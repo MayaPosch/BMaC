@@ -1,0 +1,12 @@
+OtA HTTP Database
+
+2017/02/08 - Maya Posch <posch@synyx.de>
+
+---
+
+Tables:
+
+// RowID is handled internally by SQLite ('rowid'/'oid'/'_rowid_').
+CREATE TABLE IF NOT EXISTS firmware (uid TEXT UNIQUE, filename TEXT)
+
+

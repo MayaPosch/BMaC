@@ -1,0 +1,10 @@
+CnC_UI.app
+CnC_UI
+*.user
+*.user.*
+*.o
+moc_*
+.qmake.stash
+qrc_application.cpp
+ui_mainwindow.h
+Makefile

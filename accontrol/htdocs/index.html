@@ -1,0 +1,70 @@
+<!doctype html>
+<html ng-app="ac-controller">
+<head lang="en">
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimal-ui, user-scalable=no"/>
+    <title>AC Control</title>
+</head>
+<style>
+	table {
+		margin: 5px;
+		}
+		
+	form {
+		margin: 5px;
+		margin-left: 10px;
+		}
+</style>
+
+<body>
+<!-- CoffeeNet header -->
+<!-- <header id="coffeenet-header"></header> -->
+
+<script type="text/javascript">
+	function updateNodeInfo() {
+		var http = new XMLHttpRequest();
+		http.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				var result = JSON.parse(this.responseText);
+				var out = '<table><tr><td><b>Node:</b></td><td>' + result.id + '</td></tr>';
+				out += '<tr><td><b>Temperature:</b></td><td>' + result.temperatureCurrent + '</td></tr>';
+				out += '<tr><td><b>Adjusted:</b></td><td>' + (result.temperatureCurrent - 1) + '</td></tr>';
+				out += '<tr><td><b>Target:</b></td><td>' + result.temperatureTarget + '</td></tr>';
+				document.getElementById("nodeinfo").innerHTML = out;
+			}
+		};
+		
+		http.open("GET", "/ac/grossraum-3", true);
+		http.send();
+	}
+	
+	function updateTargetTemperature() {	
+		var http = new XMLHttpRequest();
+		var request = {};
+		var newtarget = document.getElementById("newtargettemperature").value;
+		request.temperatureTarget = newtarget;
+		http.open("POST", "/ac/grossraum-3", true);
+		http.send(JSON.stringify(request));
+		window.alert('New temperature has been set.');
+		return false;
+	}
+	
+	updateNodeInfo();
+	window.setInterval(updateNodeInfo, 30 * 1000); // Every 30 seconds.
+</script>
+
+	<div id="nodeinfo"></div>
+	
+	<p>
+	<form id="nodeform" onsubmit="event.preventDefault(); updateTargetTemperature();">
+		Target temperature:<br>
+		<input type="number" min="15" max="30" id="newtargettemperature"><br>
+		<br><input type="submit" name="Submit", value="submit">
+	</form>
+	</p>
+
+	<!-- <script src="webjars/jquery/2.1.1/jquery.min.js"></script>
+	<script src="webjars/navigation-bar/bundle.js"></script> -->
+</body>
+</html>
