@@ -10,6 +10,12 @@ The Building Monitoring and Control (**BMaC**) system consists out multiple comp
 
 Communication between these components is performed over MQTT, requiring the use of an (existing) MQTT broker. An Influx database instance is used to register sensor data, allowing this data to be used by other services. An existing InfluxDB instance can be used, or a new one created for the BMaC system.
 
+A graphical overview:
+
+
+
+![bmac_overview](bmac_overview.png)
+
 ## Components
 
 * Command & Control server
