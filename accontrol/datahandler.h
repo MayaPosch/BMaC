@@ -188,7 +188,7 @@ public:
 		else if (ext == "svg") { mime = "image/svg"; }
 		
 		try {
-			response.sendFile(file.path(), ext);
+			response.sendFile(file.path(), mime);
 		}
 		catch (FileNotFoundException &e) {
 			cout << "File not found exception triggered...\n";
@@ -209,7 +209,7 @@ public:
 			ostream& ostr = response.send();
 			ostr << "Internal Server Error. Couldn't open file.";
 			return;
-		}		
+		}
 	}
 };
 
