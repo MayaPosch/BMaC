@@ -25,6 +25,7 @@ using namespace std;
 #include <Poco/Net/HTTPSClientSession.h>
 #include <Poco/Net/HTTPRequest.h>
 #include <Poco/Net/HTTPResponse.h>
+#include <Poco/File.h>
 
 using namespace Poco::Data::Keywords;
 
@@ -40,7 +41,7 @@ struct Node {
 
 
 // --- CONSTRUCTOR ---
-Listener::Listener(string clientId, string host, int port) : mosquittopp(clientId.c_str()) {
+Listener::Listener(string clientId, string host, int port, string defaultFirmware) : mosquittopp(clientId.c_str()) {
 	int keepalive = 60;
 	connect(host.c_str(), port, keepalive);
 	
@@ -55,10 +56,12 @@ Listener::Listener(string clientId, string host, int port) : mosquittopp(clientI
 		posx FLOAT, \
 		posy FLOAT)", now;
 		
-	// Ensure we have a valid CO2 table.
-	// TODO: implement.
+	// Ensure we have a valid firmware table.
+	(*session) << "CREATE TABLE IF NOT EXISTS firmware (uid TEXT UNIQUE, \
+		file TEXT)", now;
 
-	// Done for now.
+	// Load configuration settings.
+	this->defaultFirmware = defaultFirmware;
 }
 
 
@@ -84,6 +87,8 @@ void Listener::on_connect(int rc) {
 		topic = "cc/nodes/update";	// C&C client updating node.
 		subscribe(0, topic.c_str());
 		topic = "nsa/events/co2";	// CO2-related events.
+		subscribe(0, topic.c_str());
+		topic = "cc/firmware";	// C&C client firmware command.
 		subscribe(0, topic.c_str());
 	}
 	else {
@@ -280,6 +285,12 @@ void Listener::on_message(const struct mosquitto_message* message) {
 				use(node.posx),
 				use(node.posy),
 				now;
+				
+		// Store node UID with default firmware name as well.
+		(*session) << "INSERT INTO firmware VALUES(?, ?)",
+				use(node.uid),
+				use(defaultFirmware),
+				now;
 	}
 	else if (topic == "cc/nodes/update") {
 		// Update a single node.
@@ -331,6 +342,10 @@ void Listener::on_message(const struct mosquitto_message* message) {
 		del << "DELETE FROM nodes WHERE uid = ?",
 				use(payload),
 				now;
+				
+		(*session) << "DELETE FROM firmware WHERE uid = ?",
+				use(payload),
+				now;
 	}
 	else if (topic == "nsa/events/co2") {
 		// CO2-related events. Currently hard-coded triggers in the node 
@@ -380,7 +395,58 @@ void Listener::on_message(const struct mosquitto_message* message) {
 			return;
 		}
 	}
-		
+	else if (topic == "cc/firmware") {
+		if (payload == "list") {
+			// Return a list of the available firmware images as found on the 
+			// filesystem.
+			std::vector<File> files;
+			File file("firmware");
+			if (!file.isDirectory()) { return; }
+			
+			file.list(files);
+			string out;
+			for (int i = 0; i < files.size(); ++i) {
+				if (files[i].isFile()) {
+					out += files[i].path();
+					out += ";";
+				}
+			}
+			
+			// Erase last semi-colon.
+			out.pop_back();
+			
+			publish(0, "cc/firmware/list", out.length(), out.c_str());
+		}
+		else {
+			// Payload should contain the command followed by any further data.
+			// All separated by semi-colons.
+			StringTokenizer st(payload, ";", StringTokenizer::TOK_TRIM | StringTokenizer::TOK_IGNORE_EMPTY);
+			
+			if (st[0] == "change") {
+				// Change the assigned firmware for a UID from the default.
+				// Second argument should be UID, third the new firmware name.
+				// TODO: add check for whether new firmware file exists?
+				if (st.count() != 3) { return; }
+				(*session) << "UPDATE firmware SET file = ? WHERE uid = ?",
+								use (st[1]),
+								use (st[2]),
+								now;
+			}
+			else if (st[0] == "upload") {
+				// Save the new firmware data to disk. Overwrites an existing 
+				// file with the same name.
+				// Second argument is filename, third argument is file data.
+				// TODO: add some kind of CRC check.
+				if (st.count() != 3) { return; }
+				
+				// Write file & truncate if exists.
+				string filepath = "firmware/" + st[1];				
+				ofstream outfile("firmware/" + st[1], ofstream::binary | ofstream::trunc);
+				outfile.write(st[2].data(), st[2].size());
+				outfile.close();
+			}
+		}
+	}
 }
 
 

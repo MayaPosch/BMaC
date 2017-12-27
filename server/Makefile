@@ -1,5 +1,5 @@
 LDFLAGS := $(LDFLAGS) -lmosquittopp -lmosquitto -lPocoNet -lPocoNetSSL -lPocoUtil -lPocoData -lPocoDataSQLite -lPocoFoundation
-CFLAGS := $(CFLAGS) -g3
+CFLAGS := $(CFLAGS) -g3 -std=c++11
 
 TARGET = cnc
 SOURCES := $(wildcard *.cpp)

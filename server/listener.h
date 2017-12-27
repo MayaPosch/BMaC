@@ -29,9 +29,10 @@ using namespace Poco;
 
 class Listener : public mosqpp::mosquittopp {
 	Data::Session* session;
+	string defaultFirmware;
 	
 public:
-	Listener(string clientId, string host, int port);
+	Listener(string clientId, string host, int port, string defaultFirmware);
 	~Listener();
 	
 	void on_connect(int rc);
