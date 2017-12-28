@@ -35,6 +35,9 @@ private slots:
     void deleteNode();
     void errorHandler(QString err);
     void saveConfiguration();
+    void showFirmwareDialogue();
+    void showNodeFirmwareDialogue();
+    void sendMessage(string topic, string message);
     void quit();
     
     void uidChanged();

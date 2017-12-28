@@ -1,6 +1,9 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+#include "firmwaredialogue.h"
+#include "nodefirmwaredialogue.h"
+
 //#include <QGraphicsPixmapItem>
 #include <QPixmap>
 #include <QInputDialog>
@@ -21,6 +24,8 @@ MainWindow::MainWindow(QWidget *parent) :  QMainWindow(parent), ui(new Ui::MainW
     // UI connections.
     connect(ui->actionQuit, SIGNAL(triggered()), this, SLOT(quit()));
     connect(ui->actionConnect, SIGNAL(triggered()), this, SLOT(connectRemote()));
+    connect(ui->actionImages, SIGNAL(triggered()), this, SLOT(showFirmwareDialogue()));
+    connect(ui->actionNodes, SIGNAL(triggered()), this, SLOT(showNodeFirmwareDialogue()));
     connect(ui->saveNodeButton, SIGNAL(pressed()), this, SLOT(saveNode()));
     connect(ui->updateNodeButton, SIGNAL(pressed()), this, SLOT(updateNode()));
     connect(ui->deleteNodeButton, SIGNAL(pressed()), this, SLOT(deleteNode()));
@@ -527,6 +532,28 @@ void MainWindow::saveConfiguration() {
     }
     
     // TODO: implement.
+}
+
+
+// --- SHOW FIRMWARE DIALOGUE ---
+void MainWindow::showFirmwareDialogue() {
+    FirmwareDialogue dialogue(this);
+    connect(&dialogue, SIGNAL(newMessage(string,string)), this, SLOT(sendMessage(string,string)));
+    connect(mqtt, SIGNAL(receivedFirmwareList(QString)), &dialogue, SLOT(updateList(QString)));
+    dialogue.exec();
+}
+
+
+// --- SHOW NODE FIRMWARE DIALOGUE ---
+void MainWindow::showNodeFirmwareDialogue() {
+    NodeFirmwareDialogue dialogue(this);
+    dialogue.exec();
+}
+
+
+// --- SEND MESSAGE ---
+void MainWindow::sendMessage(string topic, string message) {
+    mqtt->publishMessage(topic, message);
 }
 
 

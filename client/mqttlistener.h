@@ -59,6 +59,7 @@ signals:
     void failed(QString err);
     void receivedNodes(QVector<Node> nodes);
     void receivedMap(QPixmap image);
+    void receivedFirmwareList(QString list);
     void finished();
     
 public slots:

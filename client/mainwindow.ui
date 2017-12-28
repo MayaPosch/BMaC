@@ -292,8 +292,16 @@
     <addaction name="actionConnect"/>
     <addaction name="actionSave_config"/>
    </widget>
+   <widget class="QMenu" name="menuFirmware">
+    <property name="title">
+     <string>Firmware</string>
+    </property>
+    <addaction name="actionImages"/>
+    <addaction name="actionNodes"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuServer"/>
+   <addaction name="menuFirmware"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -317,6 +325,16 @@
   <action name="actionSave_config">
    <property name="text">
     <string>Save config</string>
+   </property>
+  </action>
+  <action name="actionImages">
+   <property name="text">
+    <string>Images...</string>
+   </property>
+  </action>
+  <action name="actionNodes">
+   <property name="text">
+    <string>Nodes...</string>
    </property>
   </action>
  </widget>

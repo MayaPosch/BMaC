@@ -15,13 +15,19 @@ TEMPLATE = app
 SOURCES += main.cpp\
         mainwindow.cpp \
     mqttlistener.cpp \
-    nodetextitem.cpp
+    nodetextitem.cpp \
+    firmwaredialogue.cpp \
+    nodefirmwaredialogue.cpp
 
 HEADERS  += mainwindow.h \
     mqttlistener.h \
-    nodetextitem.h
+    nodetextitem.h \
+    firmwaredialogue.h \
+    nodefirmwaredialogue.h
 
-FORMS    += mainwindow.ui
+FORMS    += mainwindow.ui \
+    firmwaredialogue.ui \
+    nodefirmwaredialogue.ui
 
 DISTFILES +=
 

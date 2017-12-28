@@ -105,6 +105,8 @@ void MqttListener::on_connect(int rc) {
         subscribe(0, topic.c_str());
         topic = "cc/nodes/all";
         subscribe(0, topic.c_str());
+        topic = "cc/firmware/list";
+        subscribe(0, topic.c_str());
         
         emit connected();
     }
@@ -214,6 +216,11 @@ void MqttListener::on_message(const mosquitto_message *message) {
         
         // Send the received data to the UI.
         emit receivedNodes(nodes);
+    }
+    else if (topic == "cc/firmware/list") {
+        // We should have received a semi-colon-separated list of firmware
+        // filenames. Pass it on to any subscribing slots.
+        QString msgList = QString::fromStdString(payload);
     }
 }
 
