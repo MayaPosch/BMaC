@@ -7,7 +7,7 @@ NodeFirmwareDialogue::NodeFirmwareDialogue(QWidget *parent) :
     
     // Connections.
     connect(this, SIGNAL(accepted()), this, SLOT(slotOk()));
-    connect(this, SIGNAL(rejected()), this, SLOT(reject()));
+    connect(this, SIGNAL(rejected()), this, SLOT(slotCancel()));
 }
 
 NodeFirmwareDialogue::~NodeFirmwareDialogue() {
@@ -19,4 +19,13 @@ NodeFirmwareDialogue::~NodeFirmwareDialogue() {
 void NodeFirmwareDialogue::slotOk() {
     // Submit changed nodes to the C&C server.
     
+    setResult(QDialog::Accepted);
+    close();
+}
+
+
+// --- SLOT CANCEL ---
+void NodeFirmwareDialogue::slotCancel() {
+    setResult(QDialog::Rejected);
+    close();
 }

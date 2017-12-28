@@ -19,6 +19,7 @@ private:
     
 private slots:    
     void slotOk();
+    void slotCancel();
 };
 
 #endif // NODEFIRMWAREDIALOGUE_H

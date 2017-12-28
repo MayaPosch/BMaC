@@ -537,22 +537,24 @@ void MainWindow::saveConfiguration() {
 
 // --- SHOW FIRMWARE DIALOGUE ---
 void MainWindow::showFirmwareDialogue() {
-    FirmwareDialogue dialogue(this);
-    connect(&dialogue, SIGNAL(newMessage(string,string)), this, SLOT(sendMessage(string,string)));
-    connect(mqtt, SIGNAL(receivedFirmwareList(QString)), &dialogue, SLOT(updateList(QString)));
-    dialogue.exec();
+    FirmwareDialogue* dialogue = new FirmwareDialogue(this);
+    connect(dialogue, SIGNAL(newMessage(string,string)), this, SLOT(sendMessage(string,string)));
+    connect(mqtt, SIGNAL(receivedFirmwareList(QString)), dialogue, SLOT(updateList(QString)));
+    dialogue->exec();
 }
 
 
 // --- SHOW NODE FIRMWARE DIALOGUE ---
 void MainWindow::showNodeFirmwareDialogue() {
-    NodeFirmwareDialogue dialogue(this);
-    dialogue.exec();
+    NodeFirmwareDialogue* dialogue = new NodeFirmwareDialogue(this);
+    dialogue->exec();
 }
 
 
 // --- SEND MESSAGE ---
 void MainWindow::sendMessage(string topic, string message) {
+    if (!mqtt) { return; }
+    
     mqtt->publishMessage(topic, message);
 }
 

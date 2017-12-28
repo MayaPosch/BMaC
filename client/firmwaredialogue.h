@@ -24,10 +24,12 @@ private:
     
 private slots:    
     void slotOk();
+    void slotCancel();
     void uploadFirmware();
  
 public slots:
     void updateList(QString list);
+    void refreshList();
     
 signals:
     void newMessage(string topic, string message);

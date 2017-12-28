@@ -9,11 +9,12 @@ FirmwareDialogue::FirmwareDialogue(QWidget *parent) :
     
     // Connections.
     connect(ui->uploadButton, SIGNAL(pressed()), this, SLOT(uploadFirmware()));
+    connect(ui->refreshButton, SIGNAL(pressed()), this, SLOT(refreshList()));
+    connect(this, SIGNAL(accepted()), this, SLOT(slotOk()));
+    connect(this, SIGNAL(rejected()), this, SLOT(slotCancel()));
     
     // Get new list of firmware files.
-    string topic = "cc/firmware";
-    string message = "list";
-    emit newMessage(topic, message);
+    refreshList();
 }
 
 FirmwareDialogue::~FirmwareDialogue() {
@@ -34,7 +35,15 @@ void FirmwareDialogue::updateList(QString list) {
 
 // --- SLOT OK ---
 void FirmwareDialogue::slotOk() {
-    accept();
+    setResult(QDialog::Accepted);
+    close();
+}
+
+
+// --- SLOT CANCEL ---
+void FirmwareDialogue::slotCancel() {
+    setResult(QDialog::Rejected);
+    close();
 }
 
 
@@ -46,4 +55,13 @@ void FirmwareDialogue::uploadFirmware() {
     if (filename.isEmpty()) { return; }
     
     //
+}
+
+
+// --- REFRESH LIST ---
+void FirmwareDialogue::refreshList() {
+    // Get new list of firmware files.
+    string topic = "cc/firmware";
+    string message = "list";
+    emit newMessage(topic, message);
 }
