@@ -2,7 +2,7 @@
 
 **Author:** Maya Posch
 
-**Last Update:** 2017/12/20
+**Last Update:** 2018/02/27
 
 ## Introduction
 
@@ -48,3 +48,12 @@ These files will then be added to the filesystem on the firmware image.
 
 **NOTE:** Due to the limited RAM on the ESP8266, it is required to set the SSL fragment size option on the TLS termination point (MQTT broker or proxy, e.g. HAProxy). A fragment size of about 2 kB is recommended. The default 16 kB size (for TX & RX) will cause the ESP8266 to run out of memory during handshake and reset.
 
+## PCB KiCad project ##
+
+The KiCad project for the controller's PCB is found in the `kicad/` folder. From these the Gerber files can be generated for the PCBs.
+
+![](kicad/pwm_analogue_controller_v11_00.jpg)
+
+The PCB is designed for the CamdenBoss CBRS01VWH enclosure (wall/ceiling-mount).
+
+More detailed information on this project can be found at: [https://hackaday.io/project/27548-wifi-ac-controller](https://hackaday.io/project/27548-wifi-ac-controller)
