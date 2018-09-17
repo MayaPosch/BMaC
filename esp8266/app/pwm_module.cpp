@@ -6,7 +6,7 @@
 	Features:
 			- Allows for the control of PWM pins.
 			
-	2017/07/11, Maya Posch <posch@synyx.de>
+	2017/07/11, Maya Posch
 */
 
 
@@ -29,9 +29,15 @@ enum {
 };
 
 
-// --- INIT ---
-bool PwmModule::init() {
-	OtaCore::registerTopic("pwm/" + OtaCore::getLocation(), PwmModule::commandCallback);
+// --- INITIALIZE ---
+bool PwmModule::initialize() {
+	BaseModule::registerModule(MOD_IDX_PWM, PwmModule::start, PwmModule::shutdown);
+}
+
+
+// --- START ---
+bool PwmModule::start() {
+	OtaCore::registerTopic(MQTT_PREFIX + String("pwm/") + OtaCore::getLocation(), PwmModule::commandCallback);
 	
 	return true;
 }
@@ -39,7 +45,7 @@ bool PwmModule::init() {
 
 // --- SHUTDOWN ---
 bool PwmModule::shutdown() {
-	OtaCore::deregisterTopic("pwm/" + OtaCore::getLocation());
+	OtaCore::deregisterTopic(MQTT_PREFIX + String("pwm/") + OtaCore::getLocation());
 	
 	// Clean up resources.
 	if (hw_pwm) {
@@ -89,6 +95,15 @@ void PwmModule::commandCallback(String message) {
 		pins = new uint8[num];
 		for (int i = 0; i < num; ++i) {
 			pins[i] = *((uint8*) &message[index++]);
+			if (!OtaCore::claimPin(pins[i])) {
+				OtaCore::log(LOG_ERROR, "Pin is already in use: " + String(pins[i]));
+				
+				// Report failure. QoS: 1.
+				OtaCore::publish("pwm/response", OtaCore::getLocation() + ";0", 1);
+				
+				return; 
+			}
+			
 			OtaCore::log(LOG_INFO, "Adding GPIO pin " + String(pins[i]));
 		}
 		
@@ -106,6 +121,21 @@ void PwmModule::commandCallback(String message) {
 		// FIXME: duty is not reset when simply destroying the HW PWM object. Maybe reset to 0?
 		delete hw_pwm;
 		hw_pwm = 0;
+		
+		// Release GPIO pins.
+		for (int i = 0; i < pinNum; ++i) {
+			if (!OtaCore::releasePin(pins[i])) {
+				OtaCore::log(LOG_ERROR, "Pin is already in use: " + String(pins[i]));
+				
+				// Report failure. QoS: 1.
+				OtaCore::publish("pwm/response", OtaCore::getLocation() + ";0", 1);
+				
+				return; 
+			}
+			
+			OtaCore::log(LOG_INFO, "Adding GPIO pin " + String(pins[i]));
+		}
+		
 		delete[] pins;
 		pins = 0;
 		

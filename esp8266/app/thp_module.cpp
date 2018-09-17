@@ -6,7 +6,7 @@
 	Features:
 			- Defines the THP module class needed for ESP8266 functionality.
 			
-	2017/05/10, Maya Posch <posch@synyx.de>
+	2017/05/10, Maya Posch
 */
 
 
@@ -17,28 +17,20 @@
 
 
 // Static initialisations.
-//DHT* THPModule::dht = 0;
-//BME280* THPModule
-//Timer THPModule::timer;
+//bool THPModule::thp_init = THPModule::thp_initialize();
 
 
-// --- INIT ---
-bool THPModule::init() {
+// --- THP INIT ---
+bool THPModule::initialize() {
+	BaseModule::registerModule(MOD_IDX_TEMPERATURE_HUMIDITY, THPModule::start, THPModule::shutdown);
+}
+
+
+// --- START ---
+bool THPModule::start() {
 	// Directly start the BME280 module here for now.
 	// TODO: make configurable.
 	BME280Module::init();
-	
-	// Ensure we got a sensor class instance.
-	//if (!dht) { dht = new DHT(dhtPin); }
-	
-	// Wait for sensor startup, then start DHT logging.
-	//WDT.enable(false); // disable watchdog
-	//delay(1000);
-	//dht->begin();
-	
-	// Create timer.
-	//timer.initializeMs(2000, THPModule::readDHT).start();
-	//timer.initializeMs(2000, THPModule::readDHT).start();
 	
 	return true;
 }
@@ -48,12 +40,6 @@ bool THPModule::init() {
 bool THPModule::shutdown() {
 	// TODO: make configurable.
 	BME280Module::shutdown();
-	
-	//dhtTimer.stop();
-	
-	// There's no 'end' or 'stop' method in the DHT class. Just delete it.
-	//delete dht;
-	//dht = 0;
 	
 	return true;
 }

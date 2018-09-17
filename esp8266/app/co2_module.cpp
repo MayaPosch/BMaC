@@ -7,7 +7,7 @@
 			- Defines the module for MH-Z14 CO2 sensor support.
 			- Publishes read values via OtaCore::publish().
 			
-	2017/03/13, Maya Posch <posch@synyx.de>
+	2017/03/13, Maya Posch
 */
 
 
@@ -22,8 +22,18 @@ uint8 CO2Module::eventCountDown = 10; // Counter until lower event level.
 uint8 CO2Module::eventCountUp = 0; // Counter until higher event level.
 
 
-// --- INIT ---
-bool CO2Module::init() {
+// --- INITIALIZE ---
+bool CO2Module::initialize() {
+	BaseModule::registerModule(MOD_IDX_CO2, CO2Module::start, CO2Module::shutdown);
+}
+
+
+// --- START ---
+bool CO2Module::start() {
+	// Register pins.
+	if (!OtaCore::claimPin(ESP8266_gpio03)) { return false; } // RX 0
+	if (!OtaCore::claimPin(ESP8266_gpio01)) { return false; } // TX 0
+	
 	// We use UART0 for the MH-Z14 CO2 sensor.
 	// The sensor's UART uses 9600 baud, 8N1.
 	//Serial.resetCallback();
@@ -43,6 +53,10 @@ bool CO2Module::init() {
 
 // --- SHUTDOWN ---
 bool CO2Module::shutdown() {
+	// Release pins pins.
+	if (!OtaCore::releasePin(ESP8266_gpio03)) { return false; } // RX 0
+	if (!OtaCore::releasePin(ESP8266_gpio01)) { return false; } // TX 0
+	
 	timer.stop();
 	Serial.end();
 	return true;

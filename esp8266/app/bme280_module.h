@@ -6,11 +6,10 @@
 	Features:
 			- Declares the basic class needed for ESP8266 BME280 functionality.
 			
-	2017/05/10, Maya Posch <posch@synyx.de>
+	2017/05/10, Maya Posch
 */
 
 
-#pragma once
 #ifndef BME280_MODULE_H
 #define BME280_MODULE_H
 
@@ -20,15 +19,8 @@
 #include <Libraries/BME280/BME280.h>
 
 
-// I2C pins.
-//#define SCL_PIN 5 // SCL pin: GPIO5 ('D1' on NodeMCU)
-//#define SDA_PIN 4 // SDA pin: GPIO4 ('D2' on NodeMCU)
-
-
 class BME280Module {
 	static BME280* bme280;
-	//static int sclPin;
-	//static int sdaPin;
 	static Timer timer;
 	
 public:

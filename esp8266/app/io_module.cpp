@@ -6,7 +6,7 @@
 	Features:
 			- Allows one to control an i2c-enabled MCP23008 I/O expander.
 			
-	2017/11/15, Maya Posch <posch@synyx.de>
+	2017/11/15, Maya Posch
 */
 
 
@@ -41,9 +41,15 @@ enum {
 };
 
 
-// --- INIT ---
+// --- INITIALIZE ---
+bool IOModule::initialize() {
+	BaseModule::registerModule(MOD_IDX_IO, IOModule::start, IOModule::shutdown);
+}
+
+
+// --- START ---
 // Create new class instance.
-bool IOModule::init() {
+bool IOModule::start() {	
 	publishTopic = "io/response/" + OtaCore::getLocation();
 	OtaCore::registerTopic("io/" + OtaCore::getLocation(), IOModule::commandCallback);
 	

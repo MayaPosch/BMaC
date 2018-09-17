@@ -6,16 +6,15 @@
 	Features:
 			- Allows one to control an i2c-enabled MCP23008 I/O expander.
 			
-	2017/11/15, Maya Posch <posch@synyx.de>
+	2017/11/15, Maya Posch
 */
 
 
-#pragma once
 #ifndef IO_MODULE_H
 #define IO_MODULE_H
 
 
-#include "ota_core.h"
+#include "base_module.h"
 
 #include <Libraries/MCP23008/MCP23008.h>
 
@@ -28,7 +27,8 @@ class IOModule {
 	static String publishTopic;
 	
 public:
-	static bool init();
+	static bool initialize();
+	static bool start();
 	static bool shutdown();
 	static void commandCallback(String message);
 };

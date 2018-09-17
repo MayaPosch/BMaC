@@ -6,16 +6,15 @@
 	Features:
 			- Declares the basic class needed for the MH-Z14 CO2 sensor.
 			
-	2017/03/13, Maya Posch <posch@synyx.de>
+	2017/03/13, Maya Posch
 */
 
 
-#pragma once
 #ifndef CO2_MODULE_H
 #define CO2_MODULE_H
 
 
-#include "ota_core.h"
+#include "base_module.h"
 
 
 class CO2Module {
@@ -28,7 +27,8 @@ class CO2Module {
 	static void onSerialReceived(Stream &stream, char arrivedChar, unsigned short availableCharsCount);
 	
 public:
-	static bool init();
+	static bool initialize();
+	static bool start();
 	static bool shutdown();
 	static void readCO2();
 	static void config(String cmd);

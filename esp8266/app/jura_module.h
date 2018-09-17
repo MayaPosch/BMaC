@@ -6,28 +6,28 @@
 	Features:
 			- Declares the basic class needed for Jura serial protocol.
 			
-	2017/03/13, Maya Posch <posch@synyx.de>
+	2017/03/13, Maya Posch
 */
 
 
-#pragma once
 #ifndef JURA_MODULE_H
 #define JURA_MODULE_H
 
 
-#include "ota_core.h"
+#include "base_module.h"
 
 
 class JuraModule {
-	//static String mqttTxBuffer;
+	static String mqttTxBuffer;
 	static Timer timer;
 	
 	static bool toCoffeemaker(String cmd);
 	static void readStatistics();
-	//static void onSerialReceived(Stream &stream, char arrivedChar, unsigned short availableCharsCount);
+	static void onSerialReceived(Stream &stream, char arrivedChar, unsigned short availableCharsCount);
 	
 public:
-	static bool init();
+	static bool initialize();
+	static bool start();
 	static bool shutdown();
 };
 

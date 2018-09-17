@@ -7,7 +7,7 @@
 			- Defines the motion module class needed for ESP8266 functionality.
 			- Implements PIR sensor monitoring functionality.
 			
-	2017/05/10, Maya Posch <posch@synyx.de>
+	2017/05/10, Maya Posch
 */
 
 
@@ -22,8 +22,17 @@ bool MotionModule::motion = false;
 bool MotionModule::firstLow = true;
 
 
-// --- INIT ---
-bool MotionModule::init() {
+// --- INITIALIZE ---
+bool MotionModule::initialize() {
+	BaseModule::registerModule(MOD_IDX_MOTION, MotionModule::start, MotionModule::shutdown);
+}
+
+
+// --- START ---
+bool MotionModule::start() {
+	// Register pins.
+	if (!OtaCore::claimPin(ESP8266_gpio00)) { return false; }
+	
 	// The PIR sensor is connected to GPIO 0 (D3 on NodeMCU) by default.
 	// First set the sensor pin to INPUT mode.
 	pinMode(pin, INPUT);
@@ -37,6 +46,9 @@ bool MotionModule::init() {
 
 // --- SHUTDOWN ---
 bool MotionModule::shutdown() {
+	// Release pins pins.
+	if (!OtaCore::releasePin(ESP8266_gpio00)) { return false; } // RX 0
+	
 	// Detach the interrupt and stop the timer.
 	timer.stop();
 	detachInterrupt(pin);

@@ -6,29 +6,23 @@
 	Features:
 			- Declares the basic class needed for this functionality.
 			
-	2017/05/10, Maya Posch <posch@synyx.de>
+	2017/05/10, Maya Posch
 */
 
 
-#pragma once
 #ifndef THP_MODULE_H
 #define THP_MODULE_H
 
 
-#include "ota_core.h"
-
-#include <Libraries/DHT/DHT.h>
-
+#include "base_module.h"
 
 
 class THPModule {
-	//static DHT* dht;
-	//static BME280* bme280;
-	//static int dhtPin;
-	//static Timer timer;
+	//
 	
 public:
-	static bool init();
+	static bool initialize();
+	static bool start();
 	static bool shutdown();
 	static void config(String cmd);
 };

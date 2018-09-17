@@ -6,16 +6,15 @@
 	Features:
 			- 
 			
-	2017/07/11, Maya Posch <posch@synyx.de>
+	2017/07/11, Maya Posch
 */
 
 
-#pragma once
 #ifndef PWM_MODULE_H
 #define PWM_MODULE_H
 
 
-#include "ota_core.h"
+#include "base_module.h"
 
 #include <HardwarePWM.h>
 
@@ -29,7 +28,8 @@ class PwmModule {
 	static uint8* pins;
 	
 public:
-	static bool init();
+	static bool initialize();
+	static bool start();
 	static bool shutdown();
 	static void commandCallback(String message);
 };

@@ -7,16 +7,15 @@
 			- Declares the basic class needed for this functionality.
 			- Allows one to use a 
 			
-	2017/05/23, Maya Posch <posch@synyx.de>
+	2017/05/23, Maya Posch
 */
 
 
-#pragma once
 #ifndef MOTION_MODULE_H
 #define MOTION_MODULE_H
 
 
-#include "ota_core.h"
+#include "base_module.h"
 
 
 #define GPIO_PIN 0 // GPIO 0 (D5) by default.
@@ -30,7 +29,8 @@ class MotionModule {
 	static bool firstLow;
 	
 public:
-	static bool init();
+	static bool initialize();
+	static bool start();
 	static bool shutdown();
 	static void config(String cmd);
 	static void warmupSensor();

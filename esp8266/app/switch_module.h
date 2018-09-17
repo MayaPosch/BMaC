@@ -6,16 +6,15 @@
 	Features:
 			- Allows one to control a latching relay-based switch.
 			
-	2017/11/29, Maya Posch <posch@synyx.de>
+	2017/11/29, Maya Posch
 */
 
 
-#pragma once
 #ifndef SWITCH_MODULE_H
 #define SWITCH_MODULE_H
 
 
-#include "ota_core.h"
+#include "base_module.h"
 
 
 
@@ -23,7 +22,8 @@ class SwitchModule {
 	static String publishTopic;
 	
 public:
-	static bool init();
+	static bool initialize();
+	static bool start();
 	static bool shutdown();
 	static void commandCallback(String message);
 };

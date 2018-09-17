@@ -6,7 +6,7 @@
 	Features:
 			- 
 			
-	2017/03/13, Maya Posch <posch@synyx.de>
+	2017/03/13, Maya Posch
 */
 
 

@@ -6,7 +6,7 @@
 	Features:
 			- Defines the Jura module class needed for serial comms functionality.
 			
-	2017/03/13, Maya Posch <posch@synyx.de>
+	2017/03/13, Maya Posch
 */
 
 
@@ -14,12 +14,18 @@
 
 
 // Static initialisations.
-//String JuraModule::mqttTxBuffer;
+String JuraTermModule::mqttTxBuffer;
 
-String mqttTxBuffer1;
+//String mqttTxBuffer1;
 
 
-void onJuraTermSerialReceived(Stream &stream, char arrivedChar, unsigned short availableCharsCount) {
+// --- INITIALIZE ---
+bool JuraTermModule::initialize() {
+	BaseModule::registerModule(MOD_IDX_JURATERM, JuraTermModule::start, JuraTermModule::shutdown);
+}
+
+
+/* void onJuraTermSerialReceived(Stream &stream, char arrivedChar, unsigned short availableCharsCount) {
 	//Serial1.printf("Receiving UART 0.\n");
 	//OtaCore::log(LOG_DEBUG, "Receiving UART 0.");
 	
@@ -59,11 +65,15 @@ void onJuraTermSerialReceived(Stream &stream, char arrivedChar, unsigned short a
 			mqttTxBuffer1 = "";
 		}
 	}
-}
+} */
 
 
-// --- INIT ---
-bool JuraTermModule::init() {
+// --- START ---
+bool JuraTermModule::start() {
+	// Register pins.
+	if (!OtaCore::claimPin(ESP8266_gpio03)) { return false; } // RX 0
+	if (!OtaCore::claimPin(ESP8266_gpio01)) { return false; } // TX 0
+	
 	OtaCore::registerTopic("coffee/command/" + OtaCore::getLocation(), 
 					JuraTermModule::commandCallback); // Publish 'coffee/response'
 						
@@ -73,7 +83,7 @@ bool JuraTermModule::init() {
 	Serial.end();
 	delay(10);
 	Serial.begin(9600);
-	Serial.setCallback(onJuraTermSerialReceived);
+	Serial.setCallback(&JuraTermModule::onSerialReceived);
 	
 	return true;
 }
@@ -81,6 +91,10 @@ bool JuraTermModule::init() {
 
 // --- SHUTDOWN ---
 bool JuraTermModule::shutdown() {
+	// Release pins pins.
+	if (!OtaCore::releasePin(ESP8266_gpio03)) { return false; } // RX 0
+	if (!OtaCore::releasePin(ESP8266_gpio01)) { return false; } // TX 0
+	
 	Serial.end();
 	//Serial.resetCallback();
 	OtaCore::deregisterTopic("coffee/command/" + OtaCore::getLocation());
@@ -149,7 +163,7 @@ bool JuraTermModule::toCoffeemaker(String cmd) {
 
 // --- ON SERIAL RECEIVED ---
 // Callback for serial RX data events on UART 0.
-/* void JuraTermModule::onSerialReceived(Stream &stream, char arrivedChar, unsigned short availableCharsCount) {
+void JuraTermModule::onSerialReceived(Stream &stream, char arrivedChar, unsigned short availableCharsCount) {
 	//Serial1.printf("Receiving UART 0.\n");
 	OtaCore::log(LOG_DEBUG, "Receiving UART 0.");
 	
@@ -189,4 +203,4 @@ bool JuraTermModule::toCoffeemaker(String cmd) {
 			mqttTxBuffer = "";
 		}
 	}
-} */
+}

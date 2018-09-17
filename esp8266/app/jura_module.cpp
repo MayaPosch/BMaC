@@ -6,7 +6,7 @@
 	Features:
 			- Defines the Jura module class needed for serial comms functionality.
 			
-	2017/03/13, Maya Posch <posch@synyx.de>
+	2017/03/13, Maya Posch
 */
 
 
@@ -17,11 +17,18 @@
 
 // Static initialisations.
 Timer JuraModule::timer;
+String JuraModule::mqttTxBuffer;
 
-String mqttTxBuffer;
+//String mqttTxBuffer;
 
 
-void onJuraSerialReceived(Stream &stream, char arrivedChar, unsigned short availableCharsCount) {
+// --- INITIALIZE ---
+bool JuraModule::initialize() {
+	BaseModule::registerModule(MOD_IDX_JURA, JuraModule::start, JuraModule::shutdown);
+}
+
+
+/* void onJuraSerialReceived(Stream &stream, char arrivedChar, unsigned short availableCharsCount) {
 	//Serial1.printf("Receiving UART 0.\n");
 	//OtaCore::log(LOG_DEBUG, "Receiving UART 0.");
 	
@@ -71,17 +78,21 @@ void onJuraSerialReceived(Stream &stream, char arrivedChar, unsigned short avail
 			mqttTxBuffer = "";
 		}
 	}
-}
+} */
 
 
-// --- INIT ---
-bool JuraModule::init() {
+// --- START ---
+bool JuraModule::start() {
+	// Register pins.
+	if (!OtaCore::claimPin(ESP8266_gpio03)) { return false; }
+	if (!OtaCore::claimPin(ESP8266_gpio01)) { return false; }
+	
 	// UART 0: Used for external UART device (coffee machine).
 	// Runs at 9600 baud, 8N1.
 	Serial.end();
 	delay(10);
 	Serial.begin(9600);
-	Serial.setCallback(onJuraSerialReceived);
+	Serial.setCallback(&JuraModule::onSerialReceived);
 	
 	// Callback for reading out statistics every minute, assuming that reading
 	// more often is kind of ridiculous considering we're talking about a coffee
@@ -94,6 +105,10 @@ bool JuraModule::init() {
 
 // --- SHUTDOWN ---
 bool JuraModule::shutdown() {
+	// Release pins pins.
+	if (!OtaCore::releasePin(ESP8266_gpio03)) { return false; } // RX 0
+	if (!OtaCore::releasePin(ESP8266_gpio01)) { return false; } // TX 0
+	
 	timer.stop();
 	Serial.end();
 	
@@ -156,7 +171,7 @@ bool JuraModule::toCoffeemaker(String cmd) {
 
 // --- ON SERIAL RECEIVED ---
 // Callback for serial RX data events on UART 0.
-/* void JuraModule::onSerialReceived(Stream &stream, char arrivedChar, unsigned short availableCharsCount) {
+void JuraModule::onSerialReceived(Stream &stream, char arrivedChar, unsigned short availableCharsCount) {
 	//Serial1.printf("Receiving UART 0.\n");
 	OtaCore::log(LOG_DEBUG, "Receiving UART 0.");
 	
@@ -196,4 +211,4 @@ bool JuraModule::toCoffeemaker(String cmd) {
 			mqttTxBuffer = "";
 		}
 	}
-} */
+}

@@ -25,7 +25,7 @@ SMING_HOME = /opt/Sming/Sming
 # COM_PORT = COM3
 
 ## MacOS / Linux:
-# COM_PORT = /dev/tty.usbserial
+COM_PORT = /dev/ttyUSB0
 
 ## Com port speed
 # COM_SPEED	= 115200
@@ -80,9 +80,17 @@ MQTT_PORT = 8883
 else
 MQTT_PORT = 1883
 endif
+
+# Uncomment if password authentication is used.
+# USE_MQTT_PASSWORD=1
 # MQTT username & password (if needed):
-MQTT_USERNAME = esp8266
-MQTT_PWD = ESPassword
+# MQTT_USERNAME = esp8266
+# MQTT_PWD = ESPassword
+
+# MQTT topic prefix: added to all MQTT subscriptions and publications.
+# Can be left empty, but must be defined.
+# If not left empty, should end with a '/' to avoid merging with topic names.
+MQTT_PREFIX = 
 
 ## OTA
 # OTA (update) URL. Only change the host name (and port).
@@ -96,3 +104,7 @@ USER_CFLAGS := $(USER_CFLAGS) -DMQTT_PORT="$(MQTT_PORT)"
 USER_CFLAGS := $(USER_CFLAGS) -DMQTT_USERNAME="\"$(MQTT_USERNAME)"\"
 USER_CFLAGS := $(USER_CFLAGS) -DOTA_URL="\"$(OTA_URL)"\"
 USER_CFLAGS := $(USER_CFLAGS) -DMQTT_PWD="\"$(MQTT_PWD)"\"
+ifdef USE_MQTT_PASSWORD
+USER_CFLAGS := $(USER_CFLAGS) -DUSE_MQTT_PASSWORD="\"$(USE_MQTT_PASSWORD)"\"
+endif
+USER_CFLAGS := $(USER_CFLAGS) -DMQTT_PREFIX="\"$(MQTT_PREFIX)"\"

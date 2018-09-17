@@ -6,7 +6,7 @@
 	Features:
 			- Declares the basic class needed for ESP8266 DHT functionality.
 			
-	2017/03/13, Maya Posch <posch@synyx.de>
+	2017/03/13, Maya Posch
 */
 
 
@@ -17,14 +17,14 @@
 
 #include "ota_core.h"
 
-#include <Libraries/DHT/DHT.h>
+#include <Libraries/DHTesp/DHTesp.h>
 
 
 #define DHT_PIN 5 // DHT sensor: GPIO5 ('D1' on NodeMCU)
 
 
 class DHTModule {
-	static DHT* dht;
+	static DHTesp* dht;
 	static int dhtPin;
 	static Timer dhtTimer;
 	

@@ -1,7 +1,7 @@
 /*
 	ota_core.h - Header for the OtaCore class.
 	
-	Revision 0
+	Revision 2
 	
 	Features:
 			- Defines the basic class needed for ESP8266 OTA functionality.
@@ -10,35 +10,20 @@
 	Notes:
 			- 
 			
-	2017/03/13, Maya Posch <posch@synyx.de>
+	2017/03/13, Maya Posch
+	2017/11/15, Maya Posch
+	2018/08/28, Maya Posch
 */
 
 
 #include <ota_core.h>
 
+#include "base_module.h"
 
-// Feature modules.
-#include "thp_module.h"
-#include "jura_module.h"
-#include "juraterm_module.h"
-#include "co2_module.h"
-#include "motion_module.h"
-#include "pwm_module.h"
-#include "io_module.h"
-#include "switch_module.h"
-
-
-// Enums
-enum {
-	MOD_TEMPERATURE_HUMIDITY = 0x1,
-	MOD_CO2 = 0x2,
-	MOD_JURA = 0x4,
-	MOD_JURATERM = 0x8,
-	MOD_MOTION = 0x10,
-	MOD_PWM = 0x20,
-	MOD_IO = 0x40,
-	MOD_SWITCH = 0x80
-};
+#define SPI_SCLK 14
+#define SPI_MOSI 13
+#define SPI_MISO 12
+#define SPI_CS 15
 
 
 // Static initialisations.
@@ -47,13 +32,14 @@ rBootHttpUpdate* OtaCore::otaUpdater = 0;
 MqttClient* OtaCore::mqtt = 0;
 String OtaCore::MAC;
 HashMap<String, topicCallback>* OtaCore::topicCallbacks = new HashMap<String, topicCallback>();
-uint32 OtaCore::active_mods = 0x0;
 HardwareSerial OtaCore::Serial1(UART_ID_1); // UART 0 is 'Serial'.
 String OtaCore::location;
 String OtaCore::version = VERSION;
 int OtaCore::sclPin = SCL_PIN; // default.
 int OtaCore::sdaPin = SDA_PIN; // default.
 bool OtaCore::i2c_active = false;
+bool OtaCore::spi_active = false;
+uint32 OtaCore::esp8266_pins = 0x0;
 
 
 // Utility function to circumvent a bug in older versions of the 
@@ -79,6 +65,16 @@ String getFileContent(const String fileName) {
 	String res(buffer, size);
 	delete[] buffer;
 	return res;
+}
+
+
+// Utility function to write strings to a file. Replaces the default
+// fileSetContent() function in FileSystem.cpp since it does not support
+// binary strings.
+void setFileContent(const String &fileName, const String &content) {
+	file_t file = fileOpen(fileName.c_str(), eFO_CreateNewAlways | eFO_WriteOnly);
+	fileWrite(file, content.c_str(), content.length());
+	fileClose(file);
 }
 
 
@@ -110,6 +106,9 @@ bool OtaCore::init(onInitCallback cb) {
 	Serial1.begin(SERIAL_BAUD_RATE); // 115200 by default
 	Serial1.systemDebugOutput(true); // Debug output to serial
 	
+	// Initialise the sub module system.
+	BaseModule::init();
+	
 	//spiffs_mount(); // Mount file system, in order to work with files.
 	
 	// Mount the SpifFS manually. Automatic mounting is not
@@ -134,10 +133,10 @@ bool OtaCore::init(onInitCallback cb) {
 
 	WifiStation.enable(true);
 	WifiStation.config(WIFI_SSID, WIFI_PWD);
+	WifiStation.connect();
 	WifiAccessPoint.enable(false);
 
 	// Run success callback or failure callback depending on connection result.
-	// Use a 20 second timeout.
 	WifiEvents.onStationGotIP(OtaCore::connectOk);
 	WifiEvents.onStationDisconnect(OtaCore::connectFail);
 	
@@ -148,8 +147,7 @@ bool OtaCore::init(onInitCallback cb) {
 
 // --- OTA UPDATE CALLBACK ---
 void OtaCore::otaUpdate_CallBack(rBootHttpUpdate& update, bool result) {
-	Serial1.println("In OTA callback...");
-	//OtaCore::log(LOG_INFO, "In OTA callback...");
+	OtaCore::log(LOG_INFO, "In OTA callback...");
 	if (result == true) { // success
 		uint8 slot = rboot_get_current_rom();
 		if (slot == 0) { slot = 1; } else { slot = 0; }
@@ -161,7 +159,6 @@ void OtaCore::otaUpdate_CallBack(rBootHttpUpdate& update, bool result) {
 		System.restart();
 	} 
 	else { // fail
-		Serial1.println("Firmware update failed!");
 		OtaCore::log(LOG_ERROR, "Firmware update failed.");
 	}
 }
@@ -198,7 +195,7 @@ bool OtaCore::publish(String topic, String message, int qos /* = 1 */) {
 
 // --- OTA UPDATE ---
 void OtaCore::otaUpdate() {
-	Serial1.printf("Updating firmware from URL: %s...", OTA_URL);
+	//Serial1.printf("Updating firmware from URL: %s...", OTA_URL);
 	OtaCore::log(LOG_INFO, "Updating firmware from URL: " + String(OTA_URL));
 	
 	// Needs a clean object, otherwise if run before & failed, 
@@ -215,6 +212,8 @@ void OtaCore::otaUpdate() {
 	// Flash new ROM to other ROM slot.
 	// HTTP URL is hardcoded, providing our WiFi MAC as UID parameter.
 	otaUpdater->addItem(bootconf.roms[slot], OTA_URL + MAC);
+	
+	// TODO: update SPIFFS as well?
 
 	// Set a callback for the OTA procedure.
 	otaUpdater->setCallback(OtaCore::otaUpdate_CallBack);
@@ -227,7 +226,9 @@ void OtaCore::otaUpdate() {
 void OtaCore::checkMQTTDisconnect(TcpClient& client, bool flag) {	
 	// Called whenever the MQTT connection has failed.
 	if (flag == true) { Serial1.println("MQTT Broker disconnected."); }
-	else { Serial1.println("MQTT Broker unreachable."); }
+	else { 
+		String tHost = MQTT_HOST;
+		Serial1.println("MQTT Broker " + tHost + " unreachable."); }
 	
 	// Restart connection attempt after 2 seconds.
 	procTimer.initializeMs(2 * 1000, OtaCore::startMqttClient).start();
@@ -296,28 +297,26 @@ void OtaCore::startMqttClient() {
 	delete[] crtFile;
 	
     Serial1.printf("Free Heap: %d\r\n", system_get_free_heap_size());
-						
+#elif defined USE_MQTT_PASSWORD
+	mqtt->connect(MAC, MQTT_USERNAME, MQTT_PWD); // No SSL
 #else
-	mqtt->connect(MAC, MQTT_USERNAME, MQTT_PWD, true);
+	mqtt->connect(MAC); // Anonymous login.
 #endif
 
 	// Assign a disconnect callback function.
 	mqtt->setCompleteDelegate(checkMQTTDisconnect);
 	
 	// Subscribe to relevant topics.
-	mqtt->subscribe("upgrade");
-	mqtt->subscribe("presence/tell");
-	mqtt->subscribe("presence/ping");
-	mqtt->subscribe("presence/restart/#");
-	mqtt->subscribe("cc/" + MAC);
+	mqtt->subscribe(MQTT_PREFIX"upgrade");
+	mqtt->subscribe(MQTT_PREFIX"presence/tell");
+	mqtt->subscribe(MQTT_PREFIX"presence/ping");
+	mqtt->subscribe(MQTT_PREFIX"presence/restart/#");
+	mqtt->subscribe(MQTT_PREFIX"cc/" + MAC);
 	
 	delay(100); // Wait for 100 ms to let subscriptions to be processed.
 	
 	// Announce presence to C&C.
-	mqtt->publish("cc/config", MAC);
-	
-	// TODO: set the module configuration using the stored 
-	// configuration if available.
+	mqtt->publish(MQTT_PREFIX"cc/config", MAC);
 }
 
 
@@ -332,10 +331,18 @@ void OtaCore::connectOk(IPAddress ip, IPAddress mask, IPAddress gateway) {
 	
 	// Set location from storage, if present.
 	if (fileExist("location.txt")) {
-		location = fileGetContent("location.txt");
+		location = getFileContent("location.txt");
 	}
 	else {
 		location = MAC;
+	}
+	
+	// Set configuration from storage, if present.
+	if (fileExist("config.txt")) {
+		String configStr = getFileContent("config.txt");
+		uint32 config;
+		configStr.getBytes((unsigned char*) &config, sizeof(uint32), 0);
+		updateModules(config);
 	}
 
 	// Run MQTT client
@@ -354,8 +361,6 @@ void OtaCore::connectFail(String ssid, uint8_t ssidLength, uint8_t* bssid, uint8
 
 	// Handle error.
 	// Run success callback or failure callback depending on connection result.
-	// Use a 20 second timeout.
-	//WifiStation.waitConnection(OtaCore::connectOk, 20, OtaCore::connectFail);
 	WifiEvents.onStationGotIP(OtaCore::connectOk);
 	WifiEvents.onStationDisconnect(OtaCore::connectFail);
 }
@@ -368,25 +373,27 @@ void OtaCore::onMqttReceived(String topic, String message) {
 	Serial1.print(":\n"); // Prettify alignment for printing
 	Serial1.println(message);
 	
+	log(LOG_DEBUG, topic + " - " + message);
+	
 	// If the topic is 'upgrade' with our MAC as message, start OTA update.
-	if (topic == "upgrade" && message == MAC) {
+	if (topic == MQTT_PREFIX"upgrade" && message == MAC) {
 		otaUpdate();
 	}
-	else if (topic == "presence/tell") {
+	else if (topic == MQTT_PREFIX"presence/tell") {
 		// Publish our MAC.
-		mqtt->publish("presence/response", MAC);
+		mqtt->publish(MQTT_PREFIX"presence/response", MAC);
 	}
-	else if (topic == "presence/ping") {
+	else if (topic == MQTT_PREFIX"presence/ping") {
 		// Send a ping response containing our MAC.
-		mqtt->publish("presence/pong", MAC);
+		mqtt->publish(MQTT_PREFIX"presence/pong", MAC);
 	}
-	else if (topic == "presence/restart" && message == MAC) {
+	else if (topic == MQTT_PREFIX"presence/restart" && message == MAC) {
 		System.restart();
 	}
-	else if (topic == "presence/restart/all") {
+	else if (topic == MQTT_PREFIX"presence/restart/all") {
 		System.restart();
 	}
-	else if (topic == "cc/" + MAC) {
+	else if (topic == MQTT_PREFIX"cc/" + MAC) {
 		// We received a remote maintenance command. Execute it.
 		// The message consists out of the following format:
 		// <command string>;<payload string>
@@ -394,160 +401,48 @@ void OtaCore::onMqttReceived(String topic, String message) {
 		String cmd = message.substring(0, chAt);
 		++chAt;
 		
-		String msg = String((const char*) &(message[chAt]), (message.length() - chAt));
+		String msg(((char*) &message[chAt]), (message.length() - chAt));
 		
-		Serial1.printf("Command: %s, Message: %s.\n", cmd.c_str(), msg.c_str());
+		log(LOG_DEBUG, msg);
+		
+		Serial1.printf("Command: %s, Message: ", cmd.c_str());
+		Serial1.println(msg);
 		
 		if (cmd == "mod") {
 			// The second parameter should be the uint32 with bitflags.
 			// These bit flags each match up with a module:
-			// * 0x01: THPModule
-			// * 0x02: CO2Module
-			// * 0x04: JuraModule
-			// * 0x08: JuraTermModule
-			// * 0x10: MotionModule
-			// * 0x20: PwmModule
-			// * 0x40: IOModule
-			// * 0x80: SwitchModule
+			// * 0x01: 	THPModule
+			// * 0x02: 	CO2Module
+			// * 0x04: 	JuraModule
+			// * 0x08: 	JuraTermModule
+			// * 0x10: 	MotionModule
+			// * 0x20: 	PwmModule
+			// * 0x40: 	IOModule
+			// * 0x80: 	SwitchModule
+			// * 0x100: PlantModule
 			// ---
 			// Of these, the CO2, Jura and JuraTerm modules are mutually
 			// exclusive, since they all use the UART (Serial).
 			// If two or more of these are still specified in the bitflags,
-			// only the first module (DHTModule) will be enabled and the others
+			// only the first module will be enabled and the others
 			// ignored.
 			//
 			// The Switch module currently uses the same pins as the i2c bus,
 			// as well as a number of the PWM pins (D5, 6).
 			// This means that it excludes all modules but the MotionModule and
 			// those using the UART.
-			//
-			// TODO: maintain list of used/available pins in this module, 
-			// handling the assigning of pins here as well (defaults and custom).
-			// Idea: have modules obtain a pin via OtaCore's registry.
 			if (msg.length() != 4) { // Must be 32-bit integer.
 				Serial1.printf("Payload size wasn't 4 bytes: %d\n", msg.length());
 				return; 
 			}
 			
-			uint32 input = *((uint32*) &(msg[0]));
-			uint32 new_mods = 0x0;
-			
-			Serial1.printf("Input: %x, Active: %x.\n", input, active_mods);
-			
-			// Compare the new configuration with the existing configuration.
-			uint32 new_config = input ^ active_mods; // XOR comparison.
-			if (new_config == 0x0) { 
-				Serial1.print("New configuration was 0x0. No change.\n");
-				log(LOG_INFO, "New configuration was 0x0. No change.");
-				return; 
-			}
-			
-			Serial1.printf("New configuration: %x.\n", new_config);
-			log(LOG_INFO, "New configuration: " + new_config);
-			
-			// Set the new configuration.
-			// Check whether the current module should be changed, then whether
-			// the module is already active. If active, shut it down.
-			if (new_config & MOD_TEMPERATURE_HUMIDITY) {
-				if (active_mods & MOD_TEMPERATURE_HUMIDITY) {
-					THPModule::shutdown();
-					active_mods ^= MOD_TEMPERATURE_HUMIDITY;
-				}
-				else {
-					THPModule::init();
-					active_mods |= MOD_TEMPERATURE_HUMIDITY;
-				}
-			}
-			
-			if (new_config & MOD_MOTION) {
-				if (active_mods & MOD_MOTION) {
-					MotionModule::shutdown();
-					active_mods ^= MOD_MOTION;
-				}
-				else {
-					MotionModule::init();
-					active_mods |= MOD_MOTION;
-				}
-			}
-			
-			if (new_config & MOD_PWM) {
-				if (active_mods & MOD_PWM) {
-					PwmModule::shutdown();
-					active_mods ^= MOD_PWM;
-				}
-				else {
-					PwmModule::init();
-					active_mods |= MOD_PWM;
-				}
-			}
-			
-			if (new_config & MOD_IO) {
-				if (active_mods & MOD_IO) {
-					IOModule::shutdown();
-					active_mods ^= MOD_IO;
-				}
-				else {
-					IOModule::init();
-					active_mods |= MOD_IO;
-				}
-			}
-			
-			if (new_config & MOD_SWITCH) {
-				if (active_mods & MOD_SWITCH) {
-					SwitchModule::shutdown();
-					active_mods ^= MOD_SWITCH;
-				}
-				else {
-					SwitchModule::init();
-					active_mods |= MOD_SWITCH;
-				}
-			}
-			
-			// UART modules. Ensure mutual exclusivity. 
-			// Keep a running tally of active UART modules. Refuse to turn on
-			// new UART modules if one is already active.
-			uint8 active = 0;
-			if (active_mods & MOD_CO2) { active++; }
-			if (active_mods & MOD_JURA) { active++; }
-			if (active_mods & MOD_JURATERM) { active++; }
-			
-			Serial1.printf("Active UART modules: %u.\n", active);
-			
-			if (new_config & MOD_CO2 && active_mods & MOD_CO2) {
-				CO2Module::shutdown();
-				active_mods ^= MOD_CO2;
-				new_config ^= MOD_CO2;
-				active--;
-			}
-			
-			if (new_config & MOD_JURA && active_mods & MOD_JURA) {
-				JuraModule::shutdown();
-				active_mods ^= MOD_JURA;
-				new_config ^= MOD_JURATERM;
-				active--;
-			}
-			
-			if (new_config & MOD_JURATERM && active_mods & MOD_JURATERM) {
-				JuraTermModule::shutdown();
-				active_mods ^= MOD_JURATERM;
-				new_config ^= MOD_JURATERM;
-				active--;
-			}
-
-			// Enable the first active module, or abort if one is active already.
-			if (active > 0) { return; }
-			if (new_config & MOD_CO2) {
-				CO2Module::init();
-				active_mods |= MOD_CO2;
-			}
-			else if (new_config & MOD_JURA) {
-				JuraModule::init();
-				active_mods |= MOD_JURA;
-			}
-			else if (new_config & MOD_JURATERM) {
-				JuraTermModule::init();
-				active_mods |= MOD_JURATERM;
-			}			
+			uint32 input;
+			msg.getBytes((unsigned char*) &input, sizeof(uint32), 0);
+			String byteStr;
+			byteStr = "Received new configuration: ";
+			byteStr += input;
+			log(LOG_DEBUG, byteStr);
+			updateModules(input);			
 		}
 		else if (cmd == "loc") {
 			// Set the new location string if it's different.
@@ -557,22 +452,22 @@ void OtaCore::onMqttReceived(String topic, String message) {
 				fileSetContent("location.txt", location); // Save to flash.
 			}
 		}
-		else if (cmd == "dht" && msg.length() > 1) {
-			// Send payload to the DHTModule's configuration method.
-			THPModule::config(msg);
-		}
 		else if (cmd == "mod_active") {
 			// Return currently active modules.
+			uint32 active_mods = BaseModule::activeMods();
 			if (active_mods == 0) {
-				mqtt->publish("cc/response", MAC + ";0");
+				mqtt->publish(MQTT_PREFIX"cc/response", MAC + ";0");
 				return;
 			}
 			
-			mqtt->publish("cc/response", MAC + ";" + String((const char*) &active_mods, 4));
+			mqtt->publish(MQTT_PREFIX"cc/response", MAC + ";" + String((const char*) &active_mods, 4));
 		}
 		else if (cmd == "version") {
 			// Return firmware version.
-			mqtt->publish("cc/response", MAC + ";" + version);
+			mqtt->publish(MQTT_PREFIX"cc/response", MAC + ";" + version);
+		}
+		else if (cmd == "upgrade") {
+			otaUpdate();
 		}
 	}
 	else {
@@ -583,11 +478,80 @@ void OtaCore::onMqttReceived(String topic, String message) {
 }
 
 
+// --- UPDATE MODULES ---
+void OtaCore::updateModules(uint32 input) {
+	Serial1.printf("Input: %x, Active: %x.\n", input, BaseModule::activeMods());
+	
+	// Set the new configuration.
+	BaseModule::newConfig(input);
+	
+	// Update the local copy of the configuration in storage if needed.
+	if (BaseModule::activeMods() != input) {
+		String content(((char*) &input), 4);
+		setFileContent("config.txt", content);
+	}
+}
+
+
+// --- MAP GPIO TO BIT ---
+// Maps the given GPIO pin number to its position in the internal bitmask.
+bool OtaCore::mapGpioToBit(int pin, ESP8266_pins &addr) {
+	switch (pin) {
+		case 0:
+			addr = ESP8266_gpio00;
+			break;
+		case 1:
+			addr = ESP8266_gpio01;
+			break;
+		case 2:
+			addr = ESP8266_gpio02;
+			break;
+		case 3:
+			addr = ESP8266_gpio03;
+			break;
+		case 4:
+			addr = ESP8266_gpio04;
+			break;
+		case 5:
+			addr = ESP8266_gpio05;
+			break;
+		case 9:
+			addr = ESP8266_gpio09;
+			break;
+		case 10:
+			addr = ESP8266_gpio10;
+			break;
+		case 12:
+			addr = ESP8266_gpio12;
+			break;
+		case 13:
+			addr = ESP8266_gpio13;
+			break;
+		case 14:
+			addr = ESP8266_gpio14;
+			break;
+		case 15:
+			addr = ESP8266_gpio15;
+			break;
+		case 16:
+			addr = ESP8266_gpio16;
+			break;
+		default:
+			log(LOG_ERROR, "Invalid pin number specified: " + String(pin));
+			return false;
+	};
+	
+	return true;
+}
+
+
 // --- LOG ---
 void OtaCore::log(int level, String msg) {
-	//if (level > logLevel) { return; }
+	String out(lvl);
+	out += " - " + msg;
 	
-	mqtt->publish("log/all", OtaCore::MAC + ";" + msg);
+	Serial1.println(out);
+	mqtt->publish(MQTT_PREFIX"log/all", OtaCore::MAC + ";" + out);
 }
 
 
@@ -596,6 +560,10 @@ void OtaCore::log(int level, String msg) {
 bool OtaCore::starti2c() {
 	// Start i2c comms.
 	if (i2c_active) { return true; }
+	
+	// Register the I2C pins.
+	if (!claimPin(sdaPin)) { return false; }
+	if (!claimPin(sclPin)) { return false; }
 	
 	// First perform a reset in case the slave device is stuck. For this we
 	// pulse SCL 8 times.
@@ -613,4 +581,79 @@ bool OtaCore::starti2c() {
 	// Next start the i2c bus.
 	Wire.begin();
 	i2c_active = true;
+}
+
+
+// --- START SPI ---
+// Start the SPI communication on the specified pins.
+bool OtaCore::startSPI() {
+	if (spi_active) { return true; }
+	
+	// Register the pins.
+	if (!claimPin(SPI_SCLK)) { return false; }
+	if (!claimPin(SPI_MOSI)) { return false; }
+	if (!claimPin(SPI_MISO)) { return false; }
+	if (!claimPin(SPI_CS)) { return false; }
+	
+	// Start the SPI bus.
+	SPI.begin();
+	spi_active = true;
+}
+
+
+// --- CLAIM PIN ---
+// Override for claimPin(ESP8266_pins pin).
+// Converts the GPIO pin number to the position in the bit mask.
+bool OtaCore::claimPin(int pin) {
+	ESP8266_pins addr;
+	if (!mapGpioToBit(pin, addr)) { return false; }
+	
+	return claimPin(addr);
+}
+
+
+// --- CLAIM PIN ---
+// Reserves an output pin. Returns false if the pin is already in use.
+bool OtaCore::claimPin(ESP8266_pins pin) {
+	// Check the indicated pin. Return false if it's already set.
+	// Otherwise set it and return true.
+	if (esp8266_pins & pin) {
+		log(LOG_ERROR, "Attempting to claim an already claimed pin: " + String(pin));
+		log(LOG_DEBUG, String("Current claimed pins: ") + String(esp8266_pins));
+		return false;
+	}
+	
+	log(LOG_INFO, "Claiming pin position: " + String(pin));
+	
+	esp8266_pins |= pin;
+	
+	log(LOG_DEBUG, String("Claimed pin configuration: ") + String(esp8266_pins));
+	
+	return true;
+}
+
+
+// --- RELEASE PIN ---
+bool OtaCore::releasePin(int pin) {
+	ESP8266_pins addr;
+	if (!mapGpioToBit(pin, addr)) { return false; }
+	
+	return releasePin(addr);
+}
+
+
+// --- RELEASE PIN ---
+bool OtaCore::releasePin(ESP8266_pins pin) {
+	if (!(esp8266_pins & pin)) {
+		log(LOG_ERROR, "Attempting to release a pin which has not been set: " + String(pin));
+		return false;
+	}
+		
+	// Unset the indicated pin.
+	esp8266_pins ^= pin;
+	
+	log(LOG_INFO, "Released pin position: " + String(pin));
+	log(LOG_DEBUG, String("Claimed pin configuration: ") + String(esp8266_pins));
+	
+	return true;
 }

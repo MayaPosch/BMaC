@@ -6,7 +6,7 @@
 	Features:
 			- Allows one to control a latching relay-based switch.
 			
-	2017/11/29, Maya Posch <posch@synyx.de>
+	2017/11/29, Maya Posch
 */
 
 
@@ -32,9 +32,21 @@ enum {
 };
 
 
-// --- INIT ---
+// --- INITIALIZE ---
+bool SwitchModule::initialize() {
+	BaseModule::registerModule(MOD_IDX_SWITCH, SwitchModule::start, SwitchModule::shutdown);
+}
+
+
+// --- START ---
 // Create new class instance.
-bool SwitchModule::init() {
+bool SwitchModule::start() {
+	// Register pins.
+	if (!OtaCore::claimPin(ESP8266_gpio05)) { return false; }
+	if (!OtaCore::claimPin(ESP8266_gpio04)) { return false; }
+	if (!OtaCore::claimPin(ESP8266_gpio14)) { return false; }
+	if (!OtaCore::claimPin(ESP8266_gpio12)) { return false; }
+	
 	publishTopic = "switch/response/" + OtaCore::getLocation();
 	OtaCore::registerTopic("switch/" + OtaCore::getLocation(), SwitchModule::commandCallback);
 	
@@ -52,6 +64,12 @@ bool SwitchModule::init() {
 // --- SHUTDOWN ---
 bool SwitchModule::shutdown() {
 	OtaCore::deregisterTopic("switch/" + OtaCore::getLocation());
+	
+	// Release the pins.
+	if (!OtaCore::releasePin(ESP8266_gpio05)) { return false; }
+	if (!OtaCore::releasePin(ESP8266_gpio04)) { return false; }
+	if (!OtaCore::releasePin(ESP8266_gpio14)) { return false; }
+	if (!OtaCore::releasePin(ESP8266_gpio12)) { return false; }
 }
 
 

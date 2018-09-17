@@ -6,7 +6,7 @@
 	Features:
 			- Defines the BME280 module class needed for ESP8266 BME280 functionality.
 			
-	2017/05/10, Maya Posch <posch@synyx.de>
+	2017/05/10, Maya Posch
 */
 
 
@@ -15,31 +15,13 @@
 
 // Static initialisations.
 BME280* BME280Module::bme280 = 0; //(DHT_PIN);
-//int BME280Module::sclPin = SCL_PIN; // default.
-//int BME280Module::sdaPin = SDA_PIN; // default.
 Timer BME280Module::timer;
 
 
 // --- INIT ---
 bool BME280Module::init() {
 	// Start i2c comms.
-	OtaCore::starti2c();
-	
-	/*// First perform a reset in case the slave device is stuck. For this we
-	// pulse SCL 8 times.
-	Wire.pins(sdaPin, sclPin);
-	pinMode(sclPin, OUTPUT);
-	for (int i = 0; i < 8; ++i) {
-		digitalWrite(sclPin, HIGH);
-		delayMicroseconds(3);
-		digitalWrite(sclPin, LOW);
-		delayMicroseconds(3);
-	}
-	  
-	pinMode(sclPin, INPUT);
-  
-	// Next start the i2c bus.
-	Wire.begin(); */
+	if (!OtaCore::starti2c()) { return false; }
 	
 	// Ensure we got a sensor class instance.
 	if (!bme280) { bme280 = new BME280(); }
