@@ -30,6 +30,13 @@ public:
 	static bool addNode(std::string mac, Node* node);
 	static bool removeNode(std::string mac);
 	static bool removeNode(Node* node);
+	static bool registerUartCb(std::string mac, std::string cb);
+	static bool writeUart(std::string mac, std::string bytes);
+	static std::string readUart(std::string mac);
+	static bool writeSPI(std::string mac, std::string bytes);
+	static std::string readSPI(std::string mac);
+	static bool writeI2C(std::string mac, std::string bytes);
+	static std::string readI2C(std::string mac);
 	static void addMAC(std::string mac);
 	static std::string getMAC();
 };

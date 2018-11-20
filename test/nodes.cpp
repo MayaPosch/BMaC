@@ -32,6 +32,41 @@ bool Nodes::removeNode(Node* node) {
 }
 
 
+bool Nodes::registerUartCb(std::string mac, std::string cb) {
+	//
+}
+
+
+bool Nodes::writeUart(std::string mac, std::string bytes) {
+	//
+}
+
+
+std::string Nodes::readUart(std::string mac) {
+	//
+}
+
+
+bool Nodes::writeSPI(std::string mac, std::string bytes) {
+	//
+}
+
+
+std::string Nodes::readSPI(std::string mac) {
+	//
+}
+
+
+bool Nodes::writeI2C(std::string mac, std::string bytes) {
+	//
+}
+
+
+std::string Nodes::readI2C(std::string mac) {
+	//
+}
+
+
 void Nodes::addMAC(std::string mac) {
 	macs.push(mac);
 }

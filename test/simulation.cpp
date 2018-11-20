@@ -20,14 +20,18 @@
 #include <nymph.h>
 
 #include <thread>
+#include <condition_variable>
+#include <mutex>
 
 // FIXME: convert to C++11
-Condition gCon;
-Mutex gMutex;
+std::condition_variable gCon;
+std::mutex gMutex;
+bool gPredicate = false;
 
 
 void signal_handler(int signal) {
-	gCon.signal();
+	gPredicate = true;
+	gCon.notify_one();
 }
 
 
@@ -40,7 +44,7 @@ void logFunction(int level, string logStr) {
 // --- GET MAC ---
 // Request MAC address for a new node instance.
 // Returns a string type with the MAC.
-NymphMessage* getNewMac() {
+NymphMessage* getNewMac(int session, NymphMessage* msg, void* data) {
 	NymphMessage* returnMsg = msg->getReplyMessage();
 	returnMsg->setResultValue(new NymphString(nodes.getMAC()));
 	return returnMsg;
@@ -49,29 +53,86 @@ NymphMessage* getNewMac() {
 
 // --- REGISTER UART CB ---
 // Register a callback function for a UART.
-// 
+// Requires the name of the callback on the client, returns a boolean result.
 NymphMessage* registerUartCb(int session, NymphMessage* msg, void* data) {
-	//
+	NymphMessage* returnMsg = msg->getReplyMessage();
+	
+	// Get the MAC address & callback name, then call the function on the associated Node instance.
+	std::string mac = ((NymphString*) msg->parameters[0])->getValue();
+	std::string cb = ((NymphString*) msg->parameters[1])->getValue();
+	returnMsg->setResultValue(new NymphBoolean(Nodes::registerUartCb(mac, cb)));
+	return returnMsg;
 }
 
 
+// --- WRITE UART ---
+// Writes data to the UART.
+NymphMessage* writeUart(int session, NymphMessage* msg, void* data) {
+	NymphMessage* returnMsg = msg->getReplyMessage();
+	
+	// Get the MAC address, then call the function on the associated Node instance.
+	std::string mac = ((NymphString*) msg->parameters[0])->getValue();
+	std::string bytes = ((NymphString*) msg->parameters[1])->getValue();
+	returnMsg->setResultValue(new NympBoolean(Nodes::writeUart(mac, bytes)));
+	return returnMsg;
+}
+
+
+// --- READ UART ---
+// Write from the UART.
+NymphMessage* readUart(int session, NymphMessage* msg, void* data) {
+	NymphMessage* returnMsg = msg->getReplyMessage();
+	
+	// Get the MAC address, then call the function on the associated Node instance.
+	std::string mac = ((NymphString*) msg->parameters[0])->getValue();
+	returnMsg->setResultValue(new NymphString(Nodes::readUart(mac)));
+	return returnMsg;
+}
+
+
+// --- WRITE SPI ---
 NymphMessage* writeSPI(int session, NymphMessage* msg, void* data) {
-	//
+	NymphMessage* returnMsg = msg->getReplyMessage();
+	
+	// Get the MAC address, then call the function on the associated Node instance.
+	std::string mac = ((NymphString*) msg->parameters[0])->getValue();
+	std::string bytes = ((NymphString*) msg->parameters[1])->getValue();
+	returnMsg->setResultValue(new NympBoolean(Nodes::writeSPI(mac, bytes)));
+	return returnMsg;
 }
 
 
+// --- READ SPI ---
 NymphMessage* readSPI(int session, NymphMessage* msg, void* data) {
-	//
+	NymphMessage* returnMsg = msg->getReplyMessage();
+	
+	// Get the MAC address, then call the function on the associated Node instance.
+	std::string mac = ((NymphString*) msg->parameters[0])->getValue();
+	returnMsg->setResultValue(new NymphString(Nodes::readSPI(mac)));
+	return returnMsg;
 }
 
 
-NymphMessage* writeI2C(int session, NymphMessage* msg, void* data) {
-	//
+// --- WRITE I2C ---
+NymphMessage* writeI2C(int session, NymphMessage* msg, void* data) 
+	NymphMessage* returnMsg = msg->getReplyMessage();
+	
+	// Get the MAC address, then call the function on the associated Node instance.
+	std::string mac = ((NymphString*) msg->parameters[0])->getValue();
+	std::string bytes = ((NymphString*) msg->parameters[1])->getValue();
+	returnMsg->setResultValue(new NympBoolean(Nodes::writeI2C(mac, bytes)));
+	return returnMsg;
 }
 
 
+// --- READ I2C ---
 NymphMessage* readI2C(int session, NymphMessage* msg, void* data) {
-	//
+	NymphMessage* returnMsg = msg->getReplyMessage();
+	
+	// Get the MAC address, then call the function on the associated Node instance.
+	std::string mac = ((NymphString*) msg->parameters[0])->getValue();
+	returnMsg->setResultValue(new NymphString(Nodes::readI2C(mac)));
+	return returnMsg;
 }
 
 
@@ -89,14 +150,21 @@ int main() {
 	
 	// Configure and start the NymphRPC server instance.
 	// We need to provide methods for the following actions:
+	// * Get the network MAC.
 	// * Registering UART callback(s).
 	// * SPI access.
 	// * I2C access.
+	// * UART access.
 	vector<NymphTypes> parameters;
-	parameters.push_back(NYMPH_STRING);
-	NymphMethod registerUartFunction("registerUart", parameters, NYMPH_BOOL);
-	registerUartFunction.setCallback(Building::registerUartCb);
-	NymphRemoteClient::registerMethod("registerUart", registerUartFunction);
+	NymphMethod getNewMacFunction("getNewMac", parameters, NYMPH_STRING);
+	getNewMacFunction.setCallback(Building::registerUartCb);
+	NymphRemoteClient::registerMethod("getNewMac", getNewMacFunction);
+	
+	parameters.push_back(NYMPH_STRING); // MAC
+	parameters.push_back(NYMPH_STRING);	// Callback name.
+	NymphMethod registerUartCbFunction("registerUartCb", parameters, NYMPH_BOOL);
+	registerUartCbFunction.setCallback(Building::registerUartCb);
+	NymphRemoteClient::registerMethod("registerUartCb", registerUartCbFunction);
 	
 	// Install signal handler to terminate the server.
 	signal(SIGINT, signal_handler);
@@ -109,8 +177,10 @@ int main() {
 	Building building(config);
 	
 	// Loop until the SIGINT signal has been received.
-	gMutex.lock();
-	gCon.wait(gMutex);
+	std::unique_lock<std::mutex> lock(gMutex);
+	while (!gPredicate) {
+		cv.wait(lk);
+	}
 	
 	// Clean-up
 	NymphRemoteClient::shutdown();

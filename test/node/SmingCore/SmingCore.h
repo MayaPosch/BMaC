@@ -9,6 +9,9 @@
 #include "wiring/WVector.h"
 #include "wiring/WHashMap.h"
 #include "FileSystem.h"
+#include "WiringFrameworkDependencies.h"
+#include "Stream.h"
+#include "Delegate.h"
 
 using namespace std;
 
@@ -18,18 +21,23 @@ using namespace std;
 #define UART_ID_0 0 ///< ID of UART 0
 #define UART_ID_1 1 ///< ID of UART 1
 
+typedef Delegate<void(Stream& source, char arrivedChar, uint16_t availableCharsCount)> StreamDataReceivedDelegate;
+
 class HardwareSerial {
 	const int uart;
+	uint32_t baud;
 	
 public:
 	HardwareSerial(const int uartPort) { uart = uartPort; }
-	void begin() { }
+	void begin(uint32_t baud = 9600) { }
 	void systemDebugOutput(bool enable) { }
 	void end() { }
-	size_t printf(const char *fmt, ...) { printf(
-	void setCallback();
-	void write();
-	void readBytes();
+	size_t printf(const char *fmt, ...);
+	void print(String str);
+	void println(String str);
+	void setCallback(StreamDataReceivedDelegate dataReceivedDelegate);
+	size_t write(const uint8_t* buffer, size_t size);
+	size_t readBytes(char *buffer, size_t length);
 };
 
 extern HardwareSerial Serial; // Default UART
@@ -57,6 +65,8 @@ public:
 						  bool save /* = true */);
 	bool connect();
 	String getMAC() { return mac; }
+	
+	static int handle;
 };
 
 extern StationClass WifiStation;
