@@ -151,14 +151,23 @@ public:
 };
 
 
-// --- Wire
-class Wire {
+// --- Wire (I2C)
+class TwoWire {
 	//
 	
 public:
-	void pins();
+	void pins(int sda, int scl);
 	void begin();
+	void beginTransmission(int address);
+	void write(uint8_t address);
+	void write(int data);
+	void endTransmission();
+	void requestFrom(int address, int length);
+	int available();
+	int read();
 }
+
+extern TwoWire Wire ;
 
 
 // --- SPI
@@ -167,6 +176,10 @@ class SPI {
 	
 public:
 	void begin();
+	void end();
+	void beginTransaction(SPISettings mySettings);
+	void endTransaction();
+	void transfer(uint8* buffer, size_t numberBytes);
 };
 
 
@@ -176,7 +189,12 @@ delay();
 
 
 // --- GPIO
-pinMode();
+pinMode() { }
+digitalWrite() { }
+
+
+// --- ADC
+analogRead();
 
 
 // --- System

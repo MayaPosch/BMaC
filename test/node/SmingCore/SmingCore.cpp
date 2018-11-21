@@ -192,3 +192,58 @@ AccessPointClass WifiAccessPoint;
 void AccessPointClass::enable(bool enabled, bool save) {
 	// Nothing to do.
 }
+	
+	
+// SPI
+void SPI::begin() { }
+void SPI::end() { }
+void SPI::beginTransaction(SPISettings mySettings) { }
+void SPI::endTransaction() { }
+void SPI::transfer(uint8* buffer, size_t numberBytes) {
+	// Call the remote method.
+	vector<NymphType*> values;
+	values.push_back(new NymphString(StationClass::handle));
+	values.push_back(new NymphString(String(buffer, size)));
+	NymphType* returnValue = 0;
+	if (!NymphRemoteServer::callMethod(StationClass::handle, "writeSPI", values, returnValue, result)) {
+		std::cout << "Error calling remote method: " << result << std::endl;
+		NymphRemoteServer::disconnect(StationClass::handle, result);
+		NymphRemoteServer::shutdown();
+		return 0;
+	}
+	
+	if (returnValue->type() != NYMPH_BOOL) {
+		std::cout << "Return value wasn't a boolean. Type: " << returnValue->type() << std::endl;
+		NymphRemoteServer::disconnect(StationClass::handle, result);
+		NymphRemoteServer::shutdown();
+		return 0;
+	}
+}
+
+
+// I2C
+void TwoWire::pins(int sda, int scl) { }
+void TwoWire::begin() { }
+void TwoWire::beginTransmission(int address) { }
+void TwoWire::write(uint8_t address) {
+	// Call remote method.
+}
+
+
+void TwoWire::write(int data) {
+	// Call remote method.
+}
+
+
+void TwoWire::endTransmission() { }
+void TwoWire::requestFrom(int address, int length) {
+	// Call remote method.
+}
+
+
+int TwoWire::available(); //
+int TwoWire::read() {
+	// Call remote method.
+}
+
+TwoWire Wire;
