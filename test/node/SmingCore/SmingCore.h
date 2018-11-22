@@ -26,6 +26,7 @@ typedef Delegate<void(Stream& source, char arrivedChar, uint16_t availableCharsC
 class HardwareSerial {
 	const int uart;
 	uint32_t baud;
+	StreamDataReceivedDelegate HWSDelegate = nullptr;
 	
 public:
 	HardwareSerial(const int uartPort) { uart = uartPort; }
@@ -36,6 +37,7 @@ public:
 	void print(String str);
 	void println(String str);
 	void setCallback(StreamDataReceivedDelegate dataReceivedDelegate);
+	static void dataReceivedCallback();
 	size_t write(const uint8_t* buffer, size_t size);
 	size_t readBytes(char *buffer, size_t length);
 };

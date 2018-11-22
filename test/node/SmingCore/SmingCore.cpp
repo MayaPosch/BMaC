@@ -50,9 +50,12 @@ void HardwareSerial::println(String str) {
 
 
 void HardwareSerial::setCallback(StreamDataReceivedDelegate dataReceivedDelegate) {
+	HWSDelegate = dataReceivedDelegate;
+	
 	// Call the remote method.
 	vector<NymphType*> values;
-	values.push_back(new NymphString(""));
+	values.push_back(new NymphString(WifiStation.getMAC()));
+	values.push_back(new NymphString("dataReceivedCallback"));
 	NymphType* returnValue = 0;
 	if (!NymphRemoteServer::callMethod(StationClass::handle, "registerUartCb", values, returnValue, result)) {
 		std::cout << "Error calling remote method: " << result << std::endl;
@@ -61,8 +64,8 @@ void HardwareSerial::setCallback(StreamDataReceivedDelegate dataReceivedDelegate
 		return false;
 	}
 	
-	if (returnValue->type() != NYMPH_STRING) {
-		std::cout << "Return value wasn't a string. Type: " << returnValue->type() << std::endl;
+	if (returnValue->type() != NYMPH_BOOL) {
+		std::cout << "Return value wasn't a boolean. Type: " << returnValue->type() << std::endl;
 		NymphRemoteServer::disconnect(StationClass::handle, result);
 		NymphRemoteServer::shutdown();
 		return false;
@@ -70,10 +73,16 @@ void HardwareSerial::setCallback(StreamDataReceivedDelegate dataReceivedDelegate
 }
 
 
+void HardwareSerial::dataReceivedCallback() {
+	// Call the callback method, if one has been registered.
+	HWSDelegate.invoke();
+}
+
+
 size_t HardwareSerial::write(const uint8_t* buffer, size_t size) {
 	// Call the remote method.
 	vector<NymphType*> values;
-	values.push_back(new NymphString(StationClass::handle));
+	values.push_back(new NymphString(WifiStation.getMAC()));
 	values.push_back(new NymphString(String(buffer, size)));
 	NymphType* returnValue = 0;
 	if (!NymphRemoteServer::callMethod(StationClass::handle, "writeUart", values, returnValue, result)) {
@@ -115,7 +124,7 @@ size_t HardwareSerial::readBytes(char* buffer, size_t length) {
 	
 	// Update buffer, return bytes read.
 	std::string bytes = ((NymphString*) returnValue)->getValue();
-	buffer = // TODO: move data into buffer with move operator.
+	buffer = bytes.data();
 	return bytes.length();
 }
 
@@ -202,7 +211,7 @@ void SPI::endTransaction() { }
 void SPI::transfer(uint8* buffer, size_t numberBytes) {
 	// Call the remote method.
 	vector<NymphType*> values;
-	values.push_back(new NymphString(StationClass::handle));
+	values.push_back(new NymphString(WifiStation.getMAC()));
 	values.push_back(new NymphString(String(buffer, size)));
 	NymphType* returnValue = 0;
 	if (!NymphRemoteServer::callMethod(StationClass::handle, "writeSPI", values, returnValue, result)) {
@@ -227,11 +236,45 @@ void TwoWire::begin() { }
 void TwoWire::beginTransmission(int address) { }
 void TwoWire::write(uint8_t address) {
 	// Call remote method.
+	vector<NymphType*> values;
+	values.push_back(new NymphString(WifiStation.getMAC()));
+	values.push_back(new NymphString(String(buffer, size)));
+	NymphType* returnValue = 0;
+	if (!NymphRemoteServer::callMethod(StationClass::handle, "writeSPI", values, returnValue, result)) {
+		std::cout << "Error calling remote method: " << result << std::endl;
+		NymphRemoteServer::disconnect(StationClass::handle, result);
+		NymphRemoteServer::shutdown();
+		return 0;
+	}
+	
+	if (returnValue->type() != NYMPH_BOOL) {
+		std::cout << "Return value wasn't a boolean. Type: " << returnValue->type() << std::endl;
+		NymphRemoteServer::disconnect(StationClass::handle, result);
+		NymphRemoteServer::shutdown();
+		return 0;
+	}
 }
 
 
 void TwoWire::write(int data) {
 	// Call remote method.
+	vector<NymphType*> values;
+	values.push_back(new NymphString(WifiStation.getMAC()));
+	values.push_back(new NymphString(String(data)));
+	NymphType* returnValue = 0;
+	if (!NymphRemoteServer::callMethod(StationClass::handle, "writeI2C", values, returnValue, result)) {
+		std::cout << "Error calling remote method: " << result << std::endl;
+		NymphRemoteServer::disconnect(StationClass::handle, result);
+		NymphRemoteServer::shutdown();
+		return 0;
+	}
+	
+	if (returnValue->type() != NYMPH_BOOL) {
+		std::cout << "Return value wasn't a boolean. Type: " << returnValue->type() << std::endl;
+		NymphRemoteServer::disconnect(StationClass::handle, result);
+		NymphRemoteServer::shutdown();
+		return 0;
+	}
 }
 
 

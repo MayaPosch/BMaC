@@ -107,3 +107,45 @@ bool addUARTDevice(Sensor &sensor, int uart) {
 bool addUARTDevice(Actuator &actuator, int uart) {
 	//
 }
+
+
+// --- REGISTER UART CB ---
+bool registerUartCb(std::string cb) {
+	//
+}
+
+
+// --- WRITE UART ---
+bool writeUart(std::string bytes) {
+	//
+}
+
+
+// --- READ UART ---
+std::string readUart() {
+	//
+}
+
+
+// --- WRITE SPI ---
+bool writeSPI(std::string bytes) {
+	//
+}
+
+
+// --- READ SPI ---
+std::string readSPI() {
+	//
+}
+
+
+// --- WRITE I2C ---
+bool writeI2C(std::string bytes) {
+	//
+}
+
+
+// --- READ I2C ---
+std::string readI2C() {
+	//
+}

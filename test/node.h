@@ -36,6 +36,14 @@ public:
 	bool addSPIDevice(Actuator &actuator, int cs_pin);
 	bool addUARTDevice(Sensor &sensor, int uart);
 	bool addUARTDevice(Actuator &actuator, int uart);
+	
+	bool registerUartCb(std::string cb);
+	bool writeUart(std::string bytes);
+	std::string readUart();
+	bool writeSPI(std::string bytes);
+	std::string readSPI();
+	bool writeI2C(std::string bytes);
+	std::string readI2C();
 };
 
 #endif

@@ -23,6 +23,8 @@ class Node;
 
 
 class Nodes {
+	static Node* getNode(std::string mac);
+	
 	static std::map<std::string, Node*> nodes;
 	static std::queue<std::string> macs;
 	
