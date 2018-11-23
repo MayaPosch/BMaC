@@ -1,5 +1,5 @@
 /*
-	sensor.cpp - Source file for the Sensor base class.
+	device.cpp - Source file for the Device class.
 	
 	Revision 0
 	
@@ -10,11 +10,11 @@
 */
 
 
-#include "sensor.h"
+#include "device.h"
 
 
 // --- CONSTRUCTOR ---
-Sensor::Sensor(int id, Config &config) {
+Device::Device(int id, Config &config) {
 	// Read out the details for this sensor.
 	std::string cat = "Sensor_" + std::to_string(id);
 	std::string type = config.getValue<int>(cat + ".type", "");

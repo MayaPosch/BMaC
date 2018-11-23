@@ -34,16 +34,16 @@ Room::Room(uint32_t type, Config &config) {
 	if (!nodes.empty()) {
 		// Extract the node IDs.
 		std::vector<std::string> node_ids;
-		split_string(nodes, ',', node_ids);	
+		split_string(nodes, ',', node_ids);
 		int node_count = node_ids.size();
 		
 		// Create the nodes.
 		for (int i = 0; i < node_count; ++i) {
-			Node node(std::stoi(node_ids.at(i)), config);
+			Node node(node_ids.at(i), config);
 			
-			node_cat = "Node_" + std::to_string(i + 1);
+			node_cat = "Node_" + node_ids.at(i);
 			
-			nodes.push_back(node);
+			nodes.insert(std::pair<std::string, Node>(node_ids.at(i), node));
 		}
 		
 		sensors = config.getValue<std::string>(node_cat + ".sensors", "");
@@ -51,7 +51,7 @@ Room::Room(uint32_t type, Config &config) {
 		if (!sensors.empty()) {
 			// Extract the sensor IDs.
 			std::vector<std::string> sensor_ids;
-			split_string(sensors, ',', sensor_ids);
+			split_string(sensors, ':', sensor_ids);
 			int sensor_count = sensor_ids.size();
 			
 			// Create the sensors.
@@ -65,14 +65,14 @@ Room::Room(uint32_t type, Config &config) {
 				}
 				
 				// Create the new sensor.
-				Sensor sensor(std::stoi(sensor_data[0]), config);
+				Device device(std::stoi(sensor_data[0]), config);
 				
 				// TODO: allow sensors to read the current conditions in the room (temp, humidity,
 				// etc.).
 				
 				// Add sensor to the node.
 				// FIXME: nodes addressing.
-				nodes.at(std::stoi(actuator_data[1])).addSensor(sensor);
+				nodes.at(std::stoi(sensor_data[1])).addDevice(device);
 				
 				sensors.push_back(sensor);
 			}
@@ -81,7 +81,7 @@ Room::Room(uint32_t type, Config &config) {
 		if (!actuators.empty()) {
 			// Extract the actuator IDs.
 			std::vector<std::string> actuator_ids;
-			split_string(actuators, ',', actuator_ids);	
+			split_string(actuators, ':', actuator_ids);
 			int actuator_count = actuator_ids.size();
 			
 			// Create the actuators.
@@ -95,11 +95,11 @@ Room::Room(uint32_t type, Config &config) {
 				}
 				
 				// Create the new actuator.
-				Actuator actuator(std::stoi(actuator_ids.at(i)), config);
+				Device device(std::stoi(actuator_ids.at(i)), config);
 				
 				// Add actuator to the node.
 				// FIXME: nodes addressing.
-				nodes.at(std::stoi(actuator_data[1])).addActuator(actuator);
+				nodes.at(std::stoi(actuator_data[1])).addDevice(device);
 				
 				actuators.push_back(actuator);
 			}

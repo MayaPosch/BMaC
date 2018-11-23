@@ -17,18 +17,18 @@
 
 
 // --- CONSTRUCTOR ---
-Node::Node(int id, Config &config) {
+Node::Node(std::string id, Config &config) {
 	// Read out the MAC address for this node, as well as the sensors and actuators connected
 	// to this node.
-	std::string node_cat = "Node_" + std::to_string(id);
+	std::string node_cat = "Node_" + id;
 	mac = config.getValue<std::string>(node_cat + ".mac", "");
 	//std::string sensors = config.getValue<std::string>(node_cat + ".sensors", "");
 	//std::string actuators = config.getValue<std::string>(node_cat + ".actuators", "");
 	
 	// Launch a new node instance. These run as external processes since the firmware has its
 	// own main function.
-	// First push the MAC for it onto the Nodes queue.
-	Nodes::addMAC(mac);
+	// First register this new Node with the Nodes class.
+	Nodes::addNode(mac, this);
 	std::system("esp8266");
 	
 	// The new node should now be launching and connect to the simulation's NymphRPC server.
@@ -117,7 +117,13 @@ bool registerUartCb(std::string cb) {
 
 // --- WRITE UART ---
 bool writeUart(std::string bytes) {
-	//
+	// We write the provided bytes on the single UART the ESP8266 has, assuming that a device has
+	// been connected.
+	if () {
+		//
+	}
+	
+	return true;
 }
 
 

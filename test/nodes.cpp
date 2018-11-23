@@ -22,6 +22,7 @@ Node* Nodes::getNode(std::string mac) {
 bool Nodes::addNode(std::string mac, Node* node) {
 	std::pair<std::map<std::string, Node*>::iterator, bool> ret;
 	ret = nodes.insert(std::pair<std::string, Node*>(mac, node));
+	if (ret.second) { macs.push(mac); }
 	return ret.second;
 }
 

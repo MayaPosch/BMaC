@@ -15,17 +15,17 @@
 
 
 #include "node.h"
-#include "sensor.h"
-#include "actuator.h"
+#include "device.h"
 
 #include <vector>
+#include <map>
 #include <cstdint>
 
 
 class Room {
-	std::vector<Node> nodes;
-	std::vector<Sensor> sensors;
-	std::vector<Actuator> actuators;
+	std::map<std::string, Node> nodes;
+	std::vector<Device> sensors;
+	std::vector<Device> actuators;
 	
 public:
 	Room(uint32_t type, Config &config);

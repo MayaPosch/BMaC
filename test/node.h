@@ -14,6 +14,8 @@
 #define NODE_H
 
 #include "config.h"
+#include 'device.h"
+
 #include "sensor.h"
 #include "actuator.h"
 
@@ -23,11 +25,12 @@
 
 class Node {
 	std::string mac;
+	Device* uart0;
 	std::vector<Sensor> sensors;
 	std::vector<Actuator> actuators;
 	
 public:
-	Node(int id, Config &config);
+	Node(std::string id, Config &config);
 	bool addSensor(Sensor &sensor);
 	bool addActuator(Actuator &actuator);
 	bool addI2CDevice(Sensor &sensor, int address);
