@@ -23,6 +23,10 @@ Room::Room(uint32_t type, Config &config) {
 	std::string room_cat = "Room_" + std::to_string(type);
 	std::string nodes = config.getValue<std::string>(room_cat + ".nodes", "");
 	
+	// Set initial room status values.
+	state.temperature = 24.3;
+	state.humidity = 51.2;
+	
 	// A node configuration consists out of a Node instance, the peripherals it attaches to
 	// and the interfaces between both.
 	

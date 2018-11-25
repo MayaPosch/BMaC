@@ -27,6 +27,8 @@ class Room {
 	std::vector<Device> sensors;
 	std::vector<Device> actuators;
 	
+	RoomState state;
+	
 public:
 	Room(uint32_t type, Config &config);
 	
