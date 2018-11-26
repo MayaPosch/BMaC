@@ -26,19 +26,11 @@
 class Node {
 	std::string mac;
 	Device* uart0;
-	std::vector<Sensor> sensors;
-	std::vector<Actuator> actuators;
+	std::vector<Device> devices;
 	
 public:
 	Node(std::string id, Config &config);
-	bool addSensor(Sensor &sensor);
-	bool addActuator(Actuator &actuator);
-	bool addI2CDevice(Sensor &sensor, int address);
-	bool addI2CDevice(Actuator &actuator, int address);
-	bool addSPIDevice(Sensor &sensor, int cs_pin);
-	bool addSPIDevice(Actuator &actuator, int cs_pin);
-	bool addUARTDevice(Sensor &sensor, int uart);
-	bool addUARTDevice(Actuator &actuator, int uart);
+	bool addDevice(Device &device);
 	
 	bool registerUartCb(std::string cb);
 	bool writeUart(std::string bytes);

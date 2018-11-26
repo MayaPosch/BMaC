@@ -14,9 +14,9 @@
 
 
 // --- CONSTRUCTOR ---
-Device::Device(int id, Config &config) {
-	// Read out the details for this sensor.
-	std::string cat = "Sensor_" + std::to_string(id);
+Device::Device(std::string id, Config &config, std::shared_ptr<RoomState> rs) : roomState(rs) {
+	// Read out the details for this device.
+	std::string cat = "Device_" + id;
 	std::string type = config.getValue<int>(cat + ".type", "");
 	if (type == "spi") {
 		connType = CONN_SPI;

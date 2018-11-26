@@ -19,6 +19,7 @@
 
 
 class Device {
+	std::shared_ptr<RoomState> roomState;
 	Connection connType;
 	std::string device;
 	int spi_cs;
@@ -27,9 +28,9 @@ class Device {
 	int uart_dev;		// UART peripheral (0, 1, etc.)
 	
 public:
-	Device(int id, Config &config);
-	uint8_t readRegister8(int reg);
-	void writeRegister8(int reg, uint8_t data);
+	Device(std::string id, Config &config, std::shared_ptr<RoomState> rs);
+	/* uint8_t readRegister8(int reg);
+	void writeRegister8(int reg, uint8_t data); */
 	Connection connectionType() { return connType; }
 };
 

@@ -24,8 +24,8 @@ Room::Room(uint32_t type, Config &config) {
 	std::string nodes = config.getValue<std::string>(room_cat + ".nodes", "");
 	
 	// Set initial room status values.
-	state.temperature = 24.3;
-	state.humidity = 51.2;
+	state->setTemperature(24.3);
+	state->setHumidity(51.2);
 	
 	// A node configuration consists out of a Node instance, the peripherals it attaches to
 	// and the interfaces between both.
@@ -43,90 +43,37 @@ Room::Room(uint32_t type, Config &config) {
 		
 		// Create the nodes.
 		for (int i = 0; i < node_count; ++i) {
-			Node node(node_ids.at(i), config);
-			
-			node_cat = "Node_" + node_ids.at(i);
-			
+			Node node(node_ids.at(i), config);	
+			node_cat = "Node_" + node_ids.at(i);			
 			nodes.insert(std::pair<std::string, Node>(node_ids.at(i), node));
 		}
 		
-		sensors = config.getValue<std::string>(node_cat + ".sensors", "");
-		actuators = config.getValue<std::string>(node_cat + ".actuators", "");	
-		if (!sensors.empty()) {
-			// Extract the sensor IDs.
-			std::vector<std::string> sensor_ids;
-			split_string(sensors, ':', sensor_ids);
-			int sensor_count = sensor_ids.size();
+		devicesStr = config.getValue<std::string>(node_cat + ".devices", "");
+		if (!devicesStr.empty()) {
+			// Extract the device IDs.
+			std::vector<std::string> device_ids;
+			split_string(devicesStr, ':', device_ids);
+			int device_count = device_ids.size();
 			
-			// Create the sensors.
-			for (int i = 0; i < sensor_count; ++i) {
-				// Split the sensor section into its ID and the node it is to be connected to.
-				std::vector<std::string> sensor_data;
-				split_string(sensor_ids.at(i), sensor_data);
-				if (sensor_data.size() != 2) {
+			// Create the devices.
+			for (int i = 0; i < device_count; ++i) {
+				// Split the device section into its ID and the node it is to be connected to.
+				std::vector<std::string> device_data;
+				split_string(device_ids.at(i), device_data);
+				if (device_data.size() != 2) {
 					// Incorrect data. Abort.
 					continue;
 				}
 				
 				// Create the new sensor.
-				Device device(std::stoi(sensor_data[0]), config);
-				
-				// TODO: allow sensors to read the current conditions in the room (temp, humidity,
-				// etc.).
+				Device device(device_data[0], config, state);
 				
 				// Add sensor to the node.
-				// FIXME: nodes addressing.
-				nodes.at(std::stoi(sensor_data[1])).addDevice(device);
+				nodes.at(device_data[1]).addDevice(device);
 				
-				sensors.push_back(sensor);
-			}
-		}
-		
-		if (!actuators.empty()) {
-			// Extract the actuator IDs.
-			std::vector<std::string> actuator_ids;
-			split_string(actuators, ':', actuator_ids);
-			int actuator_count = actuator_ids.size();
-			
-			// Create the actuators.
-			for (int i = 0; i < actuator_count; ++i) {
-				// Split the sensor section into its ID and the node it is to be connected to.
-				std::vector<std::string> actuator_data;
-				split_string(actuator_ids.at(i), actuator_data);
-				if (actuator_data.size() != 2) {
-					// Incorrect data. Abort.
-					continue;
-				}
-				
-				// Create the new actuator.
-				Device device(std::stoi(actuator_ids.at(i)), config);
-				
-				// Add actuator to the node.
-				// FIXME: nodes addressing.
-				nodes.at(std::stoi(actuator_data[1])).addDevice(device);
-				
-				actuators.push_back(actuator);
+				devices.push_back(device);
 			}
 		}
 	}
-	
-	// Create links between the devices.
-	
-	
-	/* switch(type) {
-		case DEVICE_TYPE_NODE:
-			
-			
-			Node node(uint32_t id, config);
-			if (node.) {
-				BME280 bme280(
-				node.addI2C(bme280);
-			
-			break;
-		default:
-			//
-	}; */
-		
-	// Start the Node instance.
 	
 }

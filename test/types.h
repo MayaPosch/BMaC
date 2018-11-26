@@ -12,6 +12,7 @@
 #ifndef SENSOR_H
 #define SENSOR_H
 
+#include <memory>
 #include <thread>
 #include <mutex>
 
@@ -32,6 +33,12 @@ class RoomState {
 	std::mutex hmtx;
 	
 public:
+	RoomState() : 
+		temperature(0),
+		humidity(0) {
+		//
+	}
+
 	float getTemperature() {
 		std::lock_guard<std::mutex> lk(tmtx); 
 		return temperature; 
@@ -48,9 +55,9 @@ public:
 		return humidity;
 	}
 	
-	void setTemperature(float t) {
+	void setHumidity(float h) {
 		std::lock_guard<std::mutex> lk(hmtx);
-		temperature = t; 
+		temperature = h; 
 	}
 };
 

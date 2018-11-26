@@ -24,10 +24,8 @@
 
 class Room {
 	std::map<std::string, Node> nodes;
-	std::vector<Device> sensors;
-	std::vector<Device> actuators;
-	
-	RoomState state;
+	std::vector<Device> devices;
+	std::shared_ptr<RoomState> state;
 	
 public:
 	Room(uint32_t type, Config &config);

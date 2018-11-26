@@ -22,8 +22,6 @@ Node::Node(std::string id, Config &config) {
 	// to this node.
 	std::string node_cat = "Node_" + id;
 	mac = config.getValue<std::string>(node_cat + ".mac", "");
-	//std::string sensors = config.getValue<std::string>(node_cat + ".sensors", "");
-	//std::string actuators = config.getValue<std::string>(node_cat + ".actuators", "");
 	
 	// Launch a new node instance. These run as external processes since the firmware has its
 	// own main function.
@@ -41,8 +39,8 @@ Node::Node(std::string id, Config &config) {
 };
 
 
-// --- ADD SENSOR ---
-bool addSensor(Sensor &sensor) {
+// --- ADD DEVICE ---
+bool addDevice(Device &device) {
 	// Check the sensor for the interface it's on (SPI, I2C or UART) and add it to the respective
 	// interface.
 	switch (sensor.connectionType()) {
@@ -59,53 +57,6 @@ bool addSensor(Sensor &sensor) {
 			// Error.
 			break;
 	}
-}
-
-
-// --- ADD ACTUATOR ---
-bool addActuator(Actuator &actuator) {
-	// Check the actuator for the interface it's on (SPI, I2C or UART) and add it to the respective
-	// interface.
-	
-}
-
-
-// --- ADD I2C DEVICE ---
-// Add an I2C sensor to the node's I2C bus, with the provided address.
-bool Node::addI2CDevice(Sensor &sensor, int address) {
-	//
-}
-
-
-// Add an I2C actuator to the node's I2C bus, with the provided address.
-bool Node::AddI2CDevice(Actuator &actuator, int address) {
-	//
-}
-
-
-// --- ADD SPI DEVICE ---
-// Add an SPI sensor to the node's SPI bus, on the provided chip-select pin.
-bool Node::addSPIDevice(Sensor &sensor, int cs_pin) {
-	//
-}
-
-
-// Add an SPI actuator to the node's SPI bus, on the provided chip-select pin.
-bool Node::AddSPIDevice(Actuator &actuator, int cs_pin) {
-	//
-}
-
-
-// --- ADD UART DEVICE ---
-// Add a UART sensor to the specified UART device.
-bool addUARTDevice(Sensor &sensor, int uart) {
-	//
-}
-
-
-// Add a UART actuator to the specified UART device.
-bool addUARTDevice(Actuator &actuator, int uart) {
-	//
 }
 
 
