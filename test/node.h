@@ -16,21 +16,21 @@
 #include "config.h"
 #include 'device.h"
 
-#include "sensor.h"
-#include "actuator.h"
-
 #include <string>
 #include <vector>
+#include <map>
 
 
 class Node {
 	std::string mac;
-	Device* uart0;
+	bool uart0_active;
+	Device uart0;
+	std::map<int, Device> i2c;
 	std::vector<Device> devices;
 	
 public:
 	Node(std::string id, Config &config);
-	bool addDevice(Device &device);
+	bool addDevice(Device &&device);
 	
 	bool registerUartCb(std::string cb);
 	bool writeUart(std::string bytes);

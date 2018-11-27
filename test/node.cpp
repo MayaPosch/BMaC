@@ -14,10 +14,11 @@
 #include "nodes.h"
 
 #include <cstdlib>
+#include <utility.
 
 
 // --- CONSTRUCTOR ---
-Node::Node(std::string id, Config &config) {
+Node::Node(std::string id, Config &config) : uart0_active(false) {
 	// Read out the MAC address for this node, as well as the sensors and actuators connected
 	// to this node.
 	std::string node_cat = "Node_" + id;
@@ -40,18 +41,19 @@ Node::Node(std::string id, Config &config) {
 
 
 // --- ADD DEVICE ---
-bool addDevice(Device &device) {
-	// Check the sensor for the interface it's on (SPI, I2C or UART) and add it to the respective
+bool addDevice(Device &&device) {
+	// Check the device for the interface it's on (SPI, I2C or UART) and add it to the respective
 	// interface.
-	switch (sensor.connectionType()) {
+	switch (device.connectionType()) {
 		case CONN_SPI:
-			//
+			spi.insert(std::pair<int, Device>(device.spiCS(), std::move(device)));
 			break;
 		case CONN_I2C:
-			//
+			i2c.insert(std::pair<int, Device>(device.i2cAddress(), std::move(device)));
 			break;
 		case CONN_UART:
-			//
+			uart0 = std::move(device);
+			uart0_active = true;
 			break;
 		default:
 			// Error.
@@ -62,7 +64,7 @@ bool addDevice(Device &device) {
 
 // --- REGISTER UART CB ---
 bool registerUartCb(std::string cb) {
-	//
+	// TODO: implement, as well as CB trigger.
 }
 
 
@@ -70,9 +72,9 @@ bool registerUartCb(std::string cb) {
 bool writeUart(std::string bytes) {
 	// We write the provided bytes on the single UART the ESP8266 has, assuming that a device has
 	// been connected.
-	if () {
-		//
-	}
+	if (!uart0_active) { return false; }
+	
+	uart0.write(bytes);
 	
 	return true;
 }
@@ -80,29 +82,42 @@ bool writeUart(std::string bytes) {
 
 // --- READ UART ---
 std::string readUart() {
-	//
+	if (!uart0_active) { return false; }
+	
+	uart0.read();
 }
 
 
 // --- WRITE SPI ---
 bool writeSPI(std::string bytes) {
-	//
+	// TODO: SPI CS handling.
 }
 
 
 // --- READ SPI ---
 std::string readSPI() {
-	//
+	// TODO: ditto.
 }
 
 
 // --- WRITE I2C ---
 bool writeI2C(std::string bytes) {
-	//
+	// The first four bytes (int) are the device address. Extract it and use it to find the device.
+	// Send the remaining data to the Device instance.
+	int address = std::stoi(bytes.substr(0, 4));
+	bytes.erase(0, 4);
+	if ((i2c.find(address)) != i2c.end()) { return false; }
+	
+	i2c[address].write(bytes);
+	return true;
 }
 
 
 // --- READ I2C ---
 std::string readI2C() {
-	//
+	int address = std::stoi(bytes.substr(0, 4));
+	bytes.erase(0, 4);
+	if ((i2c.find(address)) != i2c.end()) { return string(); }
+	
+	return i2c[address].read(bytes);
 }
