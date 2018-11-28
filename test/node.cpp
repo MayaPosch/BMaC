@@ -63,9 +63,10 @@ bool addDevice(Device &&device) {
 
 
 // --- REGISTER UART CB ---
-bool registerUartCb(std::string cb) {
+/* bool registerUartCb(std::string cb) {
 	// TODO: implement, as well as CB trigger.
-}
+	
+} */
 
 
 // --- WRITE UART ---
@@ -91,12 +92,26 @@ std::string readUart() {
 // --- WRITE SPI ---
 bool writeSPI(std::string bytes) {
 	// TODO: SPI CS handling.
+	if (spi.count() == 1) {
+		spi[0].write(bytes);
+	}
+	else {
+		return false; 
+	}
+	
+	return true;
 }
 
 
 // --- READ SPI ---
 std::string readSPI() {
-	// TODO: ditto.
+	// TODO: SPI CS handling.
+	if (spi.count() == 1) {
+		return spi[0].read();
+	}
+	else {
+		return string();
+	}
 }
 
 
@@ -117,7 +132,7 @@ bool writeI2C(std::string bytes) {
 std::string readI2C() {
 	int address = std::stoi(bytes.substr(0, 4));
 	bytes.erase(0, 4);
-	if ((i2c.find(address)) != i2c.end()) { return string(); }
+	if (i2c.count(address)) { return string(); }
 	
 	return i2c[address].read(bytes);
 }

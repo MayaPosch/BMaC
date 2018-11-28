@@ -14,7 +14,9 @@
 
 
 // --- CONSTRUCTOR ---
-Device::Device(std::string id, Config &config, std::shared_ptr<RoomState> rs) : roomState(rs) {
+Device::Device(std::string id, Config &config, std::shared_ptr<RoomState> rs) : 
+																roomState(rs),
+																spi_cs(0) {
 	// Read out the details for this device.
 	std::string cat = "Device_" + id;
 	std::string type = config.getValue<int>(cat + ".type", "");
@@ -39,4 +41,34 @@ Device::Device(std::string id, Config &config, std::shared_ptr<RoomState> rs) : 
 	}
 	
 	// 
+}
+
+
+// --- WRITE ---
+bool Device::write(std::string bytes) {
+	//
+	
+	return true;
+}
+
+
+// --- READ ---
+std::string Device::read() {
+	switch (connType) {
+		case CONN_SPI:
+			// TODO: implement.
+			return std::string();
+			break;
+		case CONN_I2C:
+			// Return the string for the BME280 sensor.
+			
+			break;
+		case CONN_UART:
+			// Return the string for the MH-Z19 CO2 sensor.
+			
+			break;
+		default:
+			// Error.
+			return string();
+	};
 }

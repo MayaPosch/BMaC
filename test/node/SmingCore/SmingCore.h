@@ -155,16 +155,16 @@ public:
 
 // --- Wire (I2C)
 class TwoWire {
-	//
+	std::string buffer;
 	
 public:
 	void pins(int sda, int scl);
 	void begin();
 	void beginTransmission(int address);
-	void write(uint8_t address);
-	void write(int data);
-	void endTransmission();
-	void requestFrom(int address, int length);
+	size_t write(uint8_t data);
+	size_t write(int data);
+	size_t endTransmission();
+	size_t requestFrom(int address, int length);
 	int available();
 	int read();
 }

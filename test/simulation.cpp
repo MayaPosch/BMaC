@@ -54,7 +54,7 @@ NymphMessage* getNewMac(int session, NymphMessage* msg, void* data) {
 // --- REGISTER UART CB ---
 // Register a callback function for a UART.
 // Requires the name of the callback on the client, returns a boolean result.
-NymphMessage* registerUartCb(int session, NymphMessage* msg, void* data) {
+/* NymphMessage* registerUartCb(int session, NymphMessage* msg, void* data) {
 	NymphMessage* returnMsg = msg->getReplyMessage();
 	
 	// Get the MAC address & callback name, then call the function on the associated Node instance.
@@ -62,7 +62,7 @@ NymphMessage* registerUartCb(int session, NymphMessage* msg, void* data) {
 	std::string cb = ((NymphString*) msg->parameters[1])->getValue();
 	returnMsg->setResultValue(new NymphBoolean(Nodes::registerUartCb(mac, cb)));
 	return returnMsg;
-}
+} */
 
 
 // --- WRITE UART ---
@@ -161,14 +161,14 @@ int main() {
 	NymphRemoteClient::registerMethod("getNewMac", getNewMacFunction);
 	
 	// bool registerUartCb(string MAC, string callbackName)
-	parameters.push_back(NYMPH_STRING); // MAC
+	/* parameters.push_back(NYMPH_STRING); // MAC
 	parameters.push_back(NYMPH_STRING);	// Callback name.
 	NymphMethod registerUartCbFunction("registerUartCb", parameters, NYMPH_BOOL);
 	registerUartCbFunction.setCallback(Building::registerUartCb);
-	NymphRemoteClient::registerMethod("registerUartCb", registerUartCbFunction);
+	NymphRemoteClient::registerMethod("registerUartCb", registerUartCbFunction); */
 	
 	// string readUart(string MAC)
-	parameters.clear();
+	//parameters.clear();
 	parameters.push_back(NYMPH_STRING);
 	NymphMethod readUartFunction("readUart", parameters, NYMPH_STRING);
 	readUartFunction.setCallback(Building::registerUartCb);

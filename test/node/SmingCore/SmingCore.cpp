@@ -53,7 +53,7 @@ void HardwareSerial::setCallback(StreamDataReceivedDelegate dataReceivedDelegate
 	HWSDelegate = dataReceivedDelegate;
 	
 	// Call the remote method.
-	vector<NymphType*> values;
+	/* vector<NymphType*> values;
 	values.push_back(new NymphString(WifiStation.getMAC()));
 	values.push_back(new NymphString("dataReceivedCallback"));
 	NymphType* returnValue = 0;
@@ -69,7 +69,7 @@ void HardwareSerial::setCallback(StreamDataReceivedDelegate dataReceivedDelegate
 		NymphRemoteServer::disconnect(StationClass::handle, result);
 		NymphRemoteServer::shutdown();
 		return false;
-	}
+	} */
 }
 
 
@@ -234,13 +234,13 @@ void SPI::transfer(uint8* buffer, size_t numberBytes) {
 void TwoWire::pins(int sda, int scl) { }
 void TwoWire::begin() { }
 void TwoWire::beginTransmission(int address) { }
-void TwoWire::write(uint8_t address) {
+size_t TwoWire::write(uint8_t address) {
 	// Call remote method.
 	vector<NymphType*> values;
 	values.push_back(new NymphString(WifiStation.getMAC()));
 	values.push_back(new NymphString(String(buffer, size)));
 	NymphType* returnValue = 0;
-	if (!NymphRemoteServer::callMethod(StationClass::handle, "writeSPI", values, returnValue, result)) {
+	if (!NymphRemoteServer::callMethod(StationClass::handle, "writeI2C", values, returnValue, result)) {
 		std::cout << "Error calling remote method: " << result << std::endl;
 		NymphRemoteServer::disconnect(StationClass::handle, result);
 		NymphRemoteServer::shutdown();
@@ -256,7 +256,7 @@ void TwoWire::write(uint8_t address) {
 }
 
 
-void TwoWire::write(int data) {
+size_t TwoWire::write(int data) {
 	// Call remote method.
 	vector<NymphType*> values;
 	values.push_back(new NymphString(WifiStation.getMAC()));
@@ -278,15 +278,54 @@ void TwoWire::write(int data) {
 }
 
 
-void TwoWire::endTransmission() { }
-void TwoWire::requestFrom(int address, int length) {
-	// Call remote method.
+size_t TwoWire::endTransmission() { /* TODO */ }
+size_t TwoWire::requestFrom(int address, int length) {
+	// Call remote method. This will read the string into a local buffer.
+	vector<NymphType*> values;
+	values.push_back(new NymphString(WifiStation.getMAC()));
+	values.push_back(new NymphString(String(data)));
+	NymphType* returnValue = 0;
+	if (!NymphRemoteServer::callMethod(StationClass::handle, "readI2C", values, returnValue, result)) {
+		std::cout << "Error calling remote method: " << result << std::endl;
+		NymphRemoteServer::disconnect(StationClass::handle, result);
+		NymphRemoteServer::shutdown();
+		exit(1);
+	}
+	
+	if (returnValue->type() != NYMPH_STRING) {
+		std::cout << "Return value wasn't a string. Type: " << returnValue->type() << std::endl;
+		NymphRemoteServer::disconnect(StationClass::handle, result);
+		NymphRemoteServer::shutdown();
+		exit(1);
+	}
+	
+	buffer = ((NymphString*) returnValue)->getValue();
+	return buffer.size();
 }
 
 
-int TwoWire::available(); //
+int TwoWire::available(); // TODO
 int TwoWire::read() {
 	// Call remote method.
+	vector<NymphType*> values;
+	values.push_back(new NymphString(WifiStation.getMAC()));
+	values.push_back(new NymphString(String(data)));
+	NymphType* returnValue = 0;
+	if (!NymphRemoteServer::callMethod(StationClass::handle, "readI2C", values, returnValue, result)) {
+		std::cout << "Error calling remote method: " << result << std::endl;
+		NymphRemoteServer::disconnect(StationClass::handle, result);
+		NymphRemoteServer::shutdown();
+		exit(1);
+	}
+	
+	if (returnValue->type() != NYMPH_STRING) {
+		std::cout << "Return value wasn't a string. Type: " << returnValue->type() << std::endl;
+		NymphRemoteServer::disconnect(StationClass::handle, result);
+		NymphRemoteServer::shutdown();
+		exit(1);
+	}
+	
+	buffer = ((NymphString*) returnValue)->getValue();
 }
 
 TwoWire Wire;

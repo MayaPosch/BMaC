@@ -26,13 +26,14 @@ class Node {
 	bool uart0_active;
 	Device uart0;
 	std::map<int, Device> i2c;
+	std::map<int, Device> spi;
 	std::vector<Device> devices;
 	
 public:
 	Node(std::string id, Config &config);
 	bool addDevice(Device &&device);
 	
-	bool registerUartCb(std::string cb);
+	//bool registerUartCb(std::string cb);
 	bool writeUart(std::string bytes);
 	std::string readUart();
 	bool writeSPI(std::string bytes);

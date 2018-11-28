@@ -43,14 +43,14 @@ bool Nodes::removeNode(Node* node) {
 }
 
 
-bool Nodes::registerUartCb(std::string mac, std::string cb) {
+/* bool Nodes::registerUartCb(std::string mac, std::string cb) {
 	Node* node = getNode(mac);
 	if (!node) { return false; }
 	
 	node->registerUartCb(cb);
 	
 	return true;
-}
+} */
 
 
 bool Nodes::writeUart(std::string mac, std::string bytes) {
