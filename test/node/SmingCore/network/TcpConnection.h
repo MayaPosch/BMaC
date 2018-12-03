@@ -12,11 +12,11 @@
 
 #ifndef _SMING_CORE_TCPCONNECTION_H_
 #define _SMING_CORE_TCPCONNECTION_H_
-
+/* 
 #ifdef ENABLE_SSL
 #include "../../axtls-8266/compat/lwipr_compat.h"
 #include "../Clock.h"
-#endif
+#endif */
 
 #include "../Wiring/WiringFrameworkDependencies.h"
 #include "IPAddress.h"

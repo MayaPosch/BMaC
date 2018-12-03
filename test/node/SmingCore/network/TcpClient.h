@@ -14,28 +14,28 @@
 #ifndef _SMING_CORE_TCPCLIENT_H_
 #define _SMING_CORE_TCPCLIENT_H_
 
-#include "TcpConnection.h"
+//#include "TcpConnection.h"
 #include "../Delegate.h"
 
-#ifdef ENABLE_SSL
+/* #ifdef ENABLE_SSL
 #include "SslValidator.h"
-#endif
+#endif */
 
-class TcpClient;
+/* class TcpClient;
 class ReadWriteStream;
-class IPAddress;
+class IPAddress; */
 
 //typedef void (*TcpClientEventDelegate)(TcpClient& client, TcpConnectionEvent sourceEvent);
 //typedef void (*TcpClientBoolDelegate)(TcpClient& client, bool successful);
 //typedef bool (*TcpClientDataDelegate)(TcpClient& client, char *data, int size);
 
-typedef Delegate<void(TcpClient& client, TcpConnectionEvent sourceEvent)> TcpClientEventDelegate;
+/* typedef Delegate<void(TcpClient& client, TcpConnectionEvent sourceEvent)> TcpClientEventDelegate;
 typedef Delegate<void(TcpClient& client, bool successful)> TcpClientCompleteDelegate;
-typedef Delegate<bool(TcpClient& client, char* data, int size)> TcpClientDataDelegate;
+typedef Delegate<bool(TcpClient& client, char* data, int size)> TcpClientDataDelegate; */
 
 enum TcpClientState { eTCS_Ready, eTCS_Connecting, eTCS_Connected, eTCS_Successful, eTCS_Failed };
 
-class TcpClient : public TcpConnection
+class TcpClient //: public TcpConnection
 {
 public:
 	TcpClient(bool autoDestruct);
@@ -72,7 +72,7 @@ public:
 		return state;
 	}
 
-#ifdef ENABLE_SSL
+/* #ifdef ENABLE_SSL
 	/**
 	 * @brief Allows setting of multiple SSL validators after a successful handshake
 	 * @param SslValidatorCallback callback
@@ -81,7 +81,7 @@ public:
 	 * 					   to delete it.
 	 *
 	 */
-	void addSslValidator(SslValidatorCallback callback, void* data = NULL);
+	//void addSslValidator(SslValidatorCallback callback, void* data = NULL);
 
 	/**
 	 * @brief   Requires(pins) the remote SSL certificate to match certain fingerprints
@@ -107,7 +107,7 @@ public:
 	 *
 	 * @return bool  true of success, false or failure
 	 */
-	bool pinCertificate(const uint8_t* fingerprint, SslFingerprintType type);
+	/*bool pinCertificate(const uint8_t* fingerprint, SslFingerprintType type);
 
 	/**
 	 * @brief   Requires(pins) the remote SSL certificate to match certain fingerprints
@@ -118,8 +118,8 @@ public:
 	 *
 	 * @return bool  true of success, false or failure
 	 */
-	bool pinCertificate(SSLFingerprints fingerprints);
-#endif
+	/*bool pinCertificate(SSLFingerprints fingerprints);
+#endif */
 
 protected:
 	virtual err_t onConnected(err_t err);

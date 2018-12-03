@@ -16,11 +16,12 @@
 
 #define MQTT_MAX_BUFFER_SIZE 1024
 
-#include "TcpClient.h"
+//#include "TcpClient.h"
 #include "../Delegate.h"
 #include "../../Wiring/WString.h"
 #include "../../Wiring/WHashMap.h"
-#include "../../Services/libemqtt/libemqtt.h"
+//#include "../../Services/libemqtt/libemqtt.h"
+#include "libmosquitto/cpp/mosquittopp.h"
 #include "../Network/URL.h"
 
 //typedef void (*MqttStringSubscriptionCallback)(String topic, String message);
@@ -30,7 +31,7 @@ typedef Delegate<void(uint16_t msgId, int type)> MqttMessageDeliveredCallback;
 class MqttClient;
 class URL;
 
-class MqttClient : protected TcpClient
+class MqttClient //: protected TcpClient
 {
 public:
 	MqttClient(bool autoDestruct = false);
