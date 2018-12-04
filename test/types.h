@@ -29,13 +29,16 @@ enum Connection {
 class RoomState {
 	float temperature;	// Room temperature
 	float humidity;		// Relatively humidity (0.00 - 100.00%)
+	uint16_t pressure;	// Air pressure.
 	std::mutex tmtx;
 	std::mutex hmtx;
+	std::mutex pmtx;
 	
 public:
 	RoomState() : 
 		temperature(0),
-		humidity(0) {
+		humidity(0),
+		pressure(1000) {
 		//
 	}
 
@@ -58,6 +61,16 @@ public:
 	void setHumidity(float h) {
 		std::lock_guard<std::mutex> lk(hmtx);
 		temperature = h; 
+	}	
+	
+	float getPressure() {
+		std::lock_guard<std::mutex> lk(pmtx); 
+		return pressure;
+	}
+	
+	void setPressure(uint16_t p) {
+		std::lock_guard<std::mutex> lk(pmtx);
+		pressure = p;
 	}
 };
 

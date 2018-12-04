@@ -53,6 +53,8 @@ bool Device::write(std::string bytes) {
 
 
 // --- READ ---
+// Check the INI file for the device to see what we should be returning. Get the data from the
+// room status object and return it in the appropriate format.
 std::string Device::read() {
 	switch (connType) {
 		case CONN_SPI:
@@ -60,11 +62,11 @@ std::string Device::read() {
 			return std::string();
 			break;
 		case CONN_I2C:
-			// Return the string for the BME280 sensor.
+			// 
 			
 			break;
 		case CONN_UART:
-			// Return the string for the MH-Z19 CO2 sensor.
+			// 
 			
 			break;
 		default:
