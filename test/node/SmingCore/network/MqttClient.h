@@ -31,7 +31,7 @@ typedef Delegate<void(uint16_t msgId, int type)> MqttMessageDeliveredCallback;
 class MqttClient;
 class URL;
 
-class MqttClient //: protected TcpClient
+class MqttClient : public mosqpp::mosquittopp //: protected TcpClient
 {
 public:
 	MqttClient(bool autoDestruct = false);
@@ -88,6 +88,8 @@ public:
 
 	bool subscribe(const String& topic);
 	bool unsubscribe(const String& topic);
+	
+	void on_message(const struct mosquitto_message* message);
 
 #ifdef ENABLE_SSL
 	using TcpClient::addSslOptions;

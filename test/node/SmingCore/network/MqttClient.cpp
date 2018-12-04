@@ -180,6 +180,13 @@ bool MqttClient::unsubscribe(const String& topic) {
 	return res > 0;
 }
 
+
+void MqttClient::on_message(const struct mosquitto_message* message) {
+	if (callback) {
+		callback(message.topic, message.payload);
+	}
+}
+
 void MqttClient::debugPrintResponseType(int type, int len) {
 	String tp;
 	switch(type) {

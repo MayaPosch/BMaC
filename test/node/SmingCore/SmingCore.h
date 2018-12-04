@@ -12,6 +12,7 @@
 #include "WiringFrameworkDependencies.h"
 #include "Stream.h"
 #include "Delegate.h"
+#include "Network/MqttClient.h"
 
 using namespace std;
 
@@ -48,11 +49,20 @@ extern HardwareSerial Serial; // Default UART
 // --- rboot
 int rboot_get_current_rom() { return 0; }
 void rboot_set_current_rom();
-rBootHttpUpdate();
+
+// TODO: implement when testing OTA updates.
+class rBootHttpUpdate {
+	//
+
+public:
+	void addItem(int offset, String firmwareFileUrl) { }
+	void setCallback(OtaUpdateDelegate reqUpdateDelegate) { }
+	void start() { }
+};
 
 
 // --- SPIFFS
-spiffs_mount_manual() { }
+void spiffs_mount_manual() { }
 
 
 // --- Network
@@ -85,20 +95,19 @@ public:
 extern AccessPointClass WifiAccessPoint;
 
 
+// WIFI EVENTS
 class WifiEvents {
 	//
 	
 public:
-	//
-};
-
-
-// --- MQTT
-class MqttClient {
-	//
+	void onStationGotIP(StationGotIPDelegate delegateFunction) {
+		// Immediately call the callback.
+		delegateFunction();
+	}
 	
-public:
-	//
+	void onStationDisconnect(AccessPointDisconnectDelegate delegateFunction) {
+		//
+	}
 };
 
 
@@ -109,22 +118,6 @@ typedef uint32_t uint32;
 typedef int8_t int8;
 typedef int16_t int16;
 typedef int32_t int32;
-
-/* typedef string String;
-class Vector {
-	//
-	
-public:
-	//
-}; */
-
-/* class HashMap {
-	//
-	
-public:
-	HashMap(); // template, key and value type.
-}; */
-
 
 
 // --- File
@@ -186,17 +179,20 @@ public:
 
 
 // --- Delay
-delayMicroseconds();
-delay();
+// TODO: implement once timing becomes an issue in the simulation.
+void delayMicroseconds(uint32_t time) { }
+void delay(uint32_t time) { }
 
 
 // --- GPIO
-pinMode() { }
-digitalWrite() { }
+// TODO
+void pinMode(uint16_t pin, uint8_t mode) { }
+void digitalWrite(uint16_t pin, uint8_t val) { }
+uint8_t digitalRead(uint16_t pin) { return 1; }
 
 
 // --- ADC
-analogRead();
+uint16_t analogRead(uint16_t pin) { return 1000; }
 
 
 // --- System
