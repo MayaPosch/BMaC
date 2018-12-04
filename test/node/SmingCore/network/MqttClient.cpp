@@ -9,57 +9,56 @@
 #include "../Clock.h"
 #include <algorithm>
 
-MqttClient::MqttClient(bool autoDestruct /* = false*/) : TcpClient(autoDestruct)
+MqttClient::MqttClient(bool autoDestruct /* = false*/) //: TcpClient(autoDestruct)
 {
 	memset(buffer, 0, MQTT_MAX_BUFFER_SIZE + 1);
 	waitingSize = 0;
 	posHeader = 0;
 	current = NULL;
-	mqtt_init(&broker);
+	
+	mosqpp::lib_init();
 }
 
 // Deprecated . . .
 MqttClient::MqttClient(String serverHost, int serverPort, MqttStringSubscriptionCallback callback /* = NULL*/)
-	: TcpClient(false)
-{
+	/* : TcpClient(false) */ {
 	url.Host = serverHost;
 	url.Port = serverPort;
 	this->callback = callback;
 	waitingSize = 0;
 	posHeader = 0;
 	current = NULL;
-	mqtt_init(&broker);
+	
+	mosqpp::lib_init();
 }
 
 // Deprecated . . .
 MqttClient::MqttClient(IPAddress serverIp, int serverPort, MqttStringSubscriptionCallback callback /* = NULL*/)
-	: TcpClient(false)
-{
+	/* : TcpClient(false) */ {
 	url.Host = serverIp.toString();
 	url.Port = serverPort;
 	this->callback = callback;
 	waitingSize = 0;
 	posHeader = 0;
 	current = NULL;
-	mqtt_init(&broker);
+	
+	mosqpp::lib_init();
 }
 
-MqttClient::~MqttClient()
-{
-	mqtt_free(&broker);
+MqttClient::~MqttClient() {
+	mqtt.loop_stop();
+	mosqpp::lib_cleanup();
 }
-void MqttClient::setCallback(MqttStringSubscriptionCallback callback)
-{
+
+void MqttClient::setCallback(MqttStringSubscriptionCallback callback) {
 	this->callback = callback;
 }
 
-void MqttClient::setKeepAlive(int seconds)
-{
+void MqttClient::setKeepAlive(int seconds) {
 	keepAlive = seconds;
 }
 
-void MqttClient::setPingRepeatTime(int seconds)
-{
+void MqttClient::setPingRepeatTime(int seconds) {
 	if(pingRepeatTime > keepAlive) {
 		pingRepeatTime = keepAlive;
 	} else {
@@ -69,16 +68,17 @@ void MqttClient::setPingRepeatTime(int seconds)
 
 bool MqttClient::setWill(const String& topic, const String& message, int QoS, bool retained /* = false*/)
 {
-	return mqtt_set_will(&broker, topic.c_str(), message.c_str(), QoS, retained);
+	mqtt->will_set(topic.c_str(), message.length(), message.c_str(), QoS, retained);
+	//return mqtt_set_will(&broker, topic.c_str(), message.c_str(), QoS, retained);
 }
 
-bool MqttClient::connect(const URL& url, const String& clientName, uint32_t sslOptions)
-{
+bool MqttClient::connect(const URL& url, const String& clientName, uint32_t sslOptions) {
 	this->url = url;
 	if(!(url.Protocol == "mqtt" || url.Protocol == "mqtts")) {
 		debug_e("Only mqtt and mqtts protocols are allowed");
 		return false;
 	}
+	
 	waitingSize = 0;
 	posHeader = 0;
 	current = NULL;
@@ -101,36 +101,45 @@ bool MqttClient::connect(const String& clientName, const String& username, const
 }
 
 bool MqttClient::privateConnect(const String& clientName, const String& username, const String& password,
-								boolean useSsl /* = false */, uint32_t sslOptions /* = 0 */)
-{
+								boolean useSsl /* = false */, uint32_t sslOptions /* = 0 */) {
 	if(getConnectionState() != eTCS_Ready) {
 		close();
 		debug_d("MQTT closed previous connection");
 	}
 
 	debug_d("MQTT start connection");
-	if(clientName.length() > 0) {
-		mqtt_set_clientid(&broker, clientName.c_str());
+	if (clientName.length() > 0) {
+		mqtt.reinitialise(clientName.c_str(), false);
+		//mqtt_set_clientid(&broker, clientName.c_str());
 	}
 
-	if(username.length() > 0) {
-		mqtt_init_auth(&broker, username.c_str(), password.c_str());
+	if (username.length() > 0) {
+		mqtt.username_pw_set(username.c_str(), password.c_str());
+		//mqtt_init_auth(&broker, username.c_str(), password.c_str());
+	}
+	
+	// TODO: configure TLS settings.
+	if (useSsl) {
+		//
 	}
 
-	TcpClient::connect(url.Host, url.Port, useSsl, sslOptions);
+	mqtt.connect(url.Host.c_str(), url.Port, keepAlive);
+	mqtt.loop_start();
+	//TcpClient::connect(url.Host, url.Port, useSsl, sslOptions);
 
-	mqtt_set_alive(&broker, keepAlive);
-	broker.socket_info = (void*)this;
-	broker.send = staticSendPacket;
+	//mqtt_set_alive(&broker, keepAlive);
+	//broker.socket_info = (void*)this;
+	//broker.send = staticSendPacket;
 
-	int res = mqtt_connect(&broker);
-	setTimeOut(USHRT_MAX);
-	return res > 0;
+	//int res = mqtt_connect(&broker);
+	//setTimeOut(USHRT_MAX);
+	//return res > 0;
+	return true;
 }
 
-bool MqttClient::publish(String topic, String message, bool retained /* = false*/)
-{
-	int res = mqtt_publish(&broker, topic.c_str(), message.c_str(), message.length(), retained);
+bool MqttClient::publish(String topic, String message, bool retained /* = false*/) {
+	int res = mqtt.publish(0, topic.c_str(), message.length(), message.c_str(), 0, retained);
+	//int res = mqtt_publish(&broker, topic.c_str(), message.c_str(), message.length(), retained);
 	return res > 0;
 }
 
@@ -138,41 +147,40 @@ bool MqttClient::publishWithQoS(String topic, String message, int QoS, bool reta
 								MqttMessageDeliveredCallback onDelivery /* = NULL */)
 {
 	uint16_t msgId = 0;
-	int res = mqtt_publish_with_qos(&broker, topic.c_str(), message.c_str(), message.length(), retained, QoS, &msgId);
-	if(QoS == 0 && onDelivery) {
+	//int res = mqtt_publish_with_qos(&broker, topic.c_str(), message.c_str(), message.length(), retained, QoS, &msgId);
+	int res = mqtt.publish(msgId, topic.c_str(), message.length(), message.c_str(), QoS, retained);
+	if (QoS == 0 && onDelivery) {
 		debug_d("The delivery callback is ignored for QoS 0.");
-	} else if(QoS > 0 && onDelivery && msgId) {
+	} 
+	else if (QoS > 0 && onDelivery && msgId) {
 		onDeliveryQueue[msgId] = onDelivery;
 	}
+	
 	return res > 0;
 }
 
-int MqttClient::staticSendPacket(void* userInfo, const void* buf, unsigned int count)
-{
+/* int MqttClient::staticSendPacket(void* userInfo, const void* buf, unsigned int count) {
 	MqttClient* client = (MqttClient*)userInfo;
 	bool sent = client->send((const char*)buf, count);
 	client->lastMessage = millis();
 	return sent ? count : 0;
-}
+} */
 
-bool MqttClient::subscribe(const String& topic)
-{
+bool MqttClient::subscribe(const String& topic) {
 	uint16_t msgId = 0;
 	debug_d("subscription '%s' registered", topic.c_str());
-	int res = mqtt_subscribe(&broker, topic.c_str(), &msgId);
+	int res = mqtt.subscribe(msgId, topic.c_str());
 	return res > 0;
 }
 
-bool MqttClient::unsubscribe(const String& topic)
-{
+bool MqttClient::unsubscribe(const String& topic) {
 	uint16_t msgId = 0;
 	debug_d("unsubscribing from '%s'", topic.c_str());
-	int res = mqtt_unsubscribe(&broker, topic.c_str(), &msgId);
+	int res = mqtt.unsubscribe(msgId, topic.c_str());
 	return res > 0;
 }
 
-void MqttClient::debugPrintResponseType(int type, int len)
-{
+void MqttClient::debugPrintResponseType(int type, int len) {
 	String tp;
 	switch(type) {
 	case MQTT_MSG_CONNACK:
@@ -205,8 +213,7 @@ void MqttClient::debugPrintResponseType(int type, int len)
 	debug_d("> MQTT status: %s (len: %d)", tp.c_str(), len);
 }
 
-err_t MqttClient::onReceive(pbuf* buf)
-{
+/* err_t MqttClient::onReceive(pbuf* buf) {
 	if(buf == NULL) {
 		// Disconnected, close it
 		return TcpClient::onReceive(buf);
@@ -310,14 +317,13 @@ err_t MqttClient::onReceive(pbuf* buf)
 	TcpClient::onReceive(buf);
 
 	return ERR_OK;
-}
+} */
 
-void MqttClient::onReadyToSendData(TcpConnectionEvent sourceEvent)
-{
+/* void MqttClient::onReadyToSendData(TcpConnectionEvent sourceEvent) {
 	// Send PINGREQ every PingRepeatTime time, if there is no outgoing traffic
 	// PingRepeatTime should be <= keepAlive
 	if(lastMessage && (millis() - lastMessage >= pingRepeatTime * 1000)) {
 		mqtt_ping(&broker);
 	}
 	TcpClient::onReadyToSendData(sourceEvent);
-}
+} */
