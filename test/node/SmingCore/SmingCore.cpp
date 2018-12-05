@@ -278,12 +278,15 @@ size_t TwoWire::write(int data) {
 }
 
 
-size_t TwoWire::endTransmission() { /* TODO */ }
+size_t TwoWire::endTransmission() { }
 size_t TwoWire::requestFrom(int address, int length) {
+	// First write the address.
+	write(address);
+	
 	// Call remote method. This will read the string into a local buffer.
 	vector<NymphType*> values;
 	values.push_back(new NymphString(WifiStation.getMAC()));
-	values.push_back(new NymphString(String(data)));
+	values.push_back(new NymphString(String(length))); // Number of bytes to read.
 	NymphType* returnValue = 0;
 	if (!NymphRemoteServer::callMethod(StationClass::handle, "readI2C", values, returnValue, result)) {
 		std::cout << "Error calling remote method: " << result << std::endl;

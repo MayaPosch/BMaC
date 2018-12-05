@@ -40,13 +40,22 @@ Device::Device(std::string id, Config &config, std::shared_ptr<RoomState> rs) :
 		// Error. Invalid type.
 	}
 	
-	// 
+	// Try to open the INI file for the device. On success the device state is set to 'true'.
+	deviceState = devConf.load(device + ".ini");
+			
+	// Find the 'read' entry.
+	
 }
 
 
 // --- WRITE ---
 bool Device::write(std::string bytes) {
-	//
+	if (!deviceState) { return false; }
+	
+	// The first byte contains the register to read/write with I2C. Keep it as reference.
+	if (connType == CONN_I2C && bytes.length() > 0) {
+		i2c_register = bytes[0];
+	}
 	
 	return true;
 }
@@ -56,12 +65,15 @@ bool Device::write(std::string bytes) {
 // Check the INI file for the device to see what we should be returning. Get the data from the
 // room status object and return it in the appropriate format.
 std::string Device::read() {
+	if (!deviceState) { return string(); }
+	
 	switch (connType) {
 		case CONN_SPI:
 			// TODO: implement.
 			return std::string();
 			break;
 		case CONN_I2C:
+			// Get the specified values from the room state instance.
 			// 
 			
 			break;

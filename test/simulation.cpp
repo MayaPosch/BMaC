@@ -114,7 +114,7 @@ NymphMessage* readSPI(int session, NymphMessage* msg, void* data) {
 
 
 // --- WRITE I2C ---
-NymphMessage* writeI2C(int session, NymphMessage* msg, void* data) 
+NymphMessage* writeI2C(int session, NymphMessage* msg, void* data) {
 	NymphMessage* returnMsg = msg->getReplyMessage();
 	
 	// Get the MAC address, then call the function on the associated Node instance.
@@ -131,7 +131,9 @@ NymphMessage* readI2C(int session, NymphMessage* msg, void* data) {
 	
 	// Get the MAC address, then call the function on the associated Node instance.
 	std::string mac = ((NymphString*) msg->parameters[0])->getValue();
-	returnMsg->setResultValue(new NymphString(Nodes::readI2C(mac)));
+	std::string i2cAddress = ((NymphString*) msg->parameters[1])->getValue();
+	std::string length = ((NymphString*) msg->parameters[2])->getValue();
+	returnMsg->setResultValue(new NymphString(Nodes::readI2C(mac, i2cAddress, length)));
 	return returnMsg;
 }
 

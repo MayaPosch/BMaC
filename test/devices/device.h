@@ -26,6 +26,9 @@ class Device {
 	int i2c_address;
 	int uart_baud;		// UART baud rate.
 	int uart_dev;		// UART peripheral (0, 1, etc.)
+	Config devConf;
+	bool deviceState;
+	uint8_t i2c_register;
 	
 public:
 	Device(std::string id, Config &config, std::shared_ptr<RoomState> rs);
