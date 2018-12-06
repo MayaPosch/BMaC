@@ -89,21 +89,21 @@ std::string Nodes::readSPI(std::string mac) {
 }
 
 
-bool Nodes::writeI2C(std::string mac, std::string bytes) {
+bool Nodes::writeI2C(std::string mac, std::string i2cAddress, std::string bytes) {
 	Node* node = getNode(mac);
 	if (!node) { return false; }
 	
-	node->writeI2C(bytes);
+	node->writeI2C(i2cAddress, bytes);
 	
 	return true;
 }
 
 
-std::string Nodes::readI2C(std::string mac) {
+std::string Nodes::readI2C(std::string mac, std::string i2cAddress, std::string length) {
 	Node* node = getNode(mac);
 	if (!node) { return false; }
 	
-	return node->readI2C();
+	return node->readI2C(i2cAddress, length);
 }
 
 

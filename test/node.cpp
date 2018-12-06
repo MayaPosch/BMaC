@@ -116,23 +116,18 @@ std::string readSPI() {
 
 
 // --- WRITE I2C ---
-bool writeI2C(std::string bytes) {
-	// The first four bytes (int) are the device address. Extract it and use it to find the device.
-	// Send the remaining data to the Device instance.
-	int address = std::stoi(bytes.substr(0, 4));
-	bytes.erase(0, 4);
-	if ((i2c.find(address)) != i2c.end()) { return false; }
+bool writeI2C(std::string i2cAddress, std::string bytes) {
+	if ((i2c.find(std::stoi(i2cAddress))) != i2c.end()) { return false; }
 	
-	i2c[address].write(bytes);
+	i2c[std::stoi(i2cAddress)].write(bytes);
 	return true;
 }
 
 
 // --- READ I2C ---
-std::string readI2C() {
-	int address = std::stoi(bytes.substr(0, 4));
-	bytes.erase(0, 4);
-	if (i2c.count(address)) { return string(); }
+std::string readI2C(sd::string i2cAddress, std::string length) {
+	int len = std::stoi(length);
+	if (i2c.count(std::stoi(i2cAddress)) || len < 1) { return string(); }
 	
-	return i2c[address].read(bytes);
+	return i2c[std::stoi(i2cAddress)].read(len);
 }

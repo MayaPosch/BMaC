@@ -119,8 +119,9 @@ NymphMessage* writeI2C(int session, NymphMessage* msg, void* data) {
 	
 	// Get the MAC address, then call the function on the associated Node instance.
 	std::string mac = ((NymphString*) msg->parameters[0])->getValue();
+	std::string i2cAddress = ((NymphString*) msg->parameters[1])->getValue();
 	std::string bytes = ((NymphString*) msg->parameters[1])->getValue();
-	returnMsg->setResultValue(new NymphBoolean(Nodes::writeI2C(mac, bytes)));
+	returnMsg->setResultValue(new NymphBoolean(Nodes::writeI2C(mac, i2cAddress bytes)));
 	return returnMsg;
 }
 

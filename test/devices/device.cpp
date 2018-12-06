@@ -41,8 +41,9 @@ Device::Device(std::string id, Config &config, std::shared_ptr<RoomState> rs) :
 	}
 	
 	// Try to open the INI file for the device. On success the device state is set to 'true'.
-	deviceState = devConf.load(device + ".ini");
+	//deviceState = devConf.load(device + ".ini");
 			
+	// Check the INI file for the device to see what info we should be returning. 
 	// Find the 'read' entry.
 	
 }
@@ -56,15 +57,22 @@ bool Device::write(std::string bytes) {
 	if (connType == CONN_I2C && bytes.length() > 0) {
 		i2c_register = bytes[0];
 	}
+	else if (connType == CONN_SPI) {
+		// TODO.
+	}
+	else if (connTYPE == CONN_UART) {
+		//
+	}
+	else { return false; }
 	
 	return true;
 }
 
 
 // --- READ ---
-// Check the INI file for the device to see what we should be returning. Get the data from the
-// room status object and return it in the appropriate format.
-std::string Device::read() {
+// Get the data from the room status object and return it in the appropriate format.
+// TODO: use the length parameter.
+std::string Device::read(int length) {
 	if (!deviceState) { return string(); }
 	
 	switch (connType) {
@@ -74,7 +82,31 @@ std::string Device::read() {
 			break;
 		case CONN_I2C:
 			// Get the specified values from the room state instance.
-			// 
+			// Here we hard code a BME280 sensor.
+			// Which value we return depends on the register set.
+			uint8_t zero = 0x0;
+			switch (i2c_register) {
+				case 0xFA: // Temperature. MSB, LSB, XLSB.
+					std::string ret = std::to_string(roomState->getTemperature()); // MSB
+					ret.append(std::to_string(zero); // LSB
+					ret.append(std::to_string(zero); // XLSB
+					return ret;
+					break;
+				case 0xF7: // Pressure. MSB, LSB, XLSB.
+					std::string ret = std::to_string(roomState->getPressure()); // MSB
+					ret.append(std::to_string(zero); // LSB
+					ret.append(std::to_string(zero); // XLSB
+					return ret;
+					break;
+				case 0xFD: // Humidity. MSB, LSB.
+					std::string ret = std::to_string(roomState->getHumidity()); // MSB
+					ret.append(std::to_string(zero); // LSB
+					return ret;
+					break;
+				default:
+					return std::string();
+					break;
+			}
 			
 			break;
 		case CONN_UART:

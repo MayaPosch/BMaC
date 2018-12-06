@@ -39,7 +39,7 @@ public:
 	int i2cAddress() { return i2cAddress; }
 	
 	bool write(std::string bytes);
-	std::string read();
+	std::string read(int length);
 };
 
 

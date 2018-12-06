@@ -149,6 +149,7 @@ public:
 // --- Wire (I2C)
 class TwoWire {
 	std::string buffer;
+	int i2cAddress;
 	
 public:
 	void pins(int sda, int scl);

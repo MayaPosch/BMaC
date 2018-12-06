@@ -233,12 +233,13 @@ void SPI::transfer(uint8* buffer, size_t numberBytes) {
 // I2C
 void TwoWire::pins(int sda, int scl) { }
 void TwoWire::begin() { }
-void TwoWire::beginTransmission(int address) { }
-size_t TwoWire::write(uint8_t address) {
+void TwoWire::beginTransmission(int address) { i2cAddress = address; }
+size_t TwoWire::write(uint8_t data) {
 	// Call remote method.
 	vector<NymphType*> values;
 	values.push_back(new NymphString(WifiStation.getMAC()));
-	values.push_back(new NymphString(String(buffer, size)));
+	values.push_back(new NymphString(std::string(i2cAddress)));
+	values.push_back(new NymphString(std::string(data)));
 	NymphType* returnValue = 0;
 	if (!NymphRemoteServer::callMethod(StationClass::handle, "writeI2C", values, returnValue, result)) {
 		std::cout << "Error calling remote method: " << result << std::endl;
@@ -260,7 +261,8 @@ size_t TwoWire::write(int data) {
 	// Call remote method.
 	vector<NymphType*> values;
 	values.push_back(new NymphString(WifiStation.getMAC()));
-	values.push_back(new NymphString(String(data)));
+	values.push_back(new NymphString(std::string(i2cAddress)));
+	values.push_back(new NymphString(std::string(data)));
 	NymphType* returnValue = 0;
 	if (!NymphRemoteServer::callMethod(StationClass::handle, "writeI2C", values, returnValue, result)) {
 		std::cout << "Error calling remote method: " << result << std::endl;

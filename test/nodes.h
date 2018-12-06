@@ -37,8 +37,8 @@ public:
 	static std::string readUart(std::string mac);
 	static bool writeSPI(std::string mac, std::string bytes);
 	static std::string readSPI(std::string mac);
-	static bool writeI2C(std::string mac, std::string bytes);
-	static std::string readI2C(std::string mac);
+	static bool writeI2C(std::string mac, std::string i2cAddress, std::string bytes);
+	static std::string readI2C(std::string mac, std::string i2cAddress, std::string length);
 	static void addMAC(std::string mac);
 	static std::string getMAC();
 };
