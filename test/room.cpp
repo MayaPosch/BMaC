@@ -21,7 +21,7 @@ Room::Room(uint32_t type, Config &config) {
 	// Get the configuration for this room instance from the configuration using the type number.
 	// Create instances of the specified devices.
 	std::string room_cat = "Room_" + std::to_string(type);
-	std::string nodes = config.getValue<std::string>(room_cat + ".nodes", "");
+	std::string nodeStr = config.getValue<std::string>(room_cat + ".nodes", "");
 	
 	// Set initial room status values.
 	state->setTemperature(24.3);
@@ -35,20 +35,20 @@ Room::Room(uint32_t type, Config &config) {
 	std::string sensors;
 	std::string actuators;
 	std::string node_cat;
-	if (!nodes.empty()) {
+	if (!nodeStr.empty()) {
 		// Extract the node IDs.
 		std::vector<std::string> node_ids;
-		split_string(nodes, ',', node_ids);
+		split_string(nodeStr, ',', node_ids);
 		int node_count = node_ids.size();
 		
 		// Create the nodes.
 		for (int i = 0; i < node_count; ++i) {
 			Node node(node_ids.at(i), config);	
 			node_cat = "Node_" + node_ids.at(i);			
-			nodes.insert(std::pair<std::string, Node>(node_ids.at(i), node));
+			nodes.insert(std::map<std::string, Node>::value_type(node_ids.at(i), node));
 		}
 		
-		devicesStr = config.getValue<std::string>(node_cat + ".devices", "");
+		std::string devicesStr = config.getValue<std::string>(node_cat + ".devices", "");
 		if (!devicesStr.empty()) {
 			// Extract the device IDs.
 			std::vector<std::string> device_ids;
@@ -59,7 +59,7 @@ Room::Room(uint32_t type, Config &config) {
 			for (int i = 0; i < device_count; ++i) {
 				// Split the device section into its ID and the node it is to be connected to.
 				std::vector<std::string> device_data;
-				split_string(device_ids.at(i), device_data);
+				split_string(device_ids.at(i), ':', device_data);
 				if (device_data.size() != 2) {
 					// Incorrect data. Abort.
 					continue;
@@ -69,7 +69,7 @@ Room::Room(uint32_t type, Config &config) {
 				Device device(device_data[0], config, state);
 				
 				// Add sensor to the node.
-				nodes.at(device_data[1]).addDevice(device);
+				nodes.at(device_data[1]).addDevice(std::move(device));
 				
 				devices.push_back(device);
 			}

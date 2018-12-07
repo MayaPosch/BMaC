@@ -118,3 +118,10 @@ std::string Device::read(int length) {
 			return string();
 	};
 }
+
+
+// --- READ ---
+// Overloaded function for implementations which do not use a length parameter.
+std::string Device::read() {
+	read(0);
+}

@@ -31,14 +31,16 @@ class Device {
 	uint8_t i2c_register;
 	
 public:
+	Device() { }
 	Device(std::string id, Config &config, std::shared_ptr<RoomState> rs);
 	/* uint8_t readRegister8(int reg);
 	void writeRegister8(int reg, uint8_t data); */
 	Connection connectionType() { return connType; }
 	int spiCS() { return spi_cs; }
-	int i2cAddress() { return i2cAddress; }
+	int i2cAddress() { return i2c_address; }
 	
 	bool write(std::string bytes);
+	std::string read();
 	std::string read(int length);
 };
 

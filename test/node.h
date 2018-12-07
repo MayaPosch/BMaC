@@ -14,7 +14,7 @@
 #define NODE_H
 
 #include "config.h"
-#include 'device.h"
+#include "devices/device.h"
 
 #include <string>
 #include <vector>
@@ -36,10 +36,10 @@ public:
 	//bool registerUartCb(std::string cb);
 	bool writeUart(std::string bytes);
 	std::string readUart();
-	bool writeSPI(std::string i2cAddress, std::string bytes);
-	std::string readSPI(sd::string i2cAddress, std::string length);
-	bool writeI2C(std::string bytes);
-	std::string readI2C();
+	bool writeSPI(std::string bytes);
+	std::string readSPI();
+	bool writeI2C(std::string i2cAddress, std::string bytes);
+	std::string readI2C(std::string i2cAddress, std::string length);
 };
 
 #endif

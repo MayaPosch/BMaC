@@ -25,8 +25,6 @@ class Building {
 	
 public:
 	Building(Config &cfg);
-	
-	static registerUart(std::string 
 };
 
 #endif

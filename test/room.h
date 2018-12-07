@@ -15,7 +15,7 @@
 
 
 #include "node.h"
-#include "device.h"
+#include "devices/device.h"
 
 #include <vector>
 #include <map>

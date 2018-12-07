@@ -1,5 +1,5 @@
 /*
-	config.h - INI parser class.
+	config.h - configuration file handling class.
 	
 	Revision 0
 	
@@ -29,11 +29,11 @@ using Poco::AutoPtr;
 using namespace Poco::Util;
 
 
-class IniParser {
+class Config {
 	AutoPtr<IniFileConfiguration> parser;
 	
 public:
-	IniParser();
+	Config();
 	
 	bool load(std::string &file);
 	

@@ -17,7 +17,7 @@
 #include "building.h"
 #include "nodes.h"
 
-#include <nymph.h>
+#include <nymph/nymph.h>
 
 #include <thread>
 #include <condition_variable>

@@ -1,7 +1,7 @@
 
 #include "SmingCore.h"
 
-#include <nymph.h>
+#include <nymph/nymph.h>
 
 #include <iostream>
 #include <cstdio>

@@ -30,6 +30,4 @@ void split_string(const std::string& str, char chr, std::vector<std::string>& ve
     }
 
     vec.emplace_back(first, str.cend());
-
-    return vec;
 }

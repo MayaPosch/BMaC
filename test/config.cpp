@@ -1,5 +1,5 @@
 /*
-	config.h - INI parser class.
+	config.h - Configuration file handler class.
 	
 	Revision 0
 	
@@ -18,7 +18,7 @@
 
 
 // --- CONSTRUCTOR ---
-IniParser::IniParser() {
+Config::Config() {
 	parser = new IniFileConfiguration();
 }
 
@@ -26,7 +26,7 @@ IniParser::IniParser() {
 // --- LOAD ---
 // Loads the provided INI configuration file.
 // Return true on success, false on failure.
-bool IniParser::load(std::string &file) {
+bool Config::load(std::string &file) {
 	try {
 		parser->load(file);
 	}

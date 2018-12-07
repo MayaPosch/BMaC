@@ -14,7 +14,7 @@
 #include "nodes.h"
 
 #include <cstdlib>
-#include <utility.
+#include <utility>
 
 
 // --- CONSTRUCTOR ---
@@ -41,7 +41,7 @@ Node::Node(std::string id, Config &config) : uart0_active(false) {
 
 
 // --- ADD DEVICE ---
-bool addDevice(Device &&device) {
+bool Node::addDevice(Device &&device) {
 	// Check the device for the interface it's on (SPI, I2C or UART) and add it to the respective
 	// interface.
 	switch (device.connectionType()) {
@@ -70,7 +70,7 @@ bool addDevice(Device &&device) {
 
 
 // --- WRITE UART ---
-bool writeUart(std::string bytes) {
+bool Node::writeUart(std::string bytes) {
 	// We write the provided bytes on the single UART the ESP8266 has, assuming that a device has
 	// been connected.
 	if (!uart0_active) { return false; }
@@ -82,17 +82,17 @@ bool writeUart(std::string bytes) {
 
 
 // --- READ UART ---
-std::string readUart() {
-	if (!uart0_active) { return false; }
+std::string Node::readUart() {
+	if (!uart0_active) { return std::string(); }
 	
 	uart0.read();
 }
 
 
 // --- WRITE SPI ---
-bool writeSPI(std::string bytes) {
+bool Node::writeSPI(std::string bytes) {
 	// TODO: SPI CS handling.
-	if (spi.count() == 1) {
+	if (spi.size() == 1) {
 		spi[0].write(bytes);
 	}
 	else {
@@ -104,19 +104,19 @@ bool writeSPI(std::string bytes) {
 
 
 // --- READ SPI ---
-std::string readSPI() {
+std::string Node::readSPI() {
 	// TODO: SPI CS handling.
-	if (spi.count() == 1) {
+	if (spi.size() == 1) {
 		return spi[0].read();
 	}
 	else {
-		return string();
+		return std::string();
 	}
 }
 
 
 // --- WRITE I2C ---
-bool writeI2C(std::string i2cAddress, std::string bytes) {
+bool Node::writeI2C(std::string i2cAddress, std::string bytes) {
 	if ((i2c.find(std::stoi(i2cAddress))) != i2c.end()) { return false; }
 	
 	i2c[std::stoi(i2cAddress)].write(bytes);
@@ -125,9 +125,9 @@ bool writeI2C(std::string i2cAddress, std::string bytes) {
 
 
 // --- READ I2C ---
-std::string readI2C(sd::string i2cAddress, std::string length) {
+std::string Node::readI2C(std::string i2cAddress, std::string length) {
 	int len = std::stoi(length);
-	if (i2c.count(std::stoi(i2cAddress)) || len < 1) { return string(); }
+	if (i2c.count(std::stoi(i2cAddress)) || len < 1) { return std::string(); }
 	
 	return i2c[std::stoi(i2cAddress)].read(len);
 }
