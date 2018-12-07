@@ -1,12 +1,22 @@
-
+/*
+	nodes.cpp - Nodes static class.
+	
+	Revision 0
+	
+	Notes:
+			- 
+		
+	2018/09/18, Maya Posch
+*/
 
 
 #include "nodes.h"
+#include "node.h"
 
 
 // Static initialisations.
-std::map<std::string, Node*> nodes;
-std::queue<std::string> macs;
+std::map<std::string, Node*> Nodes::nodes;
+std::queue<std::string> Nodes::macs;
 
 
 // --- GET NODE ---
@@ -83,13 +93,13 @@ bool Nodes::writeSPI(std::string mac, std::string bytes) {
 
 std::string Nodes::readSPI(std::string mac) {
 	Node* node = getNode(mac);
-	if (!node) { return false; }
+	if (!node) { return std::string(); }
 	
 	return node->readSPI();
 }
 
 
-bool Nodes::writeI2C(std::string mac, std::string i2cAddress, std::string bytes) {
+bool Nodes::writeI2C(std::string mac, int i2cAddress, std::string bytes) {
 	Node* node = getNode(mac);
 	if (!node) { return false; }
 	
@@ -99,9 +109,9 @@ bool Nodes::writeI2C(std::string mac, std::string i2cAddress, std::string bytes)
 }
 
 
-std::string Nodes::readI2C(std::string mac, std::string i2cAddress, std::string length) {
+std::string Nodes::readI2C(std::string mac, int i2cAddress, int length) {
 	Node* node = getNode(mac);
-	if (!node) { return false; }
+	if (!node) { return std::string(); }
 	
 	return node->readI2C(i2cAddress, length);
 }

@@ -116,18 +116,17 @@ std::string Node::readSPI() {
 
 
 // --- WRITE I2C ---
-bool Node::writeI2C(std::string i2cAddress, std::string bytes) {
-	if ((i2c.find(std::stoi(i2cAddress))) != i2c.end()) { return false; }
+bool Node::writeI2C(int i2cAddress, std::string bytes) {
+	if (i2c.find(i2cAddress) == i2c.end()) { return false; }
 	
-	i2c[std::stoi(i2cAddress)].write(bytes);
+	i2c[i2cAddress].write(bytes);
 	return true;
 }
 
 
 // --- READ I2C ---
-std::string Node::readI2C(std::string i2cAddress, std::string length) {
-	int len = std::stoi(length);
-	if (i2c.count(std::stoi(i2cAddress)) || len < 1) { return std::string(); }
+std::string Node::readI2C(int i2cAddress, int length) {
+	if (i2c.count(i2cAddress) || length < 1) { return std::string(); }
 	
-	return i2c[std::stoi(i2cAddress)].read(len);
+	return i2c[i2cAddress].read(length);
 }

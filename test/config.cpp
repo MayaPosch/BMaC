@@ -26,9 +26,9 @@ Config::Config() {
 // --- LOAD ---
 // Loads the provided INI configuration file.
 // Return true on success, false on failure.
-bool Config::load(std::string &file) {
+bool Config::load(std::string filename) {
 	try {
-		parser->load(file);
+		parser->load(filename);
 	}
 	catch (...) {
 		// An exception has occurred. Return false.

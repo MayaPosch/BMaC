@@ -35,7 +35,7 @@ class Config {
 public:
 	Config();
 	
-	bool load(std::string &file);
+	bool load(std::string filename);
 	
 	// --- GET VALUE ---
 	// Gets the specified key's value from the INI file.

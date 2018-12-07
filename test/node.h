@@ -38,8 +38,8 @@ public:
 	std::string readUart();
 	bool writeSPI(std::string bytes);
 	std::string readSPI();
-	bool writeI2C(std::string i2cAddress, std::string bytes);
-	std::string readI2C(std::string i2cAddress, std::string length);
+	bool writeI2C(int i2cAddress, std::string bytes);
+	std::string readI2C(int i2cAddress, int length);
 };
 
 #endif

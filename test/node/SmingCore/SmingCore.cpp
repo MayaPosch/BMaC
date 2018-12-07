@@ -106,7 +106,7 @@ size_t HardwareSerial::write(const uint8_t* buffer, size_t size) {
 size_t HardwareSerial::readBytes(char* buffer, size_t length) {
 	// Call the remote function.
 	vector<NymphType*> values;
-	values.push_back(new NymphString(StationClass::handle));
+	values.push_back(new NymphString(WifiStation.getMAC()));
 	NymphType* returnValue = 0;
 	if (!NymphRemoteServer::callMethod(StationClass::handle, "readUart", values, returnValue, result)) {
 		std::cout << "Error calling remote method: " << result << std::endl;
@@ -238,7 +238,7 @@ size_t TwoWire::write(uint8_t data) {
 	// Call remote method.
 	vector<NymphType*> values;
 	values.push_back(new NymphString(WifiStation.getMAC()));
-	values.push_back(new NymphString(std::string(i2cAddress)));
+	values.push_back(new NymphSint32(std::string(i2cAddress)));
 	values.push_back(new NymphString(std::string(data)));
 	NymphType* returnValue = 0;
 	if (!NymphRemoteServer::callMethod(StationClass::handle, "writeI2C", values, returnValue, result)) {
@@ -261,7 +261,7 @@ size_t TwoWire::write(int data) {
 	// Call remote method.
 	vector<NymphType*> values;
 	values.push_back(new NymphString(WifiStation.getMAC()));
-	values.push_back(new NymphString(std::string(i2cAddress)));
+	values.push_back(new NymphSint32(i2cAddress));
 	values.push_back(new NymphString(std::string(data)));
 	NymphType* returnValue = 0;
 	if (!NymphRemoteServer::callMethod(StationClass::handle, "writeI2C", values, returnValue, result)) {
@@ -288,7 +288,8 @@ size_t TwoWire::requestFrom(int address, int length) {
 	// Call remote method. This will read the string into a local buffer.
 	vector<NymphType*> values;
 	values.push_back(new NymphString(WifiStation.getMAC()));
-	values.push_back(new NymphString(String(length))); // Number of bytes to read.
+	values.push_back(new NymphSint32(address)); // Number of bytes to read.
+	values.push_back(new NymphSint32(length)); // Number of bytes to read.
 	NymphType* returnValue = 0;
 	if (!NymphRemoteServer::callMethod(StationClass::handle, "readI2C", values, returnValue, result)) {
 		std::cout << "Error calling remote method: " << result << std::endl;
