@@ -8,7 +8,6 @@
 #include "FileSystem.h"
 #include "../Wiring/WString.h"
 
-#include <cstdio>
 #include <filesystem>
 #include <iostream>
 #include <fstream>
@@ -17,7 +16,7 @@ namespace fs = std::filesystem;
 
 
 file_t fileOpen(const String& name, FileOpenFlags flags) {
-	int res;
+	file_t res;
 
 	if((flags & eFO_CreateNewAlways) == eFO_CreateNewAlways) {
 		if (fileExist(name)) {
@@ -66,14 +65,14 @@ int fileFlush(file_t file)
 	return 0; //SPIFFS_fflush(&_filesystemStorageHandle, file);
 }
 
-int fileStats(const String& name, spiffs_stat* stat)
+/* int fileStats(const String& name, spiffs_stat* stat)
 {
 	return 0; //SPIFFS_stat(&_filesystemStorageHandle, name.c_str(), stat);
-}
+} */
 
-int fileStats(file_t file, spiffs_stat* stat) {
+/* int fileStats(file_t file, spiffs_stat* stat) {
 	return 0; //SPIFFS_fstat(&_filesystemStorageHandle, file, stat);
-}
+} */
 
 void fileDelete(const String& name) {
 	fs::remove(name.c_str());
@@ -95,7 +94,6 @@ int fileLastError(file_t fd) {
 }
 
 void fileClearLastError(file_t fd) {
-	return 0;
 	//SPIFFS_clearerr(&_filesystemStorageHandle);
 }
 
@@ -112,7 +110,7 @@ void fileSetContent(const String& fileName, const char* content) {
 uint32_t fileGetSize(const String& fileName) {
 	int size = 0;
 	try {
-        size = fs::file_size(filename.c_str());
+        size = fs::file_size(fileName.c_str());
     } 
 	catch (fs::filesystem_error& e) {
         std::cout << e.what() << std::endl;
@@ -163,13 +161,13 @@ int fileGetContent(const String& fileName, char* buffer, int bufSize) {
 	std::ifstream ifs(fileName.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
 	
     std::ifstream::pos_type fileSize = ifs.tellg();
-	if (size <= 0 || bufSize <= size) {
+	if (fileSize <= 0 || bufSize <= fileSize) {
 		return 0;
 	}
 	
-    buffer[size] = 0;
+    buffer[fileSize] = 0;
     ifs.seekg(0, std::ios::beg);
-	fileRead(file, buffer, size);
+	ifs.read(buffer, fileSize);
 	ifs.close();
 
     return (int) fileSize;

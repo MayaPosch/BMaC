@@ -5,11 +5,12 @@
 
 #include <cstdint>
 #include <cstdio>
+#include <string>
 #include "wiring/WString.h"
 #include "wiring/WVector.h"
 #include "wiring/WHashMap.h"
 #include "FileSystem.h"
-#include "WiringFrameworkDependencies.h"
+//#include "WiringFrameworkDependencies.h"
 #include "Stream.h"
 #include "Delegate.h"
 #include "Network/MqttClient.h"
@@ -148,6 +149,7 @@ public:
 
 // --- Wire (I2C)
 class TwoWire {
+	uint8_t rxBufferIndex;
 	std::string buffer;
 	int i2cAddress;
 	

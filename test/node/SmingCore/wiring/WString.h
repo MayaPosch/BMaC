@@ -381,8 +381,8 @@ class StringSumHelper : public String
     StringSumHelper(double num) : String(num) {}
 };
 
-#include "FlashString.h"
-#include "SplitString.h"
+//#include "FlashString.h"
+//#include "SplitString.h"
 
 #endif  // __cplusplus
 #endif

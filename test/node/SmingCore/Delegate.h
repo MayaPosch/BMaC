@@ -13,7 +13,7 @@
 #ifndef SMINGCORE_DELEGATE_H_
 #define SMINGCORE_DELEGATE_H_
 
-#include <user_config.h>
+//#include <user_config.h>
 
 /** @brief  IDelegateCaller class
  *  @todo   Provide more informative brief description of IDelegateCaller

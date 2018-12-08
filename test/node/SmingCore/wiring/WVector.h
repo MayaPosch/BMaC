@@ -35,10 +35,10 @@ class Vector : public Countable<Element>
 
     // methods
      unsigned int capacity() const;
-     boolean contains(const Element& elem) const;
+     bool contains(const Element& elem) const;
      const Element& firstElement() const;
      int indexOf(const Element& elem) const;
-     boolean isEmpty() const;
+     bool isEmpty() const;
      const Element& lastElement() const;
      int lastIndexOf(const Element& elem) const;
      unsigned int count() const
@@ -47,7 +47,7 @@ class Vector : public Countable<Element>
     }
      unsigned int size() const;
      void copyInto(Element* array) const;
-     inline boolean add(const Element& obj)
+     inline bool add(const Element& obj)
     {
       addElement(obj);
       return true;
@@ -60,7 +60,7 @@ class Vector : public Countable<Element>
     }
      void ensureCapacity(unsigned int minCapacity);
      void removeAllElements();
-     boolean removeElement(const Element& obj);
+     bool removeElement(const Element& obj);
      void setSize(unsigned int newSize);
      void trimToSize();
      const Element& elementAt(unsigned int index) const;
@@ -165,7 +165,7 @@ unsigned int Vector<Element>::capacity() const
 };
 
 template <class Element>
-boolean Vector<Element>::contains(const Element &elem) const
+bool Vector<Element>::contains(const Element &elem) const
 {
   for (unsigned int i = 0; i < _size; i++)
   {
@@ -226,7 +226,7 @@ int Vector<Element>::indexOf(const Element &elem) const
 };
 
 template <class Element>
-boolean Vector<Element>::isEmpty() const
+bool Vector<Element>::isEmpty() const
 {
   return _size == 0;
 };
@@ -360,7 +360,7 @@ void Vector<Element>::removeAllElements()
 };
 
 template <class Element>
-boolean Vector<Element>::removeElement(const Element &obj)
+bool Vector<Element>::removeElement(const Element &obj)
 {
   for (unsigned int i = 0; i < _size; i++)
   {

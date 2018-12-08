@@ -28,6 +28,8 @@
 
 class String;
 
+typedef DEC 10
+
 class Print
 {
   public:

@@ -82,9 +82,10 @@ void HardwareSerial::dataReceivedCallback() {
 size_t HardwareSerial::write(const uint8_t* buffer, size_t size) {
 	// Call the remote method.
 	vector<NymphType*> values;
-	values.push_back(new NymphString(WifiStation.getMAC()));
-	values.push_back(new NymphString(String(buffer, size)));
+	values.push_back(new NymphString(WifiStation.getMAC().c_str()));
+	values.push_back(new NymphString(std::string((const char*) buffer, size)));
 	NymphType* returnValue = 0;
+	std::string result;
 	if (!NymphRemoteServer::callMethod(StationClass::handle, "writeUart", values, returnValue, result)) {
 		std::cout << "Error calling remote method: " << result << std::endl;
 		NymphRemoteServer::disconnect(StationClass::handle, result);
@@ -108,6 +109,7 @@ size_t HardwareSerial::readBytes(char* buffer, size_t length) {
 	vector<NymphType*> values;
 	values.push_back(new NymphString(WifiStation.getMAC()));
 	NymphType* returnValue = 0;
+	std::string result;
 	if (!NymphRemoteServer::callMethod(StationClass::handle, "readUart", values, returnValue, result)) {
 		std::cout << "Error calling remote method: " << result << std::endl;
 		NymphRemoteServer::disconnect(StationClass::handle, result);
@@ -172,6 +174,7 @@ bool StationClass::connect() {
 	// Send message and wait for response.
 	vector<NymphType*> values;
 	NymphType* returnValue = 0;
+	std::string result;
 	if (!NymphRemoteServer::callMethod(StationClass::handle, "getNewMac", values, returnValue, result)) {
 		std::cout << "Error calling remote method: " << result << std::endl;
 		NymphRemoteServer::disconnect(StationClass::handle, result);
@@ -211,21 +214,22 @@ void SPI::endTransaction() { }
 void SPI::transfer(uint8* buffer, size_t numberBytes) {
 	// Call the remote method.
 	vector<NymphType*> values;
-	values.push_back(new NymphString(WifiStation.getMAC()));
-	values.push_back(new NymphString(String(buffer, size)));
+	values.push_back(new NymphString(WifiStation.getMAC().c_str()));
+	values.push_back(new NymphString(std::string((char*) buffer, numberBytes)));
 	NymphType* returnValue = 0;
+	std::string result;
 	if (!NymphRemoteServer::callMethod(StationClass::handle, "writeSPI", values, returnValue, result)) {
 		std::cout << "Error calling remote method: " << result << std::endl;
 		NymphRemoteServer::disconnect(StationClass::handle, result);
 		NymphRemoteServer::shutdown();
-		return 0;
+		return;
 	}
 	
 	if (returnValue->type() != NYMPH_BOOL) {
 		std::cout << "Return value wasn't a boolean. Type: " << returnValue->type() << std::endl;
 		NymphRemoteServer::disconnect(StationClass::handle, result);
 		NymphRemoteServer::shutdown();
-		return 0;
+		return;
 	}
 }
 
@@ -237,10 +241,11 @@ void TwoWire::beginTransmission(int address) { i2cAddress = address; }
 size_t TwoWire::write(uint8_t data) {
 	// Call remote method.
 	vector<NymphType*> values;
-	values.push_back(new NymphString(WifiStation.getMAC()));
-	values.push_back(new NymphSint32(std::string(i2cAddress)));
-	values.push_back(new NymphString(std::string(data)));
+	values.push_back(new NymphString(WifiStation.getMAC().c_str()));
+	values.push_back(new NymphSint32(i2cAddress));
+	values.push_back(new NymphString(std::to_string(data)));
 	NymphType* returnValue = 0;
+	std::string result;
 	if (!NymphRemoteServer::callMethod(StationClass::handle, "writeI2C", values, returnValue, result)) {
 		std::cout << "Error calling remote method: " << result << std::endl;
 		NymphRemoteServer::disconnect(StationClass::handle, result);
@@ -260,10 +265,11 @@ size_t TwoWire::write(uint8_t data) {
 size_t TwoWire::write(int data) {
 	// Call remote method.
 	vector<NymphType*> values;
-	values.push_back(new NymphString(WifiStation.getMAC()));
+	values.push_back(new NymphString(WifiStation.getMAC().c_str()));
 	values.push_back(new NymphSint32(i2cAddress));
-	values.push_back(new NymphString(std::string(data)));
+	values.push_back(new NymphString(std::to_string(data)));
 	NymphType* returnValue = 0;
+	std::string result;
 	if (!NymphRemoteServer::callMethod(StationClass::handle, "writeI2C", values, returnValue, result)) {
 		std::cout << "Error calling remote method: " << result << std::endl;
 		NymphRemoteServer::disconnect(StationClass::handle, result);
@@ -287,10 +293,11 @@ size_t TwoWire::requestFrom(int address, int length) {
 	
 	// Call remote method. This will read the string into a local buffer.
 	vector<NymphType*> values;
-	values.push_back(new NymphString(WifiStation.getMAC()));
+	values.push_back(new NymphString(WifiStation.getMAC().c_str()));
 	values.push_back(new NymphSint32(address)); // Number of bytes to read.
 	values.push_back(new NymphSint32(length)); // Number of bytes to read.
 	NymphType* returnValue = 0;
+	std::string result;
 	if (!NymphRemoteServer::callMethod(StationClass::handle, "readI2C", values, returnValue, result)) {
 		std::cout << "Error calling remote method: " << result << std::endl;
 		NymphRemoteServer::disconnect(StationClass::handle, result);
@@ -305,33 +312,25 @@ size_t TwoWire::requestFrom(int address, int length) {
 		exit(1);
 	}
 	
+	rxBufferIndex = 0; // reset buffer index.
 	buffer = ((NymphString*) returnValue)->getValue();
 	return buffer.size();
 }
 
 
-int TwoWire::available(); // TODO
+int TwoWire::available() {
+	return buffer.length() - rxBufferIndex;
+}
+
+
 int TwoWire::read() {
-	// Call remote method.
-	vector<NymphType*> values;
-	values.push_back(new NymphString(WifiStation.getMAC()));
-	values.push_back(new NymphString(String(data)));
-	NymphType* returnValue = 0;
-	if (!NymphRemoteServer::callMethod(StationClass::handle, "readI2C", values, returnValue, result)) {
-		std::cout << "Error calling remote method: " << result << std::endl;
-		NymphRemoteServer::disconnect(StationClass::handle, result);
-		NymphRemoteServer::shutdown();
-		exit(1);
+	int value = -1;
+	if (rxBufferIndex < buffer.length()) {
+		value = buffer.at(rxBufferIndex);
+		++rxBufferIndex;
 	}
 	
-	if (returnValue->type() != NYMPH_STRING) {
-		std::cout << "Return value wasn't a string. Type: " << returnValue->type() << std::endl;
-		NymphRemoteServer::disconnect(StationClass::handle, result);
-		NymphRemoteServer::shutdown();
-		exit(1);
-	}
-	
-	buffer = ((NymphString*) returnValue)->getValue();
+	return value;
 }
 
 TwoWire Wire;

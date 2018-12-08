@@ -16,9 +16,12 @@
 //#include "../Services/SpifFS/spiffs_sming.h"
 #include "../Wiring/WVector.h"
 
+#include <cstdint>
+#include <cstdio>
+
 class String;
 
-typedef int file_t; // file handle type.
+typedef FILE* file_t; // file handle type.
 
 
 /// File open flags
@@ -38,9 +41,9 @@ static FileOpenFlags operator|(FileOpenFlags lhs, FileOpenFlags rhs) {
 
 /// File seek flags
 typedef enum {
-	eSO_FileStart = SPIFFS_SEEK_SET,  ///< Start of file
-	eSO_CurrentPos = SPIFFS_SEEK_CUR, ///< Current position in file
-	eSO_FileEnd = SPIFFS_SEEK_END	 ///< End of file
+	eSO_FileStart = 1,  ///< Start of file
+	eSO_CurrentPos = 2, ///< Current position in file
+	eSO_FileEnd = 4	 ///< End of file
 } SeekOriginFlags;
 
 /** @brief  Open file
@@ -171,7 +174,7 @@ int fileGetContent(const String& fileName, char* buffer, int bufSize);
  *  @note   Pass a pointer to an instantiated fileStats structure
  *  @todo   Document the return value of fileStats
  */
-int fileStats(const String& name, spiffs_stat* stat);
+//int fileStats(const String& name, spiffs_stat* stat);
 
 /** brief   Get file statistics
  *  @param  file File ID
@@ -180,7 +183,7 @@ int fileStats(const String& name, spiffs_stat* stat);
  *  @note   Pass a pointer to an instantiated fileStats structure
  *  @todo   Document the return value of fileStats
  */
-int fileStats(file_t file, spiffs_stat* stat);
+//int fileStats(file_t file, spiffs_stat* stat);
 
 /** @brief  Delete file
  *  @param  name Name of file to delete
