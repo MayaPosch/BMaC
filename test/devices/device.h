@@ -22,6 +22,7 @@ class Device {
 	std::shared_ptr<RoomState> roomState;
 	Connection connType;
 	std::string device;
+	std::string mac;
 	int spi_cs;
 	int i2c_address;
 	int uart_baud;		// UART baud rate.
@@ -30,11 +31,14 @@ class Device {
 	bool deviceState;
 	uint8_t i2c_register;
 	
+	void send(std::string data);
+	
 public:
 	Device() { }
 	Device(std::string id, Config &config, std::shared_ptr<RoomState> rs);
 	/* uint8_t readRegister8(int reg);
 	void writeRegister8(int reg, uint8_t data); */
+	void setMAC(std::string mac);
 	Connection connectionType() { return connType; }
 	int spiCS() { return spi_cs; }
 	int i2cAddress() { return i2c_address; }

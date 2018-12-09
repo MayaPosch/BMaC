@@ -11,6 +11,7 @@
 
 
 #include "device.h"
+#include "nodes.h"
 
 
 // --- CONSTRUCTOR ---
@@ -46,6 +47,19 @@ Device::Device(std::string id, Config &config, std::shared_ptr<RoomState> rs) :
 	// Check the INI file for the device to see what info we should be returning. 
 	// Find the 'read' entry.
 	
+}
+
+
+// --- SET MAC ---
+void Device::setMAC(std::string mac) {
+	this->mac = mac;
+}
+
+
+// --- SEND ---
+// Called when the device (UART-based) wishes to send data.
+void Device::send(std::string data) {
+	Nodes::sendUart(mac, data);
 }
 
 
@@ -125,11 +139,13 @@ std::string Device::read(int length) {
 			// Error.
 			return std::string();
 	};
+	
+	return std::string();
 }
 
 
 // --- READ ---
 // Overloaded function for implementations which do not use a length parameter.
 std::string Device::read() {
-	read(0);
+	return read(0);
 }

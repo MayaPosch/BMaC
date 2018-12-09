@@ -42,6 +42,9 @@ Node::Node(std::string id, Config &config) : uart0_active(false) {
 
 // --- ADD DEVICE ---
 bool Node::addDevice(Device &&device) {
+	// Assign this node's MAC address to the device.
+	device.setMAC(mac);
+	
 	// Check the device for the interface it's on (SPI, I2C or UART) and add it to the respective
 	// interface.
 	switch (device.connectionType()) {
@@ -59,6 +62,8 @@ bool Node::addDevice(Device &&device) {
 			// Error.
 			break;
 	}
+	
+	return true;
 }
 
 
@@ -82,11 +87,11 @@ bool Node::writeUart(std::string bytes) {
 
 
 // --- READ UART ---
-std::string Node::readUart() {
+/* std::string Node::readUart() {
 	if (!uart0_active) { return std::string(); }
 	
 	uart0.read();
-}
+} */
 
 
 // --- WRITE SPI ---

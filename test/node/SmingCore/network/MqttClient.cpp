@@ -33,8 +33,8 @@ MqttClient::MqttClient(String serverHost, int serverPort, MqttStringSubscription
 }
 
 // Deprecated . . .
-MqttClient::MqttClient(IPAddress serverIp, int serverPort, MqttStringSubscriptionCallback callback /* = NULL*/)
-	/* : TcpClient(false) */ {
+//MqttClient::MqttClient(IPAddress serverIp, int serverPort, MqttStringSubscriptionCallback callback /* = NULL*/)
+	/* : TcpClient(false) *//*  {
 	url.Host = serverIp.toString();
 	url.Port = serverPort;
 	this->callback = callback;
@@ -43,7 +43,7 @@ MqttClient::MqttClient(IPAddress serverIp, int serverPort, MqttStringSubscriptio
 	current = NULL;
 	
 	mosqpp::lib_init();
-}
+} */
 
 MqttClient::~MqttClient() {
 	mqtt.loop_stop();
@@ -88,20 +88,20 @@ bool MqttClient::connect(const URL& url, const String& clientName, uint32_t sslO
 }
 
 // Deprecated . . .
-bool MqttClient::connect(const String& clientName, boolean useSsl /* = false */, uint32_t sslOptions /* = 0 */)
+bool MqttClient::connect(const String& clientName, bool useSsl /* = false */, uint32_t sslOptions /* = 0 */)
 {
 	return MqttClient::connect(clientName, "", "", useSsl, sslOptions);
 }
 
 // Deprecated . . .
 bool MqttClient::connect(const String& clientName, const String& username, const String& password,
-						 boolean useSsl /* = false */, uint32_t sslOptions /* = 0 */)
+						 bool useSsl /* = false */, uint32_t sslOptions /* = 0 */)
 {
 	return privateConnect(clientName, username, password, useSsl, sslOptions);
 }
 
 bool MqttClient::privateConnect(const String& clientName, const String& username, const String& password,
-								boolean useSsl /* = false */, uint32_t sslOptions /* = 0 */) {
+								bool useSsl /* = false */, uint32_t sslOptions /* = 0 */) {
 	if(getConnectionState() != eTCS_Ready) {
 		close();
 		debug_d("MQTT closed previous connection");

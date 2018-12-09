@@ -12,11 +12,13 @@
 
 #include "nodes.h"
 #include "node.h"
+#include <nymph/nymph.h>
 
 
 // Static initialisations.
 std::map<std::string, Node*> Nodes::nodes;
 std::queue<std::string> Nodes::macs;
+std::map<std::string, int> Nodes::sessions;
 
 
 // --- GET NODE ---
@@ -53,6 +55,11 @@ bool Nodes::removeNode(Node* node) {
 }
 
 
+void Nodes::registerSession(std::string mac, int session) {
+	sessions.insert(std::pair<std::string, int>(mac, session));
+}
+
+
 /* bool Nodes::registerUartCb(std::string mac, std::string cb) {
 	Node* node = getNode(mac);
 	if (!node) { return false; }
@@ -73,12 +80,31 @@ bool Nodes::writeUart(std::string mac, std::string bytes) {
 }
 
 
-std::string Nodes::readUart(std::string mac) {
+bool Nodes::sendUart(std::string mac, std::string bytes) {
+	// Get the session ID, then call the remote callback function.
+	std::map<std::string, int>::iterator it;
+	it = sessions.find(mac);
+	if (it == sessions.end()) { return false; }
+	
+	vector<NymphType*> values;
+	values.push_back(new NymphString(bytes));
+	string result;
+	NymphBoolean* world = 0;
+	if (!NymphRemoteClient::callCallback(it->second, "serialRxCallback", values, result)) {
+		// std::cerr << "Calling callback failed: " << result << endl;
+		// TODO: Report error.
+	}
+	
+	return true;
+}
+
+
+/* std::string Nodes::readUart(std::string mac) {
 	Node* node = getNode(mac);
 	if (!node) { return std::string(); }
 	
 	return node->readUart();
-}
+} */
 
 
 bool Nodes::writeSPI(std::string mac, std::string bytes) {

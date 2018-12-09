@@ -35,7 +35,7 @@ public:
 	
 	//bool registerUartCb(std::string cb);
 	bool writeUart(std::string bytes);
-	std::string readUart();
+	//std::string readUart();
 	bool writeSPI(std::string bytes);
 	std::string readSPI();
 	bool writeI2C(int i2cAddress, std::string bytes);

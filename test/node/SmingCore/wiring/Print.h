@@ -28,7 +28,8 @@
 
 class String;
 
-typedef DEC 10
+#define DEC 10
+
 
 class Print
 {

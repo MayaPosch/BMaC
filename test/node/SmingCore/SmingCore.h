@@ -26,20 +26,21 @@ using namespace std;
 typedef Delegate<void(Stream& source, char arrivedChar, uint16_t availableCharsCount)> StreamDataReceivedDelegate;
 
 class HardwareSerial {
-	const int uart;
+	int uart;
 	uint32_t baud;
 	StreamDataReceivedDelegate HWSDelegate = nullptr;
+	std::string rxBuffer;
 	
 public:
-	HardwareSerial(const int uartPort) { uart = uartPort; }
-	void begin(uint32_t baud = 9600) { }
-	void systemDebugOutput(bool enable) { }
-	void end() { }
+	HardwareSerial(const int uartPort);
+	void begin(uint32_t baud = 9600);
+	void systemDebugOutput(bool enable);
+	void end();
 	size_t printf(const char *fmt, ...);
 	void print(String str);
 	void println(String str);
 	void setCallback(StreamDataReceivedDelegate dataReceivedDelegate);
-	static void dataReceivedCallback();
+	void dataReceivedCallback(NymphMessage* msg, void* data);
 	size_t write(const uint8_t* buffer, size_t size);
 	size_t readBytes(char *buffer, size_t length);
 };
@@ -52,6 +53,8 @@ int rboot_get_current_rom() { return 0; }
 void rboot_set_current_rom();
 
 // TODO: implement when testing OTA updates.
+class rBootHttpUpdate;
+typedef Delegate<void(rBootHttpUpdate& client, bool result)> OtaUpdateDelegate;
 class rBootHttpUpdate {
 	//
 
@@ -70,10 +73,10 @@ void spiffs_mount_manual() { }
 // STATION CLASS
 class StationClass {
 	String mac;
-	bool enable;
+	bool enabled;
 	
 public:
-	void enable(bool enabled, bool save);
+	void enable(bool enable, bool save);
 	bool config(const String& ssid, const String& password, bool autoConnectOnStartup /* = true*/,
 						  bool save /* = true */);
 	bool connect();
@@ -87,23 +90,32 @@ extern StationClass WifiStation;
 
 // ACCESS POINT CLASS
 class AccessPointClass {
-	bool enable;
+	bool enabled;
 	
 public:
-	void enable(bool en) { enable = en; }
+	void enable(bool en) { enabled = en; }
 };
 
 extern AccessPointClass WifiAccessPoint;
 
 
 // WIFI EVENTS
+class IPAddress {
+	//
+public:
+	String toString() { return "192.168.0.32"; }
+};
+
+typedef Delegate<void(uint8_t[6], uint8_t)> AccessPointDisconnectDelegate;
+typedef Delegate<void(IPAddress, IPAddress, IPAddress)> StationGotIPDelegate;
 class WifiEvents {
 	//
 	
 public:
 	void onStationGotIP(StationGotIPDelegate delegateFunction) {
 		// Immediately call the callback.
-		delegateFunction();
+		IPAddress ip;
+		delegateFunction(ip, ip, ip);
 	}
 	
 	void onStationDisconnect(AccessPointDisconnectDelegate delegateFunction) {
@@ -163,12 +175,18 @@ public:
 	size_t requestFrom(int address, int length);
 	int available();
 	int read();
-}
+};
 
-extern TwoWire Wire ;
+extern TwoWire Wire;
 
 
 // --- SPI
+class SPISettings {
+	//
+public:
+	//
+};
+
 class SPI {
 	//
 	

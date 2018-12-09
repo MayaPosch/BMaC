@@ -46,7 +46,12 @@ void logFunction(int level, string logStr) {
 // Returns a string type with the MAC.
 NymphMessage* getNewMac(int session, NymphMessage* msg, void* data) {
 	NymphMessage* returnMsg = msg->getReplyMessage();
-	returnMsg->setResultValue(new NymphString(Nodes::getMAC()));
+	
+	// Get new MAC and register it with this session ID.
+	std::string mac = Nodes::getMAC();
+	Nodes::registerSession(mac, session);
+	
+	returnMsg->setResultValue(new NymphString(mac));
 	return returnMsg;
 }
 
@@ -78,16 +83,25 @@ NymphMessage* writeUart(int session, NymphMessage* msg, void* data) {
 }
 
 
-// --- READ UART ---
-// Read from the UART.
-NymphMessage* readUart(int session, NymphMessage* msg, void* data) {
-	NymphMessage* returnMsg = msg->getReplyMessage();
+// --- SEND UART ---
+// Send to the UART.
+/* void sendUart(std::string data) { //(int session, NymphMessage* msg, void* data) {
+	vector<NymphType*> values;
+	values.push_back(new NymphString(data));
+	string result;
+	NymphBoolean* world = 0;
+	if (!NymphRemoteClient::callCallback(session, "serialRxCallback", values, result)) {
+		// std::cerr << "Calling callback failed: " << result << endl;
+		// TODO: Report error.
+	} */
+	
+	/* NymphMessage* returnMsg = msg->getReplyMessage();
 	
 	// Get the MAC address, then call the function on the associated Node instance.
 	std::string mac = ((NymphString*) msg->parameters()[0])->getValue();
 	returnMsg->setResultValue(new NymphString(Nodes::readUart(mac)));
-	return returnMsg;
-}
+	return returnMsg; */
+//}
 
 
 // --- WRITE SPI ---
@@ -163,6 +177,11 @@ int main() {
 	getNewMacFunction.setCallback(getNewMac);
 	NymphRemoteClient::registerMethod("getNewMac", getNewMacFunction);
 	
+	parameters.push_back(NYMPH_STRING);
+	NymphMethod serialRxCallback("serialRxCallback", parameters, NYMPH_NULL);
+	serialRxCallback.enableCallback();
+	NymphRemoteClient::registerCallback("serialRxCallback", serialRxCallback);
+	
 	// bool registerUartCb(string MAC, string callbackName)
 	/* parameters.push_back(NYMPH_STRING); // MAC
 	parameters.push_back(NYMPH_STRING);	// Callback name.
@@ -171,11 +190,9 @@ int main() {
 	NymphRemoteClient::registerMethod("registerUartCb", registerUartCbFunction); */
 	
 	// string readUart(string MAC)
-	//parameters.clear();
-	parameters.push_back(NYMPH_STRING);
-	NymphMethod readUartFunction("readUart", parameters, NYMPH_STRING);
+	/* NymphMethod readUartFunction("readUart", parameters, NYMPH_STRING);
 	readUartFunction.setCallback(readUart);
-	NymphRemoteClient::registerMethod("readUart", readUartFunction);
+	NymphRemoteClient::registerMethod("readUart", readUartFunction); */
 	
 	// string readI2C(string MAC, int i2cAddress, int length)
 	parameters.push_back(NYMPH_SINT32);

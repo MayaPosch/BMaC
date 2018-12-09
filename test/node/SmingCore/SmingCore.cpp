@@ -34,8 +34,10 @@ void HardwareSerial::end() { }
 size_t HardwareSerial::printf(const char *fmt, ...) { 
 	va_list ap;
     va_start(ap, fmt);
-    vfprintf(stdout, fmt, ap);
+    int written = vfprintf(stdout, fmt, ap);
     va_end(ap);
+	
+	return written;
 }
 
 
@@ -73,9 +75,17 @@ void HardwareSerial::setCallback(StreamDataReceivedDelegate dataReceivedDelegate
 }
 
 
-void HardwareSerial::dataReceivedCallback() {
+void HardwareSerial::dataReceivedCallback(NymphMessage* msg, void* data) {
+	// Get the data from the message.
+	rxBuffer = ((NymphString*) msg->parameters()[0])->getValue();
+	
 	// Call the callback method, if one has been registered.
-	HWSDelegate.invoke();
+	// Loop through the received data, sending one character at a time on the registered callback.
+	Stream stream();
+	int length = rxBuffer.length();
+	for (int i = 0; i < length; ++i) {
+		HWSDelegate(stream, rxBuffer[i], length - i);
+	}
 }
 
 
@@ -134,7 +144,7 @@ size_t HardwareSerial::readBytes(char* buffer, size_t length) {
 // STATION CLASS
 StationClass WifiStation;
 
-void StationClass::enable(bool enabled, bool save) {
+void StationClass::enable(bool enable, bool save) {
 	this->enabled = enabled;
 }
 
@@ -174,7 +184,6 @@ bool StationClass::connect() {
 	// Send message and wait for response.
 	vector<NymphType*> values;
 	NymphType* returnValue = 0;
-	std::string result;
 	if (!NymphRemoteServer::callMethod(StationClass::handle, "getNewMac", values, returnValue, result)) {
 		std::cout << "Error calling remote method: " << result << std::endl;
 		NymphRemoteServer::disconnect(StationClass::handle, result);
@@ -192,10 +201,14 @@ bool StationClass::connect() {
 	std::string macStr = ((NymphString*) returnValue)->getValue();
 	mac = String(macStr.data(), macStr.length());
 	
+	delete returnValue;
+	returnValue = 0;
+	
+	// Set the serial interface callback.
+	NymphRemoteServer::registerCallback("serialRxCallback" Serial.dataReceivedCallback, 0);
+	
 	return true;
 }
-	
-String StationClass::getMAC() { return mac; }
 	
 	
 // ACCESS POINT CLASS
