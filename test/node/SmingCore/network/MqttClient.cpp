@@ -68,14 +68,14 @@ void MqttClient::setPingRepeatTime(int seconds) {
 
 bool MqttClient::setWill(const String& topic, const String& message, int QoS, bool retained /* = false*/)
 {
-	mqtt->will_set(topic.c_str(), message.length(), message.c_str(), QoS, retained);
+	return mqtt.will_set(topic.c_str(), message.length(), message.c_str(), QoS, retained);
 	//return mqtt_set_will(&broker, topic.c_str(), message.c_str(), QoS, retained);
 }
 
 bool MqttClient::connect(const URL& url, const String& clientName, uint32_t sslOptions) {
 	this->url = url;
 	if(!(url.Protocol == "mqtt" || url.Protocol == "mqtts")) {
-		debug_e("Only mqtt and mqtts protocols are allowed");
+		//debug_e("Only mqtt and mqtts protocols are allowed");
 		return false;
 	}
 	
@@ -102,12 +102,12 @@ bool MqttClient::connect(const String& clientName, const String& username, const
 
 bool MqttClient::privateConnect(const String& clientName, const String& username, const String& password,
 								bool useSsl /* = false */, uint32_t sslOptions /* = 0 */) {
-	if(getConnectionState() != eTCS_Ready) {
+	/* if(getConnectionState() != eTCS_Ready) {
 		close();
 		debug_d("MQTT closed previous connection");
-	}
+	} */
 
-	debug_d("MQTT start connection");
+	//debug_d("MQTT start connection");
 	if (clientName.length() > 0) {
 		mqtt.reinitialise(clientName.c_str(), false);
 		//mqtt_set_clientid(&broker, clientName.c_str());
@@ -146,15 +146,14 @@ bool MqttClient::publish(String topic, String message, bool retained /* = false*
 bool MqttClient::publishWithQoS(String topic, String message, int QoS, bool retained /* = false*/,
 								MqttMessageDeliveredCallback onDelivery /* = NULL */)
 {
-	uint16_t msgId = 0;
 	//int res = mqtt_publish_with_qos(&broker, topic.c_str(), message.c_str(), message.length(), retained, QoS, &msgId);
-	int res = mqtt.publish(msgId, topic.c_str(), message.length(), message.c_str(), QoS, retained);
-	if (QoS == 0 && onDelivery) {
-		debug_d("The delivery callback is ignored for QoS 0.");
+	int res = mqtt.publish(0, topic.c_str(), message.length(), message.c_str(), QoS, retained);
+	/* if (QoS == 0 && onDelivery) {
+		//debug_d("The delivery callback is ignored for QoS 0.");
 	} 
 	else if (QoS > 0 && onDelivery && msgId) {
 		onDeliveryQueue[msgId] = onDelivery;
-	}
+	} */
 	
 	return res > 0;
 }
@@ -167,27 +166,25 @@ bool MqttClient::publishWithQoS(String topic, String message, int QoS, bool reta
 } */
 
 bool MqttClient::subscribe(const String& topic) {
-	uint16_t msgId = 0;
-	debug_d("subscription '%s' registered", topic.c_str());
-	int res = mqtt.subscribe(msgId, topic.c_str());
+	//debug_d("subscription '%s' registered", topic.c_str());
+	int res = mqtt.subscribe(0, topic.c_str());
 	return res > 0;
 }
 
 bool MqttClient::unsubscribe(const String& topic) {
-	uint16_t msgId = 0;
-	debug_d("unsubscribing from '%s'", topic.c_str());
-	int res = mqtt.unsubscribe(msgId, topic.c_str());
+	//debug_d("unsubscribing from '%s'", topic.c_str());
+	int res = mqtt.unsubscribe(0, topic.c_str());
 	return res > 0;
 }
 
 
 void MqttClient::on_message(const struct mosquitto_message* message) {
 	if (callback) {
-		callback(message.topic, message.payload);
+		callback(String(message->topic), String((char*) message->payload, message->payloadlen));
 	}
 }
 
-void MqttClient::debugPrintResponseType(int type, int len) {
+/* void MqttClient::debugPrintResponseType(int type, int len) {
 	String tp;
 	switch(type) {
 	case MQTT_MSG_CONNACK:
@@ -217,8 +214,8 @@ void MqttClient::debugPrintResponseType(int type, int len) {
 	default:
 		tp = "b" + String(type, 2);
 	}
-	debug_d("> MQTT status: %s (len: %d)", tp.c_str(), len);
-}
+	//debug_d("> MQTT status: %s (len: %d)", tp.c_str(), len);
+} */
 
 /* err_t MqttClient::onReceive(pbuf* buf) {
 	if(buf == NULL) {

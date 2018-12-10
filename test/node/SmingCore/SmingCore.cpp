@@ -1,8 +1,6 @@
 
 #include "SmingCore.h"
 
-#include <nymph/nymph.h>
-
 #include <iostream>
 #include <cstdio>
 #include <cstdarg>
@@ -19,6 +17,10 @@ void logFunction(int level, string logStr) {
 
 
 // HARDWARE SERIAL
+// Static initialisation.
+StreamDataReceivedDelegate HardwareSerial::HWSDelegate = nullptr;
+std::string HardwareSerial::rxBuffer;
+
 HardwareSerial::HardwareSerial(const int uartPort) { 
 	uart = uartPort; 
 }
@@ -81,11 +83,12 @@ void HardwareSerial::dataReceivedCallback(NymphMessage* msg, void* data) {
 	
 	// Call the callback method, if one has been registered.
 	// Loop through the received data, sending one character at a time on the registered callback.
-	Stream stream();
+	SerialStream stream;
 	int length = rxBuffer.length();
-	for (int i = 0; i < length; ++i) {
+	int i = 0;
+	//for (int i = 0; i < length; ++i) {
 		HWSDelegate(stream, rxBuffer[i], length - i);
-	}
+	//}
 }
 
 
@@ -116,8 +119,8 @@ size_t HardwareSerial::write(const uint8_t* buffer, size_t size) {
 
 size_t HardwareSerial::readBytes(char* buffer, size_t length) {
 	// Call the remote function.
-	vector<NymphType*> values;
-	values.push_back(new NymphString(WifiStation.getMAC()));
+	/* vector<NymphType*> values;
+	values.push_back(new NymphString(WifiStation.getMAC().c_str()));
 	NymphType* returnValue = 0;
 	std::string result;
 	if (!NymphRemoteServer::callMethod(StationClass::handle, "readUart", values, returnValue, result)) {
@@ -135,9 +138,10 @@ size_t HardwareSerial::readBytes(char* buffer, size_t length) {
 	}
 	
 	// Update buffer, return bytes read.
-	std::string bytes = ((NymphString*) returnValue)->getValue();
-	buffer = bytes.data();
-	return bytes.length();
+	std::string bytes = ((NymphString*) returnValue)->getValue(); */
+	
+	buffer = rxBuffer.data();
+	return rxBuffer.length();
 }
 
 
@@ -205,7 +209,7 @@ bool StationClass::connect() {
 	returnValue = 0;
 	
 	// Set the serial interface callback.
-	NymphRemoteServer::registerCallback("serialRxCallback" Serial.dataReceivedCallback, 0);
+	NymphRemoteServer::registerCallback("serialRxCallback", HardwareSerial::dataReceivedCallback, 0);
 	
 	return true;
 }
@@ -214,8 +218,8 @@ bool StationClass::connect() {
 // ACCESS POINT CLASS
 AccessPointClass WifiAccessPoint;
 
-void AccessPointClass::enable(bool enabled, bool save) {
-	// Nothing to do.
+void AccessPointClass::enable(bool enable, bool save) {
+	enabled = enable;
 }
 	
 	

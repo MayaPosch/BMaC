@@ -15,6 +15,10 @@
 
 //#include <user_config.h>
 
+#include <cstdint>
+
+#define __forceinline
+
 /** @brief  IDelegateCaller class
  *  @todo   Provide more informative brief description of IDelegateCaller
  */

@@ -112,7 +112,7 @@ private:
 						bool useSsl = false, uint32_t sslOptions = 0);
 
 	URL url;
-	mosqpp::mosquittopp broker;
+	mosqpp::mosquittopp mqtt;
 	//mqtt_broker_handle_t broker;
 	int waitingSize;
 	uint8_t buffer[MQTT_MAX_BUFFER_SIZE + 1];

@@ -13,13 +13,15 @@ RM = rm
 AR = ar
 
 OUTPUT = bmac_esp8266
-INCLUDE = -I SmingCore/ \
-			-I SmingCore/network \
-			-I SmingCore/network/Http \
-			-I SmingCore/network/Http/Websocket \
-			-I SmingCore/network/libmosquitto \
-			-I SmingCore/network/libmosquitto\cpp \
-			-I SmingCore/wiring
+INCLUDE = -I $(TOP)/ \
+			-I $(TOP)/SmingCore/ \
+			-I $(TOP)/SmingCore/network \
+			-I $(TOP)/SmingCore/network/Http \
+			-I $(TOP)/SmingCore/network/Http/Websocket \
+			-I $(TOP)/SmingCore/network/libmosquitto \
+			-I $(TOP)/SmingCore/network/libmosquitto\cpp \
+			-I $(TOP)/SmingCore/wiring \
+			-I $(TOP)/esp8266/app
 #-DPOCO_WIN32_UTF8
 FLAGS := $(INCLUDE) -g3 -std=c++17 -U__STRICT_ANSI__
 LIB := -lnymphrpc -lPocoNet -lPocoUtil -lPocoFoundation -lPocoJSON

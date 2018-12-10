@@ -61,6 +61,8 @@
 #define __GXX_EXPERIMENTAL_CXX0X__
 #endif
 
+#include <cstdint>
+
 // When compiling programs with this class, the following gcc parameters
 // dramatically increase performance and memory (RAM) efficiency, typically
 // with little or no increase in code size.
@@ -382,7 +384,7 @@ class StringSumHelper : public String
 };
 
 //#include "FlashString.h"
-//#include "SplitString.h"
+#include "SplitString.h"
 
 #endif  // __cplusplus
 #endif

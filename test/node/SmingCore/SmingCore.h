@@ -11,9 +11,12 @@
 #include "wiring/WHashMap.h"
 #include "FileSystem.h"
 //#include "WiringFrameworkDependencies.h"
-#include "Stream.h"
+#include "wiring/Stream.h"
 #include "Delegate.h"
 #include "Network/MqttClient.h"
+#include "Timer.h"
+
+#include <nymph/nymph.h>
 
 using namespace std;
 
@@ -25,11 +28,23 @@ using namespace std;
 
 typedef Delegate<void(Stream& source, char arrivedChar, uint16_t availableCharsCount)> StreamDataReceivedDelegate;
 
+class SerialStream : public Stream {
+	//
+	
+public:
+	SerialStream() { }
+	size_t write(uint8_t) { return 1; }
+	int available() { return 0; }
+	int read() { return 0; }
+	void flush() { }
+	int peek() { return 0; }
+};
+
 class HardwareSerial {
 	int uart;
 	uint32_t baud;
-	StreamDataReceivedDelegate HWSDelegate = nullptr;
-	std::string rxBuffer;
+	static StreamDataReceivedDelegate HWSDelegate;
+	static std::string rxBuffer;
 	
 public:
 	HardwareSerial(const int uartPort);
@@ -40,7 +55,7 @@ public:
 	void print(String str);
 	void println(String str);
 	void setCallback(StreamDataReceivedDelegate dataReceivedDelegate);
-	void dataReceivedCallback(NymphMessage* msg, void* data);
+	static void dataReceivedCallback(NymphMessage* msg, void* data);
 	size_t write(const uint8_t* buffer, size_t size);
 	size_t readBytes(char *buffer, size_t length);
 };
@@ -93,7 +108,7 @@ class AccessPointClass {
 	bool enabled;
 	
 public:
-	void enable(bool en) { enabled = en; }
+	void enable(bool enable, bool save);
 };
 
 extern AccessPointClass WifiAccessPoint;
@@ -222,6 +237,15 @@ class System {
 	
 public:
 	void restart() { }
+};
+
+
+// --- TcpClient ---
+class TcpClient {
+	//
+	
+public:
+	//
 };
 
 #endif
