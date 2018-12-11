@@ -17,6 +17,7 @@
 #define MQTT_MAX_BUFFER_SIZE 1024
 
 //#include "TcpClient.h"
+class TcpClient;
 #include "../Delegate.h"
 #include "../../Wiring/WString.h"
 #include "../../Wiring/WHashMap.h"
@@ -28,6 +29,7 @@
 //typedef void (*MqttStringSubscriptionCallback)(String topic, String message);
 typedef Delegate<void(String topic, String message)> MqttStringSubscriptionCallback;
 typedef Delegate<void(uint16_t msgId, int type)> MqttMessageDeliveredCallback;
+typedef Delegate<void(TcpClient& client, bool successful)> TcpClientCompleteDelegate;
 
 class MqttClient;
 class URL;
@@ -50,6 +52,8 @@ public:
 	/** @brief  Provide a funcion to be called when a message is received from the broker
 	*/
 	void setCallback(MqttStringSubscriptionCallback subscriptionCallback = NULL);
+	
+	void setCompleteDelegate(TcpClientCompleteDelegate completeCb);
 
 	void setKeepAlive(int seconds);		 //send to broker
 	void setPingRepeatTime(int seconds); //used by client
@@ -119,6 +123,7 @@ private:
 	uint8_t* current;
 	int posHeader;
 	MqttStringSubscriptionCallback callback;
+	TcpClientCompleteDelegate completed = nullptr;
 	int keepAlive = 60;
 	int pingRepeatTime = 20;
 	unsigned long lastMessage = 0;

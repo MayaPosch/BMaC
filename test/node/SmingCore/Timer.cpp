@@ -7,50 +7,43 @@
 
 #include "Timer.h"
 
-Timer& Timer::initializeMs(uint32_t milliseconds, InterruptCallback callback)
-{
+Timer& Timer::initializeMs(uint32_t milliseconds, InterruptCallback callback) {
 	setCallback(callback);
 	setIntervalMs(milliseconds);
 	return *this;
 }
 
-Timer& Timer::initializeUs(uint32_t microseconds, InterruptCallback callback)
-{
+Timer& Timer::initializeUs(uint32_t microseconds, InterruptCallback callback) {
 	setCallback(callback);
 	setIntervalUs(microseconds);
 	return *this;
 }
 
-Timer& Timer::initializeMs(uint32_t milliseconds, TimerDelegate delegateFunction)
-{
+Timer& Timer::initializeMs(uint32_t milliseconds, TimerDelegate delegateFunction) {
 	setCallback(delegateFunction);
 	setIntervalMs(milliseconds);
 	return *this;
 }
 
-Timer& Timer::initializeUs(uint32_t microseconds, TimerDelegate delegateFunction)
-{
+Timer& Timer::initializeUs(uint32_t microseconds, TimerDelegate delegateFunction) {
 	setCallback(delegateFunction);
 	setIntervalUs(microseconds);
 	return *this;
 }
 
-Timer& Timer::initializeMs(uint32_t milliseconds, TimerDelegateStdFunction delegateFunction)
-{
+Timer& Timer::initializeMs(uint32_t milliseconds, TimerDelegateStdFunction delegateFunction) {
 	setCallback(delegateFunction);
 	setIntervalMs(milliseconds);
 	return *this;
 }
 
-Timer& Timer::initializeUs(uint32_t microseconds, TimerDelegateStdFunction delegateFunction)
-{
+Timer& Timer::initializeUs(uint32_t microseconds, TimerDelegateStdFunction delegateFunction) {
 	setCallback(delegateFunction);
 	setIntervalUs(microseconds);
 	return *this;
 }
 
-void Timer::start(bool repeating /* = true*/)
-{
+void Timer::start(bool repeating /* = true*/) {
 	this->repeating = repeating;
 	stop();
 	if(interval == 0)
@@ -73,8 +66,7 @@ void Timer::start(bool repeating /* = true*/)
 	started = true;
 }
 
-void Timer::stop()
-{
+void Timer::stop() {
 	if(started) {
 		simpleTimer.stop();
 		started = false;
@@ -82,8 +74,7 @@ void Timer::stop()
 	}
 }
 
-void Timer::setIntervalUs(uint64_t microseconds /* = 1000000*/)
-{
+void Timer::setIntervalUs(uint64_t microseconds /* = 1000000*/) {
 	if(microseconds > MAX_OS_TIMER_INTERVAL_US) {
 		// interval too large, calculate a good divider
 		int div = (microseconds / MAX_OS_TIMER_INTERVAL_US) + 1; // integer division, intended
@@ -107,49 +98,44 @@ void Timer::setIntervalUs(uint64_t microseconds /* = 1000000*/)
 		restart();
 }
 
-void Timer::setIntervalMs(uint32_t milliseconds /* = 1000000*/)
-{
+void Timer::setIntervalMs(uint32_t milliseconds /* = 1000000*/) {
 	setIntervalUs(((uint64_t)milliseconds) * 1000);
 }
 
-void Timer::setCallback(InterruptCallback interrupt)
-{
-	ETS_INTR_LOCK();
+void Timer::setCallback(InterruptCallback interrupt) {
+	//ETS_INTR_LOCK();
 	callback = interrupt;
 	delegateFunc = nullptr;
 	delegateStdFunc = nullptr;
-	ETS_INTR_UNLOCK();
+	//ETS_INTR_UNLOCK();
 
 	if(!interrupt)
 		stop();
 }
 
-void Timer::setCallback(TimerDelegate delegateFunction)
-{
-	ETS_INTR_LOCK();
+void Timer::setCallback(TimerDelegate delegateFunction) {
+	//ETS_INTR_LOCK();
 	callback = nullptr;
 	delegateFunc = delegateFunction;
 	delegateStdFunc = nullptr;
-	ETS_INTR_UNLOCK();
+	//ETS_INTR_UNLOCK();
 
 	if(!delegateFunction)
 		stop();
 }
 
-void Timer::setCallback(const TimerDelegateStdFunction& delegateFunction)
-{
-	ETS_INTR_LOCK();
+void Timer::setCallback(const TimerDelegateStdFunction& delegateFunction) {
+	//ETS_INTR_LOCK();
 	callback = nullptr;
 	delegateFunc = nullptr;
 	delegateStdFunc = delegateFunction;
-	ETS_INTR_UNLOCK();
+	//ETS_INTR_UNLOCK();
 
 	if(!delegateFunction)
 		stop();
 }
 
-void Timer::processing()
-{
+void Timer::processing() {
 	if(longIntervalCounterLimit > 0) {
 		// we need to handle a long interval.
 		longIntervalCounter++;
@@ -169,8 +155,7 @@ void Timer::processing()
 	tick();
 }
 
-void Timer::tick()
-{
+void Timer::tick() {
 	if(callback) {
 		callback();
 	} else if(delegateFunc) {

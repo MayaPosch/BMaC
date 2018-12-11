@@ -148,11 +148,6 @@ size_t HardwareSerial::readBytes(char* buffer, size_t length) {
 // STATION CLASS
 StationClass WifiStation;
 
-void StationClass::enable(bool enable, bool save) {
-	this->enabled = enabled;
-}
-
-
 bool StationClass::config(const String& ssid, const String& password, bool autoConnectOnStartup /* = true*/,
 						  bool save /* = true */) {
 	// Nothing to do.
@@ -221,14 +216,18 @@ AccessPointClass WifiAccessPoint;
 void AccessPointClass::enable(bool enable, bool save) {
 	enabled = enable;
 }
+
+
+// WIFI EVENTS CLASS
+WifiEventsClass WifiEvents;
 	
 	
 // SPI
-void SPI::begin() { }
-void SPI::end() { }
-void SPI::beginTransaction(SPISettings mySettings) { }
-void SPI::endTransaction() { }
-void SPI::transfer(uint8* buffer, size_t numberBytes) {
+void SPIClass::begin() { }
+void SPIClass::end() { }
+void SPIClass::beginTransaction(SPISettings mySettings) { }
+void SPIClass::endTransaction() { }
+void SPIClass::transfer(uint8* buffer, size_t numberBytes) {
 	// Call the remote method.
 	vector<NymphType*> values;
 	values.push_back(new NymphString(WifiStation.getMAC().c_str()));
@@ -249,6 +248,8 @@ void SPI::transfer(uint8* buffer, size_t numberBytes) {
 		return;
 	}
 }
+
+SPIClass SPI;
 
 
 // I2C
@@ -351,3 +352,7 @@ int TwoWire::read() {
 }
 
 TwoWire Wire;
+
+SystemClass System;
+WDTClass WDT;
+

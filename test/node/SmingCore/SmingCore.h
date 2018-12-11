@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <cstdio>
 #include <string>
+#include <iostream>
 #include "wiring/WString.h"
 #include "wiring/WVector.h"
 #include "wiring/WHashMap.h"
@@ -15,16 +16,27 @@
 #include "Delegate.h"
 #include "Network/MqttClient.h"
 #include "Timer.h"
+#include "WConstants.h"
 
 #include <nymph/nymph.h>
 
 using namespace std;
 
 
+// --- Types
+typedef uint8_t uint8;
+typedef uint16_t uint16;
+typedef uint32_t uint32;
+typedef int8_t int8;
+typedef int16_t int16;
+typedef int32_t int32;
+typedef uint32_t u32_t;
+
 
 // --- HardwareSerial.h
 #define UART_ID_0 0 ///< ID of UART 0
 #define UART_ID_1 1 ///< ID of UART 1
+#define SERIAL_BAUD_RATE 115200
 
 typedef Delegate<void(Stream& source, char arrivedChar, uint16_t availableCharsCount)> StreamDataReceivedDelegate;
 
@@ -64,8 +76,20 @@ extern HardwareSerial Serial; // Default UART
 
 
 // --- rboot
+struct rboot_config {
+	uint8 current_rom;
+	uint32 roms[2];
+};
+
 int rboot_get_current_rom() { return 0; }
-void rboot_set_current_rom();
+void rboot_set_current_rom(int slot) { }
+rboot_config rboot_get_config() {
+	rboot_config cfg;
+	cfg.current_rom = 0;
+	cfg.roms[0] = 0x1000;
+	cfg.roms[1] = 0x3000;
+	return cfg;
+}
 
 // TODO: implement when testing OTA updates.
 class rBootHttpUpdate;
@@ -81,7 +105,7 @@ public:
 
 
 // --- SPIFFS
-void spiffs_mount_manual() { }
+void spiffs_mount_manual(u32_t offset, int count) { }
 
 
 // --- Network
@@ -91,9 +115,10 @@ class StationClass {
 	bool enabled;
 	
 public:
-	void enable(bool enable, bool save);
-	bool config(const String& ssid, const String& password, bool autoConnectOnStartup /* = true*/,
-						  bool save /* = true */);
+	void enable(bool enable) { enabled = enable; }
+	void enable(bool enable, bool save) { enabled = enable; }
+	bool config(const String& ssid, const String& password, bool autoConnectOnStartup = true,
+						  bool save = true);
 	bool connect();
 	String getMAC() { return mac; }
 	
@@ -109,6 +134,7 @@ class AccessPointClass {
 	
 public:
 	void enable(bool enable, bool save);
+	void enable(bool enable) { enabled = enable; }
 };
 
 extern AccessPointClass WifiAccessPoint;
@@ -122,8 +148,9 @@ public:
 };
 
 typedef Delegate<void(uint8_t[6], uint8_t)> AccessPointDisconnectDelegate;
+typedef Delegate<void(String, uint8_t, uint8_t[6], uint8_t)> StationDisconnectDelegate;
 typedef Delegate<void(IPAddress, IPAddress, IPAddress)> StationGotIPDelegate;
-class WifiEvents {
+class WifiEventsClass {
 	//
 	
 public:
@@ -133,45 +160,32 @@ public:
 		delegateFunction(ip, ip, ip);
 	}
 	
-	void onStationDisconnect(AccessPointDisconnectDelegate delegateFunction) {
+	void onStationDisconnect(StationDisconnectDelegate delegateFunction) {
 		//
 	}
 };
 
-
-// --- Types
-typedef uint8_t uint8;
-typedef uint16_t uint16;
-typedef uint32_t uint32;
-typedef int8_t int8;
-typedef int16_t int16;
-typedef int32_t int32;
+extern WifiEventsClass WifiEvents;
 
 
-// --- File
-/* typedef enum {
-	eSO_FileStart = SPIFFS_SEEK_SET,  ///< Start of file
-	eSO_CurrentPos = SPIFFS_SEEK_CUR, ///< Current position in file
-	eSO_FileEnd = SPIFFS_SEEK_END	 ///< End of file
-} SeekOriginFlags;
-
-file_t fileOpen(const String& name, FileOpenFlags flags);
-void fileClose(file_t file);
-size_t fileWrite(file_t file, const void* data, size_t size);
-size_t fileRead(file_t file, void* data, size_t size);
-int fileSeek(file_t file, int offset, SeekOriginFlags origin);
-int32_t fileTell(file_t file);
-bool fileExist(const String& name);
-int fileGetContent(const String& fileName, char* buffer, int bufSize); */
+// --- Debug
+void debugf(const char *fmt, ...) { 
+	va_list ap;
+    va_start(ap, fmt);
+    int written = vfprintf(stdout, fmt, ap);
+    va_end(ap);
+}
 
 
 // --- WDT
-class WDT {
+class WDTClass {
 	//
 	
 public:
 	void alive() { }
 };
+
+extern WDTClass WDT;
 
 
 // --- Wire (I2C)
@@ -202,7 +216,7 @@ public:
 	//
 };
 
-class SPI {
+class SPIClass {
 	//
 	
 public:
@@ -212,6 +226,8 @@ public:
 	void endTransaction();
 	void transfer(uint8* buffer, size_t numberBytes);
 };
+
+extern SPIClass SPI;
 
 
 // --- Delay
@@ -232,12 +248,20 @@ uint16_t analogRead(uint16_t pin) { return 1000; }
 
 
 // --- System
-class System {
+String system_get_sdk_version() { return "SIM_0.1"; }
+int system_get_free_heap_size() { return 20000; }
+int system_get_cpu_freq() { return 1200000; }
+int system_get_chip_id() { return 42; }
+int spi_flash_get_id() { return 42; }
+
+class SystemClass {
 	//
 	
 public:
 	void restart() { }
 };
+
+extern SystemClass System;
 
 
 // --- TcpClient ---

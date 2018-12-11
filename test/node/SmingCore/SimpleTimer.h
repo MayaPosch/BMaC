@@ -28,18 +28,12 @@ extern "C" {
 }
 
 #include "Poco/Timer.h"
-#include "Poco/Thread.h"
-#include "Poco/Stopwatch.h"
+//#include "Poco/Thread.h"
 #include <iostream>
 
 
-using Poco::Timer;
-using Poco::TimerCallback;
-using Poco::Thread;
-using Poco::Stopwatch;
-
-
 #define __forceinline
+typedef void (*os_timer_func_t)(void* timer_arg);
 
 /*
  * According to documentation maximum value of interval for ms
@@ -57,12 +51,16 @@ public:
      *  @ingroup timer
      *  @{
      */
-	SimpleTimer() {
-		//TimerCallback<TimerExample> callback(example, &TimerExample::onTimer);
+	SimpleTimer() : timer(0) {
+		cb = new Poco::TimerCallback<SimpleTimer>(*this, &SimpleTimer::onTimer);
 	}
 
 	~SimpleTimer() {
 		stop();
+		delete cb;
+		if (timer) {
+			delete timer;
+		}
 	}
 
 	/** @brief  Initialise millisecond timer
@@ -73,13 +71,13 @@ public:
 	__forceinline void startMs(uint32_t milliseconds, bool repeating = false) {
 		stop();
 		if (repeating) {
-			timer(milliseconds, 0);
+			timer = new Poco::Timer(milliseconds, 0);
 		}
 		else {
-			timer(milliseconds, milliseconds);
+			timer = new Poco::Timer(milliseconds, milliseconds);
 		}
 		
-		timer.start(TimerCallback<SimpleTimer>(example, &SimpleTimer::onTimer));
+		timer->start(*cb);
 		/*if(osTimer.timer_func)
 			ets_timer_arm_new(&osTimer, milliseconds, repeating, true); */
 	}
@@ -92,14 +90,15 @@ public:
 	__forceinline void startUs(uint32_t microseconds, bool repeating = false)
 	{
 		stop();
+		uint32_t milliseconds = microseconds / 1000;
 		if (repeating) {
-			timer(milliseconds, 0);
+			timer = new Poco::Timer(milliseconds, 0);
 		}
 		else {
-			timer(milliseconds, milliseconds);
+			timer = new Poco::Timer(milliseconds, milliseconds);
 		}
 		
-		timer.start(TimerCallback<TimerExample>(example, &TimerExample::onTimer));
+		timer->start(*cb);
 		/*if(osTimer.timer_func)
 			ets_timer_arm_new(&osTimer, microseconds, repeating, false); */
 	}
@@ -109,7 +108,9 @@ public:
      */
 	__forceinline void stop()
 	{
-		timer.stop();
+		timer->stop();
+		delete timer;
+		timer = 0;
 		//ets_timer_disarm(&osTimer);
 	}
 
@@ -120,17 +121,21 @@ public:
 	void setCallback(os_timer_func_t callback, void* arg = nullptr)
 	{
 		stop();
+		userCb = callback;
+		userCbArg = arg;
 		//ets_timer_setfn(&osTimer, callback, arg);
 	}
 
 private:
-	void onTimer(Timer& timer) {
+	void onTimer(Poco::Timer &timer) {
 		// Call callback.
-		cb();
+		userCb(userCbArg);
 	}
 	
-	Timer timer;
-	os_timer_func_t cb;
+	Poco::Timer* timer;
+	Poco::TimerCallback<SimpleTimer>* cb;
+	os_timer_func_t userCb;
+	void* userCbArg;
 	//os_timer_t osTimer;
 };
 

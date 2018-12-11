@@ -51,7 +51,7 @@
 
 #ifdef __cplusplus
 
-#include "WiringFrameworkDependencies.h"
+//#include "WiringFrameworkDependencies.h"
 #include "WVector.h"
 
 // @deprecated Should not be using String in interrupt context
@@ -62,6 +62,8 @@
 #endif
 
 #include <cstdint>
+
+void* memmem(const void* haystack, size_t haystacklen, const void* needle, size_t needlelen);
 
 // When compiling programs with this class, the following gcc parameters
 // dramatically increase performance and memory (RAM) efficiency, typically
@@ -78,21 +80,21 @@ class StringSumHelper;
  * __FlashStringHelper* provides strongly-typed pointer to allow safe implicit
  * operation using String class methods.
  */
-class __FlashStringHelper; // Never actually defined
-typedef const __FlashStringHelper* flash_string_t;
+//class __FlashStringHelper; // Never actually defined
+//typedef const __FlashStringHelper* flash_string_t;
 
 // Cast a PGM_P (flash memory) pointer to a flash string pointer
-#define FPSTR(pstr_pointer) reinterpret_cast<flash_string_t>(pstr_pointer)
+//#define FPSTR(pstr_pointer) reinterpret_cast<flash_string_t>(pstr_pointer)
 
 /*
  * Use this macro to wrap a string literal and access it using a String object.
  * The string data is stored in flash and only read into RAM when executed.
  * For example: Serial.print(F("This is a test string\n"));
  */
-#define F(string_literal) String(FPSTR(PSTR(string_literal)), sizeof(string_literal) - 1)
+//#define F(string_literal) String(FPSTR(PSTR(string_literal)), sizeof(string_literal) - 1)
 
 // Forward declaration for counted flash string - see FlashString.h
-struct FlashString;
+//struct FlashString;
 
 /**
  * @brief The string class
@@ -125,8 +127,8 @@ class String
     STRING_IRAM_ATTR String(const char *cstr = nullptr);
     STRING_IRAM_ATTR String(const char *cstr, unsigned int length);
     STRING_IRAM_ATTR String(const String &str);
-    explicit String(flash_string_t pstr, int length = -1);
-    String(const FlashString& fstr);
+    //explicit String(flash_string_t pstr, int length = -1);
+    //String(const FlashString& fstr);
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
     STRING_IRAM_ATTR String(String && rval);
@@ -143,7 +145,7 @@ class String
     ~String(void);
 
     void setString(const char *cstr, int length = -1);
-    void setString(flash_string_t pstr, int length = -1);
+    //void setString(flash_string_t pstr, int length = -1);
 
     // memory management
     // return true on success, false on failure (in which case, the string
@@ -262,7 +264,7 @@ class String
     int STRING_IRAM_ATTR compareTo(const String &s) const;
     bool STRING_IRAM_ATTR equals(const String &s) const;
     bool STRING_IRAM_ATTR equals(const char *cstr) const;
-    bool equals(const FlashString& fstr) const;
+    //bool equals(const FlashString& fstr) const;
 
     bool STRING_IRAM_ATTR operator == (const String &rhs) const
     {
@@ -272,10 +274,10 @@ class String
     {
       return equals(cstr);
     }
-    bool STRING_IRAM_ATTR operator==(const FlashString& fstr) const
+    /* bool STRING_IRAM_ATTR operator==(const FlashString& fstr) const
     {
       return equals(fstr);
-    }
+    } */
     bool STRING_IRAM_ATTR operator != (const String &rhs) const
     {
       return !equals(rhs);
@@ -290,7 +292,7 @@ class String
     bool operator >= (const String &rhs) const;
     bool equalsIgnoreCase(const char* cstr) const;
     bool equalsIgnoreCase(const String &s2) const;
-    bool equalsIgnoreCase(const FlashString& fstr) const;
+    //bool equalsIgnoreCase(const FlashString& fstr) const;
     bool startsWith(const String &prefix) const;
     bool startsWith(const String &prefix, unsigned int offset) const;
     bool endsWith(const String &suffix) const;
@@ -362,7 +364,7 @@ class String
 
     // copy and move
     String & copy(const char *cstr, unsigned int length);
-    String& copy(flash_string_t pstr, unsigned int length);
+    //String& copy(flash_string_t pstr, unsigned int length);
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
     void move(String &rhs);
 #endif

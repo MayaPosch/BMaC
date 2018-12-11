@@ -25,6 +25,7 @@ uint8 CO2Module::eventCountUp = 0; // Counter until higher event level.
 // --- INITIALIZE ---
 bool CO2Module::initialize() {
 	BaseModule::registerModule(MOD_IDX_CO2, CO2Module::start, CO2Module::shutdown);
+	return true;
 }
 
 

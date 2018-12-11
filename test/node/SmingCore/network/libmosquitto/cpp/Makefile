@@ -1,4 +1,4 @@
-include ../../config.mk
+include ../config.mk
 
 ifneq ($(UNAME),SunOS)
 	LIB_LDFLAGS:=$(LDFLAGS) -Wl,-soname,libmosquittopp.so.${SOVERSION}

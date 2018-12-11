@@ -54,6 +54,10 @@ void MqttClient::setCallback(MqttStringSubscriptionCallback callback) {
 	this->callback = callback;
 }
 
+void MqttClient::setCompleteDelegate(TcpClientCompleteDelegate completeCb) {
+	completed = completeCb;
+}
+
 void MqttClient::setKeepAlive(int seconds) {
 	keepAlive = seconds;
 }

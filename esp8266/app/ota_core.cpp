@@ -16,7 +16,7 @@
 */
 
 
-#include <ota_core.h>
+#include "ota_core.h"
 
 #include "base_module.h"
 
@@ -547,7 +547,7 @@ bool OtaCore::mapGpioToBit(int pin, ESP8266_pins &addr) {
 
 // --- LOG ---
 void OtaCore::log(int level, String msg) {
-	String out(lvl);
+	String out(level);
 	out += " - " + msg;
 	
 	Serial1.println(out);
@@ -581,6 +581,8 @@ bool OtaCore::starti2c() {
 	// Next start the i2c bus.
 	Wire.begin();
 	i2c_active = true;
+	
+	return true;
 }
 
 
@@ -598,6 +600,8 @@ bool OtaCore::startSPI() {
 	// Start the SPI bus.
 	SPI.begin();
 	spi_active = true;
+	
+	return true;
 }
 
 

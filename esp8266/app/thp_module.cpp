@@ -23,6 +23,7 @@
 // --- THP INIT ---
 bool THPModule::initialize() {
 	BaseModule::registerModule(MOD_IDX_TEMPERATURE_HUMIDITY, THPModule::start, THPModule::shutdown);
+	return true;
 }
 
 

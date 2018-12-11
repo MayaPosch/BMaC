@@ -16,7 +16,8 @@
 ||
 */
 
-#include "WiringFrameworkIncludes.h"
+#include "WString.h"
+#include "stringconversion.h"
 
 const String String::nullstr = nullptr;
 const String String::empty = "";
@@ -40,15 +41,15 @@ String::String(const String &value)
   *this = value;
 }
 
-String::String(flash_string_t pstr, int length)
+/* String::String(flash_string_t pstr, int length)
 {
   setString(pstr, length);
-}
+} */
 
-String::String(const FlashString& fstr)
+/* String::String(const FlashString& fstr)
 {
   setString(fstr.data(), fstr.length());
-}
+} */
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
 String::String(String &&rval)
@@ -129,15 +130,17 @@ void String::setString(const char *cstr, int length /* = -1 */)
 	}
 }
 
-void String::setString(flash_string_t pstr, int length /* = -1 */)
-{
+
+
+/*void String::setString(flash_string_t pstr, int length /* = -1 *///)
+/* {
 	if(pstr)
 	{
 		if(length < 0)
 			length = strlen_P((PGM_P)pstr);
 		copy(pstr, length);
 	}
-}
+} */
 /*********************************************/
 /*  Memory Management                        */
 /*********************************************/
@@ -201,7 +204,7 @@ String & String::copy(const char *cstr, unsigned int length)
   return *this;
 }
 
-String &String::copy(flash_string_t pstr, unsigned int length)
+/* String &String::copy(flash_string_t pstr, unsigned int length)
 {
 	// If necessary, allocate additional space so copy can be aligned
 	unsigned int length_aligned = ALIGNUP(length);
@@ -216,7 +219,7 @@ String &String::copy(flash_string_t pstr, unsigned int length)
 		len = length;
 	}
 	return *this;
-}
+} */
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
 void String::move(String &rhs)
@@ -452,12 +455,12 @@ bool String::equals(const char *cstr) const
   return memcmp(buffer, cstr, len) == 0;
 }
 
-bool String::equals(const FlashString& fstr) const
+/* bool String::equals(const FlashString& fstr) const
 {
 	if (len != fstr.length()) return false;
 	LOAD_FSTR(buf, fstr);
 	return memcmp(buf, buffer, len) == 0;
-}
+} */
 
 bool String::operator<(const String &rhs) const
 {
@@ -492,12 +495,12 @@ bool String::equalsIgnoreCase(const String &s2) const
   return equalsIgnoreCase(s2.buffer);
 }
 
-bool String::equalsIgnoreCase(const FlashString& fstr) const
+/* bool String::equalsIgnoreCase(const FlashString& fstr) const
 {
   if (len != fstr.length()) return false;
   LOAD_FSTR(buf, fstr);
   return strcasecmp(buf, buffer) == 0;
-}
+} */
 
 bool String::startsWith(const String &prefix) const
 {
@@ -781,4 +784,9 @@ float String::toFloat(void) const
 {
   p.print(buffer);
 }*/
+
+
+void* memmem(const void* haystack, size_t haystacklen, const void* needle, size_t needlelen) {
+	//
+}
 
