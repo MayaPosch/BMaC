@@ -25,7 +25,6 @@
 #define STREAM_H
 
 #include "Print.h"
-#include "WiringFrameworkDependencies.h"
 
 class Stream : public Print
 {

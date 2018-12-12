@@ -22,29 +22,30 @@ INCLUDE = -I $(ROOT)/ \
 			-I $(ROOT)/SmingCore/network/Http \
 			-I $(ROOT)/SmingCore/network/Http/Websocket \
 			-I $(ROOT)/SmingCore/network/libmosquitto \
-			-I $(ROOT)/SmingCore/network/libmosquitto\cpp \
+			-I $(ROOT)/SmingCore/network/libmosquitto/cpp \
 			-I $(ROOT)/SmingCore/wiring \
 			-I $(ROOT)/esp8266/app
 #-DPOCO_WIN32_UTF8
 FLAGS := $(INCLUDE) -g3 -U__STRICT_ANSI__
-LIB := -lmosquittopp -lmosquitto  -lnymphrpc -lPocoNet -lPocoUtil -lPocoFoundation -lPocoJSON
-# -l$(OUTPUT) -Llib 
+LIB := -L$(ROOT)/lib -l$(OUTPUT) -lmosquittopp -lmosquitto  -lnymphrpc \
+		-lPocoNet -lPocoUtil -lPocoFoundation -lPocoJSON -lstdc++fs \
+		-lcrypto -lssl
+LIB_WIN :=  -lws2_32
 
 include ./esp8266/version
 include ./Makefile-user.mk
 
-CPPFLAGS := $(FLAGS) -DVERSION="\"$(VERSION)\"" $(USER_CFLAGS) -std=c++17 
+CPPFLAGS := $(FLAGS) -DVERSION="\"$(VERSION)\"" $(USER_CFLAGS) -std=c++17 -Wl,--gc-sections
 CFLAGS := -g3 
 CPP_SOURCES := $(wildcard $(ROOT)/SmingCore/*.cpp) \
-			#$(wildcard $(ROOT)/SmingCore/network/*.cpp) \
-			#$(wildcard $(ROOT)/SmingCore/network/Http/*.cpp) \
-			#$(wildcard $(ROOT)/SmingCore/wiring/*.cpp)
+			$(wildcard $(ROOT)/SmingCore/network/*.cpp) \
+			$(wildcard $(ROOT)/SmingCore/network/Http/*.cpp) \
+			$(wildcard $(ROOT)/SmingCore/wiring/*.cpp)
 FW_SOURCES := $(wildcard esp8266/app/*.cpp)
 CPP_OBJECTS := $(addprefix $(ROOT)/obj/,$(notdir) $(CPP_SOURCES:.cpp=.o))
 FW_OBJECTS := $(addprefix $(ROOT)/obj/,$(notdir) $(FW_SOURCES:.cpp=.o))
 
-all: makedir $(FW_OBJECTS) $(CPP_OBJECTS) $(ROOT)/bin/$(OUTPUT)
-# $(ROOT)/lib/$(OUTLIB) $(FW_OBJECTS)
+all: makedir $(FW_OBJECTS) $(CPP_OBJECTS) $(ROOT)/lib/$(OUTLIB) $(ROOT)/bin/$(OUTPUT)
 	
 $(ROOT)/obj/%.o: %.cpp
 	$(GPP) -c -o $@ $< $(CPPFLAGS)
@@ -58,7 +59,7 @@ $(ROOT)/lib/$(OUTLIB): $(CPP_OBJECTS)
 	
 $(ROOT)/bin/$(OUTPUT):
 	-rm -f $@
-	$(GPP) -o $@ $(CPPFLAGS) $(LIB)  $(CPP_OBJECTS) $(FW_OBJECTS)
+	$(GPP) -o $@ $(CPPFLAGS) $(FW_SOURCES) $(LIB)
 	
 makedir:
 	$(MAKEDIR) $(ROOT)/bin
@@ -66,7 +67,7 @@ makedir:
 	$(MAKEDIR) $(ROOT)/obj
 	$(MAKEDIR) $(ROOT)/obj/$(ROOT)/SmingCore/network
 	$(MAKEDIR) $(ROOT)/obj/$(ROOT)/SmingCore/wiring
-	$(MAKEDIR) $(ROOT)/obj/$(ROOT)/esp8266/app
+	$(MAKEDIR) $(ROOT)/obj/esp8266/app
 
 clean:
 	$(RM) $(CPP_OBJECTS) $(FW_OBJECTS)

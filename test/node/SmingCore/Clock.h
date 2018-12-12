@@ -13,7 +13,6 @@
 #ifndef _SMING_CORE_CLOCK_H_
 #define _SMING_CORE_CLOCK_H_
 
-//#include "WiringFrameworkDependencies.h"
 #include <cstdint>
 
 #ifdef __cplusplus

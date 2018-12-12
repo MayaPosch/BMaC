@@ -17,8 +17,6 @@
 
 #include <cstdint>
 
-#define __forceinline
-
 /** @brief  IDelegateCaller class
  *  @todo   Provide more informative brief description of IDelegateCaller
  */

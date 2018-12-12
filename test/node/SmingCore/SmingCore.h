@@ -11,12 +11,12 @@
 #include "wiring/WVector.h"
 #include "wiring/WHashMap.h"
 #include "FileSystem.h"
-//#include "WiringFrameworkDependencies.h"
 #include "wiring/Stream.h"
 #include "Delegate.h"
 #include "Network/MqttClient.h"
 #include "Timer.h"
 #include "WConstants.h"
+#include "Clock.h"
 
 #include <nymph/nymph.h>
 
@@ -214,8 +214,8 @@ extern SPIClass SPI;
 
 // --- Delay
 // TODO: implement once timing becomes an issue in the simulation.
-void delayMicroseconds(uint32_t time);
-void delay(uint32_t time);
+//void delayMicroseconds(uint32_t time);
+//void delay(uint32_t time);
 
 
 // --- GPIO

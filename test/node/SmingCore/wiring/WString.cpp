@@ -18,6 +18,7 @@
 
 #include "WString.h"
 #include "stringconversion.h"
+#include <cctype>
 
 const String String::nullstr = nullptr;
 const String String::empty = "";
@@ -71,7 +72,7 @@ String::String(char c)
 String::String(unsigned char value, unsigned char base)
 {
   char buf[8 + 8 * sizeof(value)];
-  ultoa(value, buf, base);
+  ultoa_w(value, buf, base, 0);
   *this = buf;
 }
 
@@ -85,7 +86,7 @@ String::String(int value, unsigned char base)
 String::String(unsigned int value, unsigned char base)
 {
   char buf[8 + 8 * sizeof(value)];
-  ultoa(value, buf, base);
+  ultoa_w(value, buf, base, 0);
   *this = buf;
 }
 
@@ -99,7 +100,7 @@ String::String(long value, unsigned char base)
 String::String(unsigned long value, unsigned char base)
 {
   char buf[8 + 8 * sizeof(value)];
-  ultoa(value, buf, base);
+  ultoa_w(value, buf, base, 0);
   *this = buf;
 }
 
@@ -319,7 +320,7 @@ bool String::concat(int num)
 bool String::concat(unsigned int num)
 {
   char buf[8 + 3 * sizeof(num)];
-  ultoa(num, buf, 10);
+  ultoa_w(num, buf, 10, 0);
   return concat(buf, strlen(buf));
 }
 
@@ -333,7 +334,7 @@ bool String::concat(long num)
 bool String::concat(unsigned long num)
 {
   char buf[8 + 3 * sizeof(num)];
-  ultoa(num, buf, 10);
+  ultoa_w(num, buf, 10, 0);
   return concat(buf, strlen(buf));
 }
 
@@ -817,4 +818,3 @@ void* memmem(const void* haystack, size_t haystacklen, const void* needle, size_
 
 	return 0;
 }
-

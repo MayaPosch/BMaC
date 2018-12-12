@@ -19,8 +19,8 @@
 #define WVECTOR_H
 
 #include "Countable.h"
-#include "WiringFrameworkDependencies.h"
-#include <stdlib.h>
+#include <cstdlib>
+#include <cstring>
 
 template <typename Element>
 class Vector : public Countable<Element>

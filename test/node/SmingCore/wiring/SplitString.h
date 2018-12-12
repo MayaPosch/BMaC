@@ -14,7 +14,6 @@
 
 #include "WVector.h"
 #include "WString.h"
-#include "WiringFrameworkDependencies.h"
 
 /** @brief split a delimited string list of integers into an array
  *  @param what

@@ -17,8 +17,6 @@
 #ifndef COUNTABLE_H
 #define COUNTABLE_H
 
-#include "WiringFrameworkDependencies.h"
-
 template<typename T>
 class Countable
 {

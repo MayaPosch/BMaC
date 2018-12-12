@@ -13,12 +13,13 @@ extern "C" {
 #endif
 
 #include <cstdint>
+//#include <cstdlib>
 
 int atoi(const char *nptr); // Already implemented
 
 extern char* ltoa_wp(long val, char* buffer, int base, int width, char pad);
 extern char* ltoa_w (long, char*, int, int width);
-//extern char* ltoa (long, char*, int);
+extern char* ltoa (long, char*, int);
 
 extern char* ultoa_wp(unsigned long val, char* buffer, unsigned int base, int width, char pad);
 extern char* ultoa_w(unsigned long val, char* buffer, unsigned int base, int width);

@@ -8,6 +8,7 @@
 #include "MqttClient.h"
 #include "../Clock.h"
 #include <algorithm>
+#include <cstring>
 
 MqttClient::MqttClient(bool autoDestruct /* = false*/) //: TcpClient(autoDestruct)
 {

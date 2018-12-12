@@ -32,7 +32,7 @@ extern "C" {
 #include <iostream>
 
 
-#define __forceinline
+//#define __forceinline
 typedef void (*os_timer_func_t)(void* timer_arg);
 
 /*

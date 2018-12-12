@@ -16,7 +16,6 @@
 
 #define MQTT_MAX_BUFFER_SIZE 1024
 
-//#include "TcpClient.h"
 class TcpClient;
 #include "../Delegate.h"
 #include "../../Wiring/WString.h"

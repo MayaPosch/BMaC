@@ -1,7 +1,7 @@
 #include <user_config.h>
 #include "stringconversion.h"
 #include <cmath>
-#include <cstdlib>
+//#include <cstdlib>
 #include <cstring>
 //#include "stringutil.h"
 
@@ -33,10 +33,10 @@ static inline signed char unhex(char c)
 
 //Since C does not support default func parameters, keep this function as used by framework
 //and create extended _w funct to handle width
-/* char* ltoa(long val, char* buffer, int base)
+char* ltoa(long val, char* buffer, int base)
 {
 	return ltoa_w(val, buffer, base, 0);
-} */
+}
 
 char* ltoa_w(long val, char* buffer, int base, int width)
 {
@@ -73,10 +73,10 @@ char* ltoa_wp(long val, char* buffer, int base, int width, char pad)
 
 //Since C does not support default func parameters, keep this function as used by framework
 //and create extended _w funct to handle width
-char* ultoa(unsigned long val, char* buffer, unsigned int base)
+/* char* ultoa(unsigned long val, char* buffer, unsigned int base)
 {
 	return ultoa_w(val, buffer, base, 0);
-}
+} */
 
 char* ultoa_w(unsigned long val, char* buffer, unsigned int base, int width)
 {

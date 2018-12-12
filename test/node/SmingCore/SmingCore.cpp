@@ -29,6 +29,7 @@ void debugf(const char *fmt, ...) {
 // Static initialisation.
 StreamDataReceivedDelegate HardwareSerial::HWSDelegate = nullptr;
 std::string HardwareSerial::rxBuffer;
+HardwareSerial Serial(0);
 
 SerialStream::SerialStream() { }
 size_t SerialStream::write(uint8_t) { return 1; }
@@ -340,6 +341,8 @@ size_t TwoWire::write(uint8_t data) {
 		NymphRemoteServer::shutdown();
 		return 0;
 	}
+	
+	return 1;
 }
 
 
@@ -364,10 +367,12 @@ size_t TwoWire::write(int data) {
 		NymphRemoteServer::shutdown();
 		return 0;
 	}
+	
+	return 1;
 }
 
 
-size_t TwoWire::endTransmission() { }
+size_t TwoWire::endTransmission() { return 0; }
 size_t TwoWire::requestFrom(int address, int length) {
 	// First write the address.
 	write(address);
@@ -428,8 +433,8 @@ void SystemClass::restart() { }
 SystemClass System;
 
 // DELAY
-void delayMicroseconds(uint32_t time) { }
-void delay(uint32_t time) { }
+//void delayMicroseconds(uint32_t time) { }
+//void delay(uint32_t time) { }
 
 
 // --- GPIO

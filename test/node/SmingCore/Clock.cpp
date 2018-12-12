@@ -6,25 +6,23 @@
  ****/
 
 #include "Clock.h"
-//#include "WiringFrameworkIncludes.h"
+#include <chrono>
 
 #define MAX_SAFE_DELAY 1000
 
-// TODO: implement.
-unsigned long millis(void)
-{
-	return 1;
-	//return system_get_time() / 1000UL;
+unsigned long millis() {
+	unsigned long now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+	return now;
 }
 
 // TODO: implement.
-unsigned long micros(void)
-{
-	//return system_get_time();
+unsigned long micros() {
+	unsigned long now = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+	return now;
 }
 
-void delay(uint32_t milliseconds)
-{
+// TODO: implement when required.
+void delay(uint32_t milliseconds) {
 	/* unsigned quotient = milliseconds / MAX_SAFE_DELAY;
 	unsigned remainder = milliseconds % MAX_SAFE_DELAY;
 	for(unsigned i = 0; i <= quotient; i++) {
@@ -38,7 +36,7 @@ void delay(uint32_t milliseconds)
 	} */
 }
 
-void delayMicroseconds(uint32_t time)
-{
+// TODO: implement when required.
+void delayMicroseconds(uint32_t time) {
 	//os_delay_us(time);
 }
