@@ -19,6 +19,9 @@
 #include "Print.h"
 #include "WString.h"
 
+#include <cstdarg>
+#include <cstdio>
+
 /*
 || @description
 || | Virtual method - may be redefined in derived class (polymorphic)
@@ -207,7 +210,7 @@ size_t Print::printf(const char *fmt, ...)
 		char tempBuff[buffSize];
 		va_list va;
 		va_start(va, fmt);
-		sz = m_vsnprintf(tempBuff,buffSize, fmt, va);
+		sz = snprintf(tempBuff,buffSize, fmt, va);
 		va_end(va);
 		if (sz > (buffSize -1))
 		{

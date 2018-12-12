@@ -36,6 +36,8 @@
 #ifndef PRINTABLE_H
 #define PRINTABLE_H
 
+#include <cstddef>
+
 class Print;
 class Printable
 {

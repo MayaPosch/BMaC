@@ -787,6 +787,34 @@ float String::toFloat(void) const
 
 
 void* memmem(const void* haystack, size_t haystacklen, const void* needle, size_t needlelen) {
-	//
+	char *cur, *last;
+	const char *cl = (const char*) haystack;
+	const char *cs = (const char*) needle;
+
+	// we need something to compare
+	if (haystacklen == 0 || needlelen == 0) {
+		return 0;
+	}
+
+	// "needle" must be smaller or equal to "haystack"
+	if (haystacklen < needlelen) {
+		return 0;
+	}
+
+	// special case where needlelen == 1
+	if (needlelen == 1) {
+		return memchr(haystack, (int) *cs, haystacklen);
+	}
+
+	// the last position where its possible to find "needle" in "haystack"
+	last = (char*) cl + haystacklen - needlelen;
+
+	for (cur = (char*) cl; cur <= last; cur++) {
+		if (cur[0] == cs[0] && memcmp(cur, cs, needlelen) == 0) {
+			return cur;
+		}
+	}
+
+	return 0;
 }
 

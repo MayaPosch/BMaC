@@ -21,8 +21,11 @@
 
 #ifdef __cplusplus
 
-#include "WiringFrameworkDependencies.h"
+//#include "WiringFrameworkDependencies.h"
 #include "Printable.h"
+
+#include <cstdint>
+#include <cstring>
 
 #define INITIAL_PRINTF_BUFFSIZE 128
 

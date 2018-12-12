@@ -16,10 +16,26 @@ void logFunction(int level, string logStr) {
 }
 
 
+// --- Debug
+void debugf(const char *fmt, ...) { 
+	va_list ap;
+    va_start(ap, fmt);
+    int written = vfprintf(stdout, fmt, ap);
+    va_end(ap);
+}
+
+
 // HARDWARE SERIAL
 // Static initialisation.
 StreamDataReceivedDelegate HardwareSerial::HWSDelegate = nullptr;
 std::string HardwareSerial::rxBuffer;
+
+SerialStream::SerialStream() { }
+size_t SerialStream::write(uint8_t) { return 1; }
+int SerialStream::available() { return 0; }
+int SerialStream::read() { return 0; }
+void SerialStream::flush() { }
+int SerialStream::peek() { return 0; }
 
 HardwareSerial::HardwareSerial(const int uartPort) { 
 	uart = uartPort; 
@@ -145,8 +161,33 @@ size_t HardwareSerial::readBytes(char* buffer, size_t length) {
 }
 
 
+// RBOOT
+int rboot_get_current_rom() { return 0; }
+void rboot_set_current_rom(int slot) { }
+rboot_config rboot_get_config() {
+	rboot_config cfg;
+	cfg.current_rom = 0;
+	cfg.roms[0] = 0x1000;
+	cfg.roms[1] = 0x3000;
+	return cfg;
+}
+
+// TODO: implement when testing OTA updates.
+void rBootHttpUpdate::addItem(int offset, String firmwareFileUrl) { }
+void rBootHttpUpdate::setCallback(OtaUpdateDelegate reqUpdateDelegate) { }
+void rBootHttpUpdate::start() { }
+
+
+// --- SPIFFS
+void spiffs_mount_manual(u32_t offset, int count) { }
+
+
 // STATION CLASS
 StationClass WifiStation;
+
+void StationClass::enable(bool enable) { enabled = enable; }
+void StationClass::enable(bool enable, bool save) { enabled = enable; }
+String StationClass::getMAC() { return mac; }
 
 bool StationClass::config(const String& ssid, const String& password, bool autoConnectOnStartup /* = true*/,
 						  bool save /* = true */) {
@@ -217,9 +258,31 @@ void AccessPointClass::enable(bool enable, bool save) {
 	enabled = enable;
 }
 
+void AccessPointClass::enable(bool enable) {
+	enabled = enable;
+}
+
 
 // WIFI EVENTS CLASS
 WifiEventsClass WifiEvents;
+
+String IPAddress::toString() { return "192.168.0.32"; }
+
+void WifiEventsClass::onStationGotIP(StationGotIPDelegate delegateFunction) {
+	// Immediately call the callback.
+	IPAddress ip;
+	delegateFunction(ip, ip, ip);
+}
+
+void WifiEventsClass::onStationDisconnect(StationDisconnectDelegate delegateFunction) {
+	//
+}
+
+
+// WDT
+WDTClass WDT;
+
+void WDTClass::alive() { }
 	
 	
 // SPI
@@ -353,6 +416,37 @@ int TwoWire::read() {
 
 TwoWire Wire;
 
-SystemClass System;
-WDTClass WDT;
+// --- System
+String system_get_sdk_version() { return "SIM_0.1"; }
+int system_get_free_heap_size() { return 20000; }
+int system_get_cpu_freq() { return 1200000; }
+int system_get_chip_id() { return 42; }
+int spi_flash_get_id() { return 42; }
 
+void SystemClass::restart() { }
+
+SystemClass System;
+
+// DELAY
+void delayMicroseconds(uint32_t time) { }
+void delay(uint32_t time) { }
+
+
+// --- GPIO
+// TODO
+void pinMode(uint16_t pin, uint8_t mode) { }
+void digitalWrite(uint16_t pin, uint8_t val) { }
+uint8_t digitalRead(uint16_t pin) { return 1; }
+
+
+// --- ADC
+uint16_t analogRead(uint16_t pin) { return 1000; }
+
+
+// MAIN
+int main() {
+	// Start the firmware image.
+	init();
+	
+	return 0;
+}

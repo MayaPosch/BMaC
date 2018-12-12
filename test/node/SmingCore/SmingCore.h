@@ -44,12 +44,12 @@ class SerialStream : public Stream {
 	//
 	
 public:
-	SerialStream() { }
-	size_t write(uint8_t) { return 1; }
-	int available() { return 0; }
-	int read() { return 0; }
-	void flush() { }
-	int peek() { return 0; }
+	SerialStream();
+	size_t write(uint8_t);
+	int available();
+	int read();
+	void flush();
+	int peek();
 };
 
 class HardwareSerial {
@@ -81,15 +81,9 @@ struct rboot_config {
 	uint32 roms[2];
 };
 
-int rboot_get_current_rom() { return 0; }
-void rboot_set_current_rom(int slot) { }
-rboot_config rboot_get_config() {
-	rboot_config cfg;
-	cfg.current_rom = 0;
-	cfg.roms[0] = 0x1000;
-	cfg.roms[1] = 0x3000;
-	return cfg;
-}
+int rboot_get_current_rom();
+void rboot_set_current_rom(int slot);
+rboot_config rboot_get_config();
 
 // TODO: implement when testing OTA updates.
 class rBootHttpUpdate;
@@ -98,14 +92,14 @@ class rBootHttpUpdate {
 	//
 
 public:
-	void addItem(int offset, String firmwareFileUrl) { }
-	void setCallback(OtaUpdateDelegate reqUpdateDelegate) { }
-	void start() { }
+	void addItem(int offset, String firmwareFileUrl);
+	void setCallback(OtaUpdateDelegate reqUpdateDelegate);
+	void start();
 };
 
 
 // --- SPIFFS
-void spiffs_mount_manual(u32_t offset, int count) { }
+void spiffs_mount_manual(u32_t offset, int count);
 
 
 // --- Network
@@ -115,12 +109,12 @@ class StationClass {
 	bool enabled;
 	
 public:
-	void enable(bool enable) { enabled = enable; }
-	void enable(bool enable, bool save) { enabled = enable; }
+	void enable(bool enable);
+	void enable(bool enable, bool save);
 	bool config(const String& ssid, const String& password, bool autoConnectOnStartup = true,
 						  bool save = true);
 	bool connect();
-	String getMAC() { return mac; }
+	String getMAC();
 	
 	static int handle;
 };
@@ -134,7 +128,7 @@ class AccessPointClass {
 	
 public:
 	void enable(bool enable, bool save);
-	void enable(bool enable) { enabled = enable; }
+	void enable(bool enable);
 };
 
 extern AccessPointClass WifiAccessPoint;
@@ -144,7 +138,7 @@ extern AccessPointClass WifiAccessPoint;
 class IPAddress {
 	//
 public:
-	String toString() { return "192.168.0.32"; }
+	String toString();
 };
 
 typedef Delegate<void(uint8_t[6], uint8_t)> AccessPointDisconnectDelegate;
@@ -154,27 +148,15 @@ class WifiEventsClass {
 	//
 	
 public:
-	void onStationGotIP(StationGotIPDelegate delegateFunction) {
-		// Immediately call the callback.
-		IPAddress ip;
-		delegateFunction(ip, ip, ip);
-	}
-	
-	void onStationDisconnect(StationDisconnectDelegate delegateFunction) {
-		//
-	}
+	void onStationGotIP(StationGotIPDelegate delegateFunction);	
+	void onStationDisconnect(StationDisconnectDelegate delegateFunction);
 };
 
 extern WifiEventsClass WifiEvents;
 
 
 // --- Debug
-void debugf(const char *fmt, ...) { 
-	va_list ap;
-    va_start(ap, fmt);
-    int written = vfprintf(stdout, fmt, ap);
-    va_end(ap);
-}
+void debugf(const char *fmt, ...);
 
 
 // --- WDT
@@ -182,7 +164,7 @@ class WDTClass {
 	//
 	
 public:
-	void alive() { }
+	void alive();
 };
 
 extern WDTClass WDT;
@@ -232,33 +214,32 @@ extern SPIClass SPI;
 
 // --- Delay
 // TODO: implement once timing becomes an issue in the simulation.
-void delayMicroseconds(uint32_t time) { }
-void delay(uint32_t time) { }
+void delayMicroseconds(uint32_t time);
+void delay(uint32_t time);
 
 
 // --- GPIO
-// TODO
-void pinMode(uint16_t pin, uint8_t mode) { }
-void digitalWrite(uint16_t pin, uint8_t val) { }
-uint8_t digitalRead(uint16_t pin) { return 1; }
+void pinMode(uint16_t pin, uint8_t mode);
+void digitalWrite(uint16_t pin, uint8_t val);
+uint8_t digitalRead(uint16_t pin);
 
 
 // --- ADC
-uint16_t analogRead(uint16_t pin) { return 1000; }
+uint16_t analogRead(uint16_t pin);
 
 
 // --- System
-String system_get_sdk_version() { return "SIM_0.1"; }
-int system_get_free_heap_size() { return 20000; }
-int system_get_cpu_freq() { return 1200000; }
-int system_get_chip_id() { return 42; }
-int spi_flash_get_id() { return 42; }
+String system_get_sdk_version();
+int system_get_free_heap_size();
+int system_get_cpu_freq();
+int system_get_chip_id();
+int spi_flash_get_id();
 
 class SystemClass {
 	//
 	
 public:
-	void restart() { }
+	void restart();
 };
 
 extern SystemClass System;
@@ -271,5 +252,8 @@ class TcpClient {
 public:
 	//
 };
+
+
+extern void init();
 
 #endif

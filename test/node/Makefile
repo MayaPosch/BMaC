@@ -13,6 +13,7 @@ RM = rm
 AR = ar
 
 OUTPUT = bmac_esp8266
+OUTLIB = lib$(OUTPUT).a
 INCLUDE = -I $(TOP)/ \
 			-I $(TOP)/SmingCore/ \
 			-I $(TOP)/SmingCore/network \
@@ -23,26 +24,24 @@ INCLUDE = -I $(TOP)/ \
 			-I $(TOP)/SmingCore/wiring \
 			-I $(TOP)/esp8266/app
 #-DPOCO_WIN32_UTF8
-FLAGS := $(INCLUDE) -g3 -std=c++17 -U__STRICT_ANSI__
-LIB := -lnymphrpc -lPocoNet -lPocoUtil -lPocoFoundation -lPocoJSON -lmosquitto -lmosquittopp
+FLAGS := $(INCLUDE) -g3 -U__STRICT_ANSI__
+LIB := -Llib -lnymphrpc -lPocoNet -lPocoUtil -lPocoFoundation -lPocoJSON -lmosquitto -lmosquittopp 
+# -l$(OUTPUT)
 
 include ./../../esp8266/version
 include ./Makefile-user.mk
 
-CPPFLAGS := $(FLAGS) -DVERSION="\"$(VERSION)\"" $(USER_CFLAGS)
+CPPFLAGS := $(FLAGS) -DVERSION="\"$(VERSION)\"" $(USER_CFLAGS) -std=c++17 
 CFLAGS := -g3 
 CPP_SOURCES := $(wildcard SmingCore/*.cpp) \
 			$(wildcard SmingCore/network/*.cpp) \
 			$(wildcard SmingCore/network/Http/*.cpp) \
 			$(wildcard SmingCore/wiring/*.cpp)
-			#$(wildcard SmingCore/network/Http/Websocket/*.cpp) \
-			#$(wildcard SmingCore/network/libmosquitto/cpp/*.cpp) \
-#C_SOURCES := $(wildcard SmingCore/network/libmosquitto/*.c)
-FW_SOURCES := $(wildcard ../../esp8266/app/*.cpp)
+FW_SOURCES := $(wildcard $(TOP)/esp8266/app/*.cpp)
 CPP_OBJECTS := $(addprefix obj/,$(notdir) $(CPP_SOURCES:.cpp=.o))
-C_OBJECTS := $(addprefix obj/,$(notdir) $(C_SOURCES:.c=.o))
+FW_OBJECTS := $(addprefix obj/,$(notdir) $(FW_SOURCES:.cpp=.o))
 
-all: makedir $(C_OBJECTS) $(CPP_OBJECTS) bin/$(OUTPUT)
+all: makedir $(CPP_OBJECTS) lib/$(OUTLIB) $(FW_OBJECTS) bin/$(OUTPUT)
 	
 obj/%.o: %.cpp
 	$(GPP) -c -o $@ $< $(CPPFLAGS)
@@ -50,17 +49,21 @@ obj/%.o: %.cpp
 obj/%.o: %.c
 	$(GCC) -c -o $@ $< $(CFLAGS)
 	
+lib/$(OUTLIB): $(CPP_OBJECTS)
+	-rm -f $@
+	$(AR) rcs $@ $^
+	
 bin/$(OUTPUT):
 	-rm -f $@
-	$(GPP) -o $@ $(CPPFLAGS) $(FW_SOURCES) $(C_OBJECTS) $(CPP_OBJECTS) $(LIB)
+	$(GPP) -o $@ $(CPPFLAGS) $(LIB) $(FW_SOURCES) $(CPP_SOURCES)
 	
 makedir:
 	$(MAKEDIR) bin
+	$(MAKEDIR) lib
 	$(MAKEDIR) obj
 	$(MAKEDIR) obj/SmingCore/network
-	#/Http/Websocket
-	#$(MAKEDIR) obj/SmingCore/network/libmosquitto/cpp
 	$(MAKEDIR) obj/SmingCore/wiring
+	$(MAKEDIR) obj/esp8266/app
 
 clean:
 	$(RM) $(C_OBJECTS) $(CPP_OBJECTS)
