@@ -29,8 +29,11 @@ INCLUDE = -I $(ROOT)/ \
 FLAGS := $(INCLUDE) -g3 -U__STRICT_ANSI__
 LIB := -L$(ROOT)/lib -l$(OUTPUT) -lmosquittopp -lmosquitto  -lnymphrpc \
 		-lPocoNet -lPocoUtil -lPocoFoundation -lPocoJSON -lstdc++fs \
-		-lcrypto -lssl
+		-lssl -lcrypto
 LIB_WIN :=  -lws2_32
+ifeq ($(OS),Windows_NT)
+	LIB := $(LIB) $(LIB_WIN)
+endif
 
 include ./esp8266/version
 include ./Makefile-user.mk
