@@ -70,6 +70,16 @@ void HardwareSerial::println(String str) {
 }
 
 
+void HardwareSerial::println(const char* str) {
+	std::cout << str << std::endl;
+}
+
+
+void HardwareSerial::println(int16_t ch) {
+	std::cout << std::hex << ch << std::endl;
+}
+
+
 void HardwareSerial::setCallback(StreamDataReceivedDelegate dataReceivedDelegate) {
 	HWSDelegate = dataReceivedDelegate;
 	

@@ -11,6 +11,7 @@
 #include "wiring/WVector.h"
 #include "wiring/WHashMap.h"
 #include "FileSystem.h"
+//#include "WiringFrameworkDependencies.h"
 #include "wiring/Stream.h"
 #include "Delegate.h"
 #include "Network/MqttClient.h"
@@ -66,6 +67,8 @@ public:
 	size_t printf(const char *fmt, ...);
 	void print(String str);
 	void println(String str);
+	void println(const char* str);
+	void println(int16_t ch);
 	void setCallback(StreamDataReceivedDelegate dataReceivedDelegate);
 	static void dataReceivedCallback(NymphMessage* msg, void* data);
 	size_t write(const uint8_t* buffer, size_t size);

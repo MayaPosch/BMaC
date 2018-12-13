@@ -24,6 +24,7 @@ INCLUDE = -I $(ROOT)/ \
 			-I $(ROOT)/SmingCore/network/libmosquitto \
 			-I $(ROOT)/SmingCore/network/libmosquitto/cpp \
 			-I $(ROOT)/SmingCore/wiring \
+			-I $(ROOT)/Libraries/BME280 \
 			-I $(ROOT)/esp8266/app
 #-DPOCO_WIN32_UTF8
 FLAGS := $(INCLUDE) -g3 -U__STRICT_ANSI__
@@ -43,7 +44,8 @@ CFLAGS := -g3
 CPP_SOURCES := $(wildcard $(ROOT)/SmingCore/*.cpp) \
 			$(wildcard $(ROOT)/SmingCore/network/*.cpp) \
 			$(wildcard $(ROOT)/SmingCore/network/Http/*.cpp) \
-			$(wildcard $(ROOT)/SmingCore/wiring/*.cpp)
+			$(wildcard $(ROOT)/SmingCore/wiring/*.cpp) \
+			$(wildcard $(ROOT)/Libraries/BME280/*.cpp)
 FW_SOURCES := $(wildcard esp8266/app/*.cpp)
 CPP_OBJECTS := $(addprefix $(ROOT)/obj/,$(notdir) $(CPP_SOURCES:.cpp=.o))
 FW_OBJECTS := $(addprefix $(ROOT)/obj/,$(notdir) $(FW_SOURCES:.cpp=.o))
@@ -70,6 +72,7 @@ makedir:
 	$(MAKEDIR) $(ROOT)/obj
 	$(MAKEDIR) $(ROOT)/obj/$(ROOT)/SmingCore/network
 	$(MAKEDIR) $(ROOT)/obj/$(ROOT)/SmingCore/wiring
+	$(MAKEDIR) $(ROOT)/obj/$(ROOT)/Libraries/BME280
 	$(MAKEDIR) $(ROOT)/obj/esp8266/app
 
 clean:
