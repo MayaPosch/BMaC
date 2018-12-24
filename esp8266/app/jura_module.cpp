@@ -207,7 +207,17 @@ void JuraModule::onSerialReceived(Stream &stream, char arrivedChar, unsigned sho
 		// command was sent via UART 0 and not MQTT, and vice versa.
 		mqttTxBuffer += (char) d4;
 		if ('\n' == (char) d4) {
-			OtaCore::publish("coffee/response", OtaCore::getMAC() + ";" + mqttTxBuffer);
+			// Read string in 16-bit sequences, each of which is a counter,
+			// then publish the appropriate counters.
+			long int espressoCount = strtol(mqttTxBuffer.substring(3, 7).c_str(), 0, 16);
+			long int espresso2Count = strtol(mqttTxBuffer.substring(7, 11).c_str(), 0, 16);
+			long int coffeeCount = strtol(mqttTxBuffer.substring(11, 15).c_str(), 0, 16);
+			long int coffee2Count = strtol(mqttTxBuffer.substring(15, 19).c_str(), 0, 16);
+			
+			OtaCore::publish("nsa/espresso", OtaCore::getLocation() + ";" + espressoCount);
+			OtaCore::publish("nsa/espresso2", OtaCore::getLocation() + ";" + espresso2Count);
+			OtaCore::publish("nsa/coffee", OtaCore::getLocation() + ";" + coffeeCount);
+			OtaCore::publish("nsa/coffee2", OtaCore::getLocation() + ";" + coffee2Count);
 			mqttTxBuffer = "";
 		}
 	}
