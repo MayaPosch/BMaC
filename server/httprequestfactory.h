@@ -26,8 +26,6 @@ class RequestHandlerFactory: public HTTPRequestHandlerFactory {
 public:
 	RequestHandlerFactory() {}
 	HTTPRequestHandler* createRequestHandler(const HTTPServerRequest& request) {
-		//if (request.getURI().compare(0, 4, "/ac/") == 0) { return new ACHandler(); }
-		//else { return new DataHandler(); }
 		return new DataHandler();
 	}
 };

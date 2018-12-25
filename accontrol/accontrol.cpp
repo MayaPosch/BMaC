@@ -32,7 +32,6 @@ using namespace Poco::Net;
 
 #include "httprequestfactory.h"
 #include "nodes.h"
-//#include "coffeenet.h"
 
 
 int main(int argc, char* argv[]) {
@@ -71,17 +70,6 @@ int main(int argc, char* argv[]) {
 	params->setMaxThreads(10);
 	HTTPServer httpd(new RequestHandlerFactory, port, params);
 	httpd.start();
-	
-	// Start Coffeenet instance and register application with Eureka discovery 
-	// server.
-	/* string eurekaServer = config->getString("Discovery.host", "localhost");
-	string eurekaPath = config->getString("Discovery.path", "/eureka/");
-	string eurekaSec = config->getString("Discovery.secure", "false");
-	string authServer = config->getString("Auth.host", "localhost");
-	string authPath = config->getString("Auth.path", "/oauth/");
-	string authSec = config->getString("Auth.secure", "false");
-	Coffeenet::start(eurekaServer, eurekaSec, eurekaPath, authServer, authSec, authPath);
-	Coffeenet::registerApp(); */
 	
 	while(1) {
 		rc = listener.loop();

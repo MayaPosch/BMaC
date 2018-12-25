@@ -112,7 +112,6 @@ void Listener::on_message(const struct mosquitto_message* message) {
 		
 		// Payload should be the UID of the node. Retrieve the configuration for
 		// this UID and publish it on 'cc/<UID>' with the configuration as payload.
-		// FIXME: make this configurable with a DB backend or such :)
 		Data::Statement select(*session);
 		Node node;
 		node.uid = payload;
@@ -355,7 +354,7 @@ void Listener::on_message(const struct mosquitto_message* message) {
 		// When dropping back below 750 ppm, send an 'OK'.
 		//
 		// Send a JSON-encoded message to the below HTTP URL:
-		// curl -XPOST -H 'Content-Type: application/json' -d '{"state":"ok"}' 'https://hubot.synyx.coffee/adhs/iot/co2?user=maya'
+		// curl -XPOST -H 'Content-Type: application/json' -d '{"state":"ok"}' 'https://<server>'`
 		//
 		// States:
 		// * ok
@@ -377,10 +376,10 @@ void Listener::on_message(const struct mosquitto_message* message) {
 						\"ppm\": " + st[3] + " }";
 						
 		// Send the JSON string to the URL.
-		Net::HTTPSClientSession httpsClient("hubot.synyx.coffee");
+		Net::HTTPSClientSession httpsClient("localhost");
 		try {
 			Net::HTTPRequest request(Net::HTTPRequest::HTTP_POST, 
-									"/adhs/iot/co2?room=%23bot", 
+									"/", 
 									Net::HTTPMessage::HTTP_1_1);
 			request.setContentLength(json.length());
 			request.setContentType("application/json");

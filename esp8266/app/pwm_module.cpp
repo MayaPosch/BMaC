@@ -125,7 +125,7 @@ void PwmModule::commandCallback(String message) {
 		// Release GPIO pins.
 		for (int i = 0; i < pinNum; ++i) {
 			if (!OtaCore::releasePin(pins[i])) {
-				OtaCore::log(LOG_ERROR, "Pin is already in use: " + String(pins[i]));
+				OtaCore::log(LOG_ERROR, "Pin cannot be released: " + String(pins[i]));
 				
 				// Report failure. QoS: 1.
 				OtaCore::publish("pwm/response", OtaCore::getLocation() + ";0", 1);
