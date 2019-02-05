@@ -140,8 +140,8 @@
  *************************************************************/
 
 typedef unsigned int word;
-typedef uint8_t byte;
-typedef uint8_t boolean;
+//typedef uint8_t byte;
+typedef bool boolean;
 typedef void (*voidFuncPtr)(void);
 
 #endif

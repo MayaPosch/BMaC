@@ -36,8 +36,8 @@ void signal_handler(int signal) {
 
 
 // --- LOG FUNCTION ---
-void logFunction(int level, string logStr) {
-	cout << level << " - " << logStr << endl;
+void logFunction(int level, std::string logStr) {
+	std::cout << level << " - " << logStr << std::endl;
 }
 
 
@@ -172,7 +172,7 @@ int main() {
 	// * SPI access.
 	// * I2C access.
 	// * UART access.
-	vector<NymphTypes> parameters;
+	std::vector<NymphTypes> parameters;
 	NymphMethod getNewMacFunction("getNewMac", parameters, NYMPH_STRING);
 	getNewMacFunction.setCallback(getNewMac);
 	NymphRemoteClient::registerMethod("getNewMac", getNewMacFunction);
@@ -243,7 +243,7 @@ int main() {
 	NymphRemoteClient::shutdown();
 	
 	// Wait before exiting, giving threads time to exit.
-	Thread::sleep(2000); // 2 seconds.
+	Poco::Thread::sleep(2000); // 2 seconds.
 	
 	return 0;
 }

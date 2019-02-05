@@ -21,7 +21,6 @@
 
 #ifdef __cplusplus
 
-//#include "WiringFrameworkDependencies.h"
 #include "Printable.h"
 
 #include <cstdint>

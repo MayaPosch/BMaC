@@ -3,25 +3,11 @@
 #ifndef SMINGCORE_H
 #define SMINGCORE_H
 
+
 #include <cstdint>
 #include <cstdio>
 #include <string>
 #include <iostream>
-#include "wiring/WString.h"
-#include "wiring/WVector.h"
-#include "wiring/WHashMap.h"
-#include "FileSystem.h"
-//#include "WiringFrameworkDependencies.h"
-#include "wiring/Stream.h"
-#include "Delegate.h"
-#include "Network/MqttClient.h"
-#include "Timer.h"
-#include "WConstants.h"
-#include "Clock.h"
-
-#include <nymph/nymph.h>
-
-using namespace std;
 
 
 // --- Types
@@ -32,6 +18,23 @@ typedef int8_t int8;
 typedef int16_t int16;
 typedef int32_t int32;
 typedef uint32_t u32_t;
+typedef uint8_t byte;
+
+
+#include "wiring/WString.h"
+#include "wiring/WVector.h"
+#include "wiring/WHashMap.h"
+#include "FileSystem.h"
+#include "wiring/Stream.h"
+#include "Delegate.h"
+#include "Network/MqttClient.h"
+#include "Timer.h"
+#include "WConstants.h"
+#include "Clock.h"
+#include "HardwarePWM.h"
+#include "wiring/BitManipulations.h"
+
+#include <nymph/nymph.h>
 
 
 // --- HardwareSerial.h
@@ -72,6 +75,7 @@ public:
 	void setCallback(StreamDataReceivedDelegate dataReceivedDelegate);
 	static void dataReceivedCallback(NymphMessage* msg, void* data);
 	size_t write(const uint8_t* buffer, size_t size);
+	size_t write(uint8_t oneChar);
 	size_t readBytes(char *buffer, size_t length);
 };
 
@@ -172,6 +176,13 @@ public:
 
 extern WDTClass WDT;
 
+void yield();
+
+
+// --- Shift
+uint16_t shiftIn(uint8_t dataPin, uint8_t clockPin, uint8_t bitOrder, uint8_t count = 8, uint8_t delayTime = 1);
+void shiftOut(uint8_t dataPin, uint8_t clockPin, uint8_t bitOrder, uint16_t value, uint8_t count = 8, uint8_t delayTime = 1);
+
 
 // --- Wire (I2C)
 class TwoWire {
@@ -195,30 +206,27 @@ extern TwoWire Wire;
 
 
 // --- SPI
-class SPISettings {
-	//
-public:
-	//
-};
 
-class SPIClass {
+class SPISettings;
+#include "SPISettings.h"
+//#include "SPIBase.h"
+
+class SPIBase { // : public SPIBase {
 	//
 	
 public:
+	SPIBase() {}
+	~SPIBase() {}
 	void begin();
 	void end();
 	void beginTransaction(SPISettings mySettings);
 	void endTransaction();
 	void transfer(uint8* buffer, size_t numberBytes);
+	unsigned short transfer16(unsigned short val);
+	unsigned char transfer(unsigned char val);
 };
 
-extern SPIClass SPI;
-
-
-// --- Delay
-// TODO: implement once timing becomes an issue in the simulation.
-//void delayMicroseconds(uint32_t time);
-//void delay(uint32_t time);
+extern SPIBase SPI;
 
 
 // --- GPIO
@@ -227,7 +235,15 @@ void digitalWrite(uint16_t pin, uint8_t val);
 uint8_t digitalRead(uint16_t pin);
 
 
+// --- INTERRUPTS
+void attachInterrupt(uint8_t pin, InterruptCallback callback, uint8_t mode);
+void detachInterrupt(uint8_t pin);
+void cli();
+void sei();
+
+
 // --- ADC
+const unsigned int A0 = 42;
 uint16_t analogRead(uint16_t pin);
 
 

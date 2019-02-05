@@ -16,6 +16,8 @@
 #include "base_module.h"
 
 #include <Libraries/APA102/apa102.h>
+#include <Libraries/HX711/hx711.h>
+#include <Network/HttpServer.h>
 
 
 #define PLANT_GPIO_PIN 5	// GPIO 5 (D1) by default.

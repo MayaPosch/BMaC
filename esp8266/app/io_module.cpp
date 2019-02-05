@@ -12,7 +12,7 @@
 
 #include "io_module.h"
 
-#include <Wire.h>
+//#include <Wire.h>
 
 
 // Static initialisations.
@@ -44,6 +44,8 @@ enum {
 // --- INITIALIZE ---
 bool IOModule::initialize() {
 	BaseModule::registerModule(MOD_IDX_IO, IOModule::start, IOModule::shutdown);
+	
+	return true;
 }
 
 
@@ -55,6 +57,8 @@ bool IOModule::start() {
 	
 	// Start i2c comms.
 	OtaCore::starti2c();
+	
+	return true;
 }
 
 
@@ -65,6 +69,8 @@ bool IOModule::shutdown() {
 		delete mcp;
 		mcp = 0;
 	}
+	
+	return true;
 }
 
 
@@ -388,10 +394,10 @@ void IOModule::commandCallback(String message) {
 		if (mcp) { active = 1; }
 		
 		// Report success. QoS: 1.
-		char output[] = { 0x80, 0x01, active };
+		uint8 output[] = { 0x80, 0x01, active };
 		OtaCore::publish(publishTopic, OtaCore::getLocation() + ";" + 
 												//(char) 0x80 + (char) 0x01 + 
-												String(output, 3));
+												String((char*) &output, 3));
 												//(char) active);
 	}
 }

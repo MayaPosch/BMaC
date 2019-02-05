@@ -15,7 +15,7 @@
 #ifndef _SMING_CORE_NETWORK_URL_H_
 #define _SMING_CORE_NETWORK_URL_H_
 
-#include "../../Wiring/WString.h"
+#include "../wiring/WString.h"
 
 #define DEFAULT_URL_PROTOCOL "http"
 #define HTTPS_URL_PROTOCOL "https"

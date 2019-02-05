@@ -12,7 +12,7 @@
 
 #include "switch_module.h"
 
-#include <Wire.h>
+//#include <Wire.h>
 
 
 #define SW1_SET_PIN 5 	// GPIO 5 (D1 on NodeMCU).

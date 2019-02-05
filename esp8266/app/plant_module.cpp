@@ -33,6 +33,8 @@ enum {
 // --- INITIALIZE ---
 bool PlantModule::initialize() {
 	BaseModule::registerModule(MOD_IDX_PLANT, PlantModule::start, PlantModule::shutdown);
+	
+	return true;
 }
 
 
@@ -43,7 +45,7 @@ bool PlantModule::start() {
 	// Register pins.
 	if (!OtaCore::claimPin(pin)) { return false; }
 	
-	publishTopic = MQTT_PREFIX + "plant/response/" + OtaCore::getLocation();
+	publishTopic = MQTT_PREFIX + String("plant/response/") + OtaCore::getLocation();
 	OtaCore::registerTopic(MQTT_PREFIX + String("plants/") + OtaCore::getLocation(), PlantModule::commandCallback);
 	
 	// Set output pin mode.

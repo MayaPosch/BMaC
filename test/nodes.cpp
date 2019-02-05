@@ -14,6 +14,8 @@
 #include "node.h"
 #include <nymph/nymph.h>
 
+using namespace std;
+
 
 // Static initialisations.
 std::map<std::string, Node*> Nodes::nodes;

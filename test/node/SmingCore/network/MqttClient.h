@@ -18,8 +18,8 @@
 
 class TcpClient;
 #include "../Delegate.h"
-#include "../../Wiring/WString.h"
-#include "../../Wiring/WHashMap.h"
+#include "../wiring/WString.h"
+#include "../wiring/WHashMap.h"
 //#include "../../Services/libemqtt/libemqtt.h"
 #include "libmosquitto/cpp/mosquittopp.h"
 #include "URL.h"

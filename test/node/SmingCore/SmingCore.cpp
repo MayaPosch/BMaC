@@ -5,6 +5,8 @@
 #include <cstdio>
 #include <cstdarg>
 
+using namespace std;
+
 
 // Static initialisations.
 int StationClass::handle;
@@ -141,6 +143,12 @@ size_t HardwareSerial::write(const uint8_t* buffer, size_t size) {
 	}
 	
 	return size;
+}
+
+
+size_t HardwareSerial::write(uint8_t oneChar) {
+	const uint8_t constChar = oneChar;
+	return write(&constChar, 1);
 }
 
 
@@ -294,14 +302,21 @@ void WifiEventsClass::onStationDisconnect(StationDisconnectDelegate delegateFunc
 WDTClass WDT;
 
 void WDTClass::alive() { }
+
+void yield() { }
+
+
+// --- Shift
+uint16_t shiftIn(uint8_t dataPin, uint8_t clockPin, uint8_t bitOrder, uint8_t count /*= 8*/, uint8_t delayTime /*= 1*/) { return 1; }
+void shiftOut(uint8_t dataPin, uint8_t clockPin, uint8_t bitOrder, uint16_t value, uint8_t count /*= 8*/, uint8_t delayTime /*= 1*/) { }
 	
 	
 // SPI
-void SPIClass::begin() { }
-void SPIClass::end() { }
-void SPIClass::beginTransaction(SPISettings mySettings) { }
-void SPIClass::endTransaction() { }
-void SPIClass::transfer(uint8* buffer, size_t numberBytes) {
+void SPIBase::begin() { }
+void SPIBase::end() { }
+void SPIBase::beginTransaction(SPISettings mySettings) { }
+void SPIBase::endTransaction() { }
+void SPIBase::transfer(uint8* buffer, size_t numberBytes) {
 	// Call the remote method.
 	vector<NymphType*> values;
 	values.push_back(new NymphString(WifiStation.getMAC().c_str()));
@@ -323,7 +338,15 @@ void SPIClass::transfer(uint8* buffer, size_t numberBytes) {
 	}
 }
 
-SPIClass SPI;
+unsigned short SPIBase::transfer16(unsigned short val) {
+	// TODO
+}
+
+unsigned char SPIBase::transfer(unsigned char val) {
+	// TODO
+}
+
+SPIBase SPI;
 
 
 // I2C
@@ -452,6 +475,19 @@ SystemClass System;
 void pinMode(uint16_t pin, uint8_t mode) { }
 void digitalWrite(uint16_t pin, uint8_t val) { }
 uint8_t digitalRead(uint16_t pin) { return 1; }
+
+
+// --- INTERRUPTS
+void attachInterrupt(uint8_t pin, InterruptCallback callback, uint8_t mode) {
+	// TODO.
+}
+
+void detachInterrupt(uint8_t pin) {
+	// TODO.
+}
+
+void cli() { }
+void sei() { }
 
 
 // --- ADC
