@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2010-2013 Roger Light <roger@atchoo.org>
+Copyright (c) 2010-2018 Roger Light <roger@atchoo.org>
 
 All rights reserved. This program and the accompanying materials
 are made available under the terms of the Eclipse Public License v1.0
@@ -17,7 +17,7 @@ Contributors:
 #ifndef MOSQUITTOPP_H
 #define MOSQUITTOPP_H
 
-#ifdef _WIN32
+#if defined(_WIN32) && defined(_MSC_VER)
 #	ifdef mosquittopp_EXPORTS
 #		define mosqpp_EXPORT  __declspec(dllexport)
 #	else
@@ -41,6 +41,38 @@ mosqpp_EXPORT int lib_version(int *major, int *minor, int *revision);
 mosqpp_EXPORT int lib_init();
 mosqpp_EXPORT int lib_cleanup();
 mosqpp_EXPORT int topic_matches_sub(const char *sub, const char *topic, bool *result);
+mosqpp_EXPORT int validate_utf8(const char *str, int len);
+mosqpp_EXPORT int subscribe_simple(
+		struct mosquitto_message **messages,
+		int msg_count,
+		bool retained,
+		const char *topic,
+		int qos=0,
+		const char *host="localhost",
+		int port=1883,
+		const char *client_id=NULL,
+		int keepalive=60,
+		bool clean_session=true,
+		const char *username=NULL,
+		const char *password=NULL,
+		const struct libmosquitto_will *will=NULL,
+		const struct libmosquitto_tls *tls=NULL);
+
+mosqpp_EXPORT int subscribe_callback(
+		int (*callback)(struct mosquitto *, void *, const struct mosquitto_message *),
+		void *userdata,
+		const char *topic,
+		int qos=0,
+		bool retained=true,
+		const char *host="localhost",
+		int port=1883,
+		const char *client_id=NULL,
+		int keepalive=60,
+		bool clean_session=true,
+		const char *username=NULL,
+		const char *password=NULL,
+		const struct libmosquitto_will *will=NULL,
+		const struct libmosquitto_tls *tls=NULL);
 
 /*
  * Class: mosquittopp
@@ -93,6 +125,7 @@ class mosqpp_EXPORT mosquittopp {
 
 		// names in the functions commented to prevent unused parameter warning
 		virtual void on_connect(int /*rc*/) {return;}
+		virtual void on_connect_with_flags(int /*rc*/, int /*flags*/) {return;}
 		virtual void on_disconnect(int /*rc*/) {return;}
 		virtual void on_publish(int /*mid*/) {return;}
 		virtual void on_message(const struct mosquitto_message * /*message*/) {return;}

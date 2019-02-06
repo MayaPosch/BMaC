@@ -37,12 +37,13 @@ LIBS += -lmosquittopp -lmosquitto -L/usr/local/lib
 
 INCLUDEPATH += /usr/local/include
 
-win32: LIBS += -L$$PWD/mosquitto/ -lmosquitto
+win32: LIBS += -lws2_32
+#win32: LIBS += -L$$PWD/mosquitto/ -lmosquitto
 
 INCLUDEPATH += $$PWD/mosquitto
 DEPENDPATH += $$PWD/mosquitto
 
-win32: LIBS += -L$$PWD/mosquitto/ -lmosquittopp
+#win32: LIBS += -L$$PWD/mosquitto/ -lmosquittopp
 
 INCLUDEPATH += $$PWD/mosquitto
 DEPENDPATH += $$PWD/mosquitto
