@@ -27,6 +27,14 @@ void debugf(const char *fmt, ...) {
 }
 
 
+void debug_e(const char *fmt, ...) {
+	va_list ap;
+    va_start(ap, fmt);
+    int written = vfprintf(stdout, fmt, ap);
+    va_end(ap);
+}
+
+
 // HARDWARE SERIAL
 // Static initialisation.
 StreamDataReceivedDelegate HardwareSerial::HWSDelegate = nullptr;

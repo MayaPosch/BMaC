@@ -15,15 +15,15 @@
 bool HttpConnectionBase::parserSettingsInitialized = false;
 http_parser_settings HttpConnectionBase::parserSettings;
 
-HttpConnectionBase::HttpConnectionBase(http_parser_type type, bool autoDestruct) : TcpClient(autoDestruct)
+HttpConnectionBase::HttpConnectionBase(http_parser_type type, bool autoDestruct) //: TcpClient(autoDestruct)
 {
 	init(type);
 }
 
-HttpConnectionBase::HttpConnectionBase(tcp_pcb* connection, http_parser_type type) : TcpClient(connection, 0, 0)
+/* HttpConnectionBase::HttpConnectionBase(tcp_pcb* connection, http_parser_type type) : TcpClient(connection, 0, 0)
 {
 	init(type);
-}
+} */
 
 void HttpConnectionBase::init(http_parser_type type)
 {
@@ -60,7 +60,7 @@ void HttpConnectionBase::init(http_parser_type type)
 
 void HttpConnectionBase::setDefaultParser()
 {
-	TcpClient::setReceiveDelegate(TcpClientDataDelegate(&HttpConnectionBase::onTcpReceive, this));
+	//TcpClient::setReceiveDelegate(TcpClientDataDelegate(&HttpConnectionBase::onTcpReceive, this));
 }
 
 void HttpConnectionBase::resetHeaders()

@@ -28,6 +28,25 @@
 #include "Http/HttpResource.h"
 #include "Http/HttpServerConnection.h"
 #include "Http/HttpBodyParser.h" */
+//#include "Http/HttpResourceTree.h"
+
+class HttpResource;
+class HttpRequest;
+class HttpResponse;
+
+/* class HttpPathDelegate {
+	//
+}; */
+
+
+typedef Delegate<void(HttpRequest& request, HttpResponse& response)> HttpPathDelegate;
+
+class HttpResourceTree {
+public:
+	void setDefault(const HttpPathDelegate& callback) {
+		//
+	}
+};
 
 class HttpBodyParserDelegate {
 	//
@@ -36,11 +55,6 @@ class HttpBodyParserDelegate {
 class HttpServerConnection {
 	//
 };
-
-class HttpPathDelegate {
-	//
-};
-
 class HttpResourceDelegate {
 	//
 };
@@ -89,6 +103,8 @@ class HttpServer //: public TcpServer
 	friend class HttpServerConnection;
 
 public:
+	HttpResourceTree paths;
+	
 	HttpServer();
 	HttpServer(const HttpServerSettings& settings);
 	virtual ~HttpServer();

@@ -22,7 +22,7 @@ class TcpClient;
 #include "../wiring/WHashMap.h"
 //#include "../../Services/libemqtt/libemqtt.h"
 #include "libmosquitto/cpp/mosquittopp.h"
-#include "URL.h"
+#include "Url.h"
 //#include "IPAddress.h"
 
 //typedef void (*MqttStringSubscriptionCallback)(String topic, String message);
@@ -31,7 +31,7 @@ typedef Delegate<void(uint16_t msgId, int type)> MqttMessageDeliveredCallback;
 typedef Delegate<void(TcpClient& client, bool successful)> TcpClientCompleteDelegate;
 
 class MqttClient;
-class URL;
+//class Url;
 
 class MqttClient : public mosqpp::mosquittopp //: protected TcpClient
 {
@@ -63,7 +63,7 @@ public:
 	*  @param  url, in the form "mqtt://user:password@server:port" or "mqtts://user:password@server:port"
 	*  @param  client name
 	*/
-	bool connect(const URL& url, const String& uniqueClientName, uint32_t sslOptions = 0);
+	bool connect(const Url& url, const String& uniqueClientName, uint32_t sslOptions = 0);
 
 	/** @brief  connect
 	*  @deprecated Use connect(const String& url, const String& uniqueClientName) instead

@@ -77,9 +77,9 @@ bool MqttClient::setWill(const String& topic, const String& message, int QoS, bo
 	//return mqtt_set_will(&broker, topic.c_str(), message.c_str(), QoS, retained);
 }
 
-bool MqttClient::connect(const URL& url, const String& clientName, uint32_t sslOptions) {
+bool MqttClient::connect(const Url& url, const String& clientName, uint32_t sslOptions) {
 	this->url = url;
-	if(!(url.Protocol == "mqtt" || url.Protocol == "mqtts")) {
+	if(!(url.Scheme == "mqtt" || url.Scheme == "mqtts")) {
 		//debug_e("Only mqtt and mqtts protocols are allowed");
 		return false;
 	}
@@ -88,7 +88,7 @@ bool MqttClient::connect(const URL& url, const String& clientName, uint32_t sslO
 	posHeader = 0;
 	current = NULL;
 
-	bool useSsl = (url.Protocol == "mqtts");
+	bool useSsl = (url.Scheme == "mqtts");
 	return privateConnect(clientName, url.User, url.Password, useSsl, sslOptions);
 }
 

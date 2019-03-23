@@ -13,7 +13,7 @@
 #ifndef _SMING_CORE_NETWORK_HTTP_HTTPCONNECTIONBASE_H_
 #define _SMING_CORE_NETWORK_HTTP_HTTPCONNECTIONBASE_H_
 
-#include "../TcpClient.h"
+//#include "../TcpClient.h"
 #include "../../Wiring/WString.h"
 #include "../../Wiring/WHashMap.h"
 #include "../../Delegate.h"
@@ -27,11 +27,11 @@
  *  @{
  */
 
-class HttpConnectionBase : public TcpClient
+class HttpConnectionBase //: public TcpClient
 {
 public:
 	HttpConnectionBase(http_parser_type type, bool autoDestruct = false);
-	HttpConnectionBase(tcp_pcb* connection, http_parser_type type);
+	//HttpConnectionBase(tcp_pcb* connection, http_parser_type type);
 	virtual void reset();
 	virtual void cleanup();
 	virtual void setDefaultParser();
@@ -119,7 +119,7 @@ protected:
 	virtual void onHttpError(http_errno error);
 
 	// TCP methods
-	virtual bool onTcpReceive(TcpClient& client, char* data, int size);
+	//virtual bool onTcpReceive(TcpClient& client, char* data, int size);
 	virtual void onError(err_t err);
 
 private:

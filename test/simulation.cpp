@@ -165,6 +165,12 @@ int main() {
 	Config config;
 	config.load("config.cfg");
 	
+	
+	// Initialise Nymph the server instance.
+	std::cout << "Initialising server..." << std::endl;
+	long timeout = 5000; // 5 seconds.
+	NymphRemoteClient::init(logFunction, NYMPH_LOG_LEVEL_TRACE, timeout);
+	
 	// Configure and start the NymphRPC server instance.
 	// We need to provide methods for the following actions:
 	// * Get the network MAC.

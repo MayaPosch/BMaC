@@ -42,6 +42,8 @@ typedef uint8_t byte;
 #define UART_ID_1 1 ///< ID of UART 1
 #define SERIAL_BAUD_RATE 115200
 
+#define SMING_DEPRECATED
+
 typedef Delegate<void(Stream& source, char arrivedChar, uint16_t availableCharsCount)> StreamDataReceivedDelegate;
 
 class SerialStream : public Stream {
@@ -164,6 +166,7 @@ extern WifiEventsClass WifiEvents;
 
 // --- Debug
 void debugf(const char *fmt, ...);
+void debug_e(const char *fmt, ...);
 
 
 // --- WDT
