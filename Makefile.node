@@ -50,12 +50,17 @@ CPP_SOURCES := $(wildcard $(ROOT)/SmingCore/*.cpp) \
 			$(wildcard $(ROOT)/Libraries/MCP23008/*.cpp) \
 			$(wildcard $(ROOT)/Libraries/DHTesp/*.cpp) \
 			$(wildcard $(ROOT)/Libraries/APA102/*.cpp) \
-			$(wildcard $(ROOT)/Libraries/HX711/*.cpp)
+			$(wildcard $(ROOT)/Libraries/HX711/*.cpp) \
+			$(wildcard $(ROOT)/Services/WebHelpers/*.cpp)
+			
+C_SOURCES := $(wildcard $(ROOT)/SmingCore/network/libyuarel/*.c) \
+			$(wildcard $(ROOT)/Services/libb64/*.c)
 FW_SOURCES := $(wildcard esp8266/app/*.cpp)
 CPP_OBJECTS := $(addprefix $(ROOT)/obj/,$(notdir) $(CPP_SOURCES:.cpp=.o))
+C_OBJECTS := $(addprefix $(ROOT)/obj/,$(notdir) $(C_SOURCES:.c=.o))
 FW_OBJECTS := $(addprefix $(ROOT)/obj/,$(notdir) $(FW_SOURCES:.cpp=.o))
 
-all: makedir $(FW_OBJECTS) $(CPP_OBJECTS) $(ROOT)/lib/$(OUTLIB) $(ROOT)/bin/$(OUTPUT)
+all: makedir $(FW_OBJECTS) $(CPP_OBJECTS) $(C_OBJECTS) $(ROOT)/lib/$(OUTLIB) $(ROOT)/bin/$(OUTPUT)
 	
 $(ROOT)/obj/%.o: %.cpp
 	$(GPP) -c -o $@ $< $(CPPFLAGS)
@@ -63,7 +68,7 @@ $(ROOT)/obj/%.o: %.cpp
 $(ROOT)/obj/%.o: %.c
 	$(GCC) -c -o $@ $< $(CFLAGS)
 	
-$(ROOT)/lib/$(OUTLIB): $(CPP_OBJECTS)
+$(ROOT)/lib/$(OUTLIB): $(CPP_OBJECTS) $(C_OBJECTS)
 	-rm -f $@
 	$(AR) rcs $@ $^
 	
@@ -75,8 +80,11 @@ makedir:
 	$(MAKEDIR) $(ROOT)/bin
 	$(MAKEDIR) $(ROOT)/lib
 	$(MAKEDIR) $(ROOT)/obj
-	$(MAKEDIR) $(ROOT)/obj/$(ROOT)/SmingCore/network
+	$(MAKEDIR) $(ROOT)/obj/$(ROOT)/SmingCore/network/Http/http-parser
+	$(MAKEDIR) $(ROOT)/obj/$(ROOT)/SmingCore/network/libyuarel
 	$(MAKEDIR) $(ROOT)/obj/$(ROOT)/SmingCore/wiring
+	$(MAKEDIR) $(ROOT)/obj/$(ROOT)/Services/WebHelpers
+	$(MAKEDIR) $(ROOT)/obj/$(ROOT)/Services/libb64
 	$(MAKEDIR) $(ROOT)/obj/$(ROOT)/Libraries/BME280
 	$(MAKEDIR) $(ROOT)/obj/$(ROOT)/Libraries/APA102
 	$(MAKEDIR) $(ROOT)/obj/$(ROOT)/Libraries/DHTesp
@@ -85,5 +93,5 @@ makedir:
 	$(MAKEDIR) $(ROOT)/obj/esp8266/app
 
 clean:
-	$(RM) $(FW_OBJECTS) $(CPP_OBJECTS)
+	$(RM) $(FW_OBJECTS) $(CPP_OBJECTS) $(C_OBJECTS)
 	
