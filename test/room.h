@@ -25,7 +25,7 @@
 class Room {
 	std::map<std::string, Node> nodes;
 	std::vector<Device> devices;
-	std::shared_ptr<RoomState> state;
+	std::unique_ptr<RoomState> state;
 	
 public:
 	Room(uint32_t type, Config &config);

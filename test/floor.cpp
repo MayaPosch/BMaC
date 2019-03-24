@@ -19,7 +19,7 @@
 Floor::Floor(uint32_t level, Config &config) {
 	// For each floor, create the room instances defined for it. 
 	std::string floor_cat = "Floor_" + std::to_string(level);
-	std::string roomsStr = config.getValue<std::string>(floor_cat + ".rooms", 0);
+	std::string roomsStr = config.getValue<std::string>(floor_cat + ".rooms", std::string());
 	
 	// Extract the room IDs.
 	std::vector<std::string> room_ids;

@@ -15,8 +15,8 @@
 
 
 // --- CONSTRUCTOR ---
-Device::Device(std::string id, Config &config, std::shared_ptr<RoomState> rs) : 
-																roomState(rs),
+Device::Device(std::string id, Config &config, std::unique_ptr<RoomState> &rs) : 
+																roomState(rs.get()),
 																spi_cs(0) {
 	// Read out the details for this device.
 	std::string cat = "Device_" + id;

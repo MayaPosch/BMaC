@@ -24,6 +24,7 @@ Room::Room(uint32_t type, Config &config) {
 	std::string nodeStr = config.getValue<std::string>(room_cat + ".nodes", "");
 	
 	// Set initial room status values.
+	state = std::make_unique<RoomState>();
 	state->setTemperature(24.3);
 	state->setHumidity(51.2);
 	

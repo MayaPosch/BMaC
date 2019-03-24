@@ -28,7 +28,7 @@ Node::Node(std::string id, Config &config) : uart0_active(false) {
 	// own main function.
 	// First register this new Node with the Nodes class.
 	Nodes::addNode(mac, this);
-	std::system("esp8266");
+	std::system("bmac_esp8266.exe");
 	
 	// The new node should now be launching and connect to the simulation's NymphRPC server.
 	// We have registered the required functions at this point already.

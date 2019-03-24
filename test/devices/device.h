@@ -19,7 +19,7 @@
 
 
 class Device {
-	std::shared_ptr<RoomState> roomState;
+	RoomState* roomState;
 	Connection connType;
 	std::string device;
 	std::string mac;
@@ -35,7 +35,7 @@ class Device {
 	
 public:
 	Device() { }
-	Device(std::string id, Config &config, std::shared_ptr<RoomState> rs);
+	Device(std::string id, Config &config, std::unique_ptr<RoomState> &rs);
 	/* uint8_t readRegister8(int reg);
 	void writeRegister8(int reg, uint8_t data); */
 	void setMAC(std::string mac);

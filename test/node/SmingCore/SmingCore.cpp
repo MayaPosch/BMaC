@@ -478,7 +478,7 @@ int TwoWire::read() {
 TwoWire Wire;
 
 // --- System
-String system_get_sdk_version() { return "SIM_0.1"; }
+String system_get_sdk_version() { return String("SIM_0.1"); }
 int system_get_free_heap_size() { return 20000; }
 int system_get_cpu_freq() { return 1200000; }
 int system_get_chip_id() { return 42; }

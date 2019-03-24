@@ -163,7 +163,10 @@ int main() {
 	
 	// First, read in the building configuration file.
 	Config config;
-	config.load("config.cfg");
+	if (!config.load("config.ini")) {
+		std::cerr << "Couldn't load configuration file 'config.ini'" << std::endl;
+		return 1;
+	}
 	
 	
 	// Initialise Nymph the server instance.
