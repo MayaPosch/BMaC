@@ -4,8 +4,23 @@
 #include <iostream>
 #include <cstdio>
 #include <cstdarg>
+#include <csignal>
 
 using namespace std;
+
+#include <Poco/Condition.h>
+#include <Poco/Thread.h>
+
+using namespace Poco;
+
+
+Condition gCon;
+Mutex gMutex;
+
+
+void signal_handler(int signal) {
+	gCon.signal();
+}
 
 
 // Static initialisations.
@@ -506,6 +521,13 @@ uint16_t analogRead(uint16_t pin) { return 1000; }
 int main() {
 	// Start the firmware image.
 	init();
+	
+	// Install signal handler to terminate the application.
+	signal(SIGINT, signal_handler);
+	
+	// Loop until the SIGINT signal has been received.
+	gMutex.lock();
+	gCon.wait(gMutex);
 	
 	return 0;
 }
