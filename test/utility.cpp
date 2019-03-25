@@ -26,9 +26,9 @@ void split_string(const std::string& str, char chr, std::vector<std::string>& ve
 
     while (second != str.cend()) {
         vec.emplace_back(first, second);
-        first = second;
+        ++first; // = second;
         second = std::find(second + 1, str.cend(), chr);
     }
 
-    vec.emplace_back(first, str.cend());
+    vec.emplace_back(++first, str.cend());
 }

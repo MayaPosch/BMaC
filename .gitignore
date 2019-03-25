@@ -5,3 +5,5 @@ bin/
 *.so*
 lib/
 *.db
+logs/
+
