@@ -13,6 +13,7 @@
 #include "utility.h"
 
 #include <string>
+#include <iostream>
 
 
 // --- CONSTRUCTOR ---
@@ -29,8 +30,14 @@ Floor::Floor(uint32_t level, Config &config) {
 	// Create the rooms for this floor.
 	if (room_count > 0) {	
 		for (int i = 0; i < room_count; ++i) {
-			Room room(std::stoi(room_ids.at(i)), config);
-			rooms.push_back(room);
+			try {
+				Room room(std::stoi(room_ids.at(i)), config);
+				rooms.push_back(std::move(room));
+			}
+			catch(std::invalid_argument &e) {
+				std::cerr << "stoi() conversion failed for: " << room_ids.at(i) << std::endl;
+				continue;
+			}
 		}
 	}
 }

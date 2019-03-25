@@ -14,6 +14,8 @@
 #include "node.h"
 #include <nymph/nymph.h>
 
+#include <iostream>
+
 using namespace std;
 
 
@@ -21,6 +23,7 @@ using namespace std;
 std::map<std::string, Node*> Nodes::nodes;
 std::queue<std::string> Nodes::macs;
 std::map<std::string, int> Nodes::sessions;
+std::vector<Poco::ProcessHandle> Nodes::node_processes;
 
 
 // --- GET NODE ---
@@ -157,3 +160,26 @@ std::string Nodes::getMAC() {
 	 macs.pop();
 	 return val;
  }
+ 
+ 
+void Nodes::addProcess(Poco::ProcessHandle pid) {
+	// Debug.
+	std::cout << "Nodes: Adding process handle..." << std::endl;
+	
+	node_processes.push_back(pid);
+}
+
+
+void Nodes::endProcesses() {
+	// Debug.
+	std::cout << "Nodes: Ending processes..." << std::endl;
+	
+	for (Poco::ProcessHandle pid : node_processes) {
+		// Debug.
+		std::cout << "Nodes: Ending process handle..." << std::endl;
+	
+		// TODO: implement RPC method to gracefully shut down the node processes instead of
+		// simply killing them.
+		Poco::Process::kill(pid);
+	}
+}

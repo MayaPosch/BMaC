@@ -16,6 +16,8 @@
 #include <cstdlib>
 #include <utility>
 
+#include <Poco/Process.h>
+
 
 // --- CONSTRUCTOR ---
 Node::Node(std::string id, Config &config) : uart0_active(false) {
@@ -28,7 +30,10 @@ Node::Node(std::string id, Config &config) : uart0_active(false) {
 	// own main function.
 	// First register this new Node with the Nodes class.
 	Nodes::addNode(mac, this);
-	std::system("bmac_esp8266.exe");
+	std::string cmd("bmac_esp8266");
+	std::vector<std::string> args;
+	Poco::ProcessHandle ph = Poco::Process::launch(cmd, args);
+	Nodes::addProcess(ph);
 	
 	// The new node should now be launching and connect to the simulation's NymphRPC server.
 	// We have registered the required functions at this point already.

@@ -23,7 +23,7 @@ Building::Building(Config &config) {
 	
 	for (int i = 0; i < floor_count; ++i) {
 		Floor floor(i + 1, config); // Floor numbering starts at 1.
-		floors.push_back(floor);
+		floors.push_back(std::move(floor));
 	}
 }
 

@@ -18,6 +18,8 @@
 #include <string>
 #include <queue>
 
+#include <Poco/Process.h>
+
 
 class Node;
 
@@ -28,6 +30,7 @@ class Nodes {
 	static std::map<std::string, Node*> nodes;
 	static std::queue<std::string> macs;
 	static std::map<std::string, int> sessions;
+	static std::vector<Poco::ProcessHandle> node_processes;
 	
 public:
 	static bool addNode(std::string mac, Node* node);
@@ -44,6 +47,8 @@ public:
 	static std::string readI2C(std::string mac, int i2cAddress, int length);
 	static void addMAC(std::string mac);
 	static std::string getMAC();
+	static void addProcess(Poco::ProcessHandle pid);
+	static void endProcesses();
 };
 
 #endif

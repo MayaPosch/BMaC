@@ -46,7 +46,7 @@ Room::Room(uint32_t type, Config &config) {
 		for (int i = 0; i < node_count; ++i) {
 			Node node(node_ids.at(i), config);	
 			node_cat = "Node_" + node_ids.at(i);			
-			nodes.insert(std::map<std::string, Node>::value_type(node_ids.at(i), node));
+			nodes.insert(std::pair<std::string, Node>(node_ids.at(i), node));
 		}
 		
 		std::string devicesStr = config.getValue<std::string>(node_cat + ".devices", "");

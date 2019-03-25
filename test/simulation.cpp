@@ -249,10 +249,11 @@ int main() {
 	}
 	
 	// Clean-up
+	Nodes::endProcesses();
 	NymphRemoteClient::shutdown();
 	
 	// Wait before exiting, giving threads time to exit.
-	Poco::Thread::sleep(2000); // 2 seconds.
+	Poco::Thread::sleep(5000); // 5 seconds.
 	
 	return 0;
 }
