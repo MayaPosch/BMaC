@@ -348,6 +348,12 @@ void OtaCore::connectOk(IPAddress ip, IPAddress mask, IPAddress gateway) {
 		location = MAC;
 	}
 	
+	
+	// Run MQTT client.
+	// It's important that the MQTT client is started before any modules, so
+	// that any log output from those modules can be sent to the MQTT broker.
+	startMqttClient();
+	
 	// Set configuration from storage, if present.
 	if (fileExist("config.txt")) {
 		String configStr = getFileContent("config.txt");
@@ -355,9 +361,6 @@ void OtaCore::connectOk(IPAddress ip, IPAddress mask, IPAddress gateway) {
 		configStr.getBytes((unsigned char*) &config, sizeof(uint32), 0);
 		updateModules(config);
 	}
-
-	// Run MQTT client
-	startMqttClient();
 }
 
 
