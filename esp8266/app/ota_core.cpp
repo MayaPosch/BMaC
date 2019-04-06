@@ -41,6 +41,8 @@ bool OtaCore::i2c_active = false;
 bool OtaCore::spi_active = false;
 uint32 OtaCore::esp8266_pins = 0x0;
 
+const Url mqtt_url(MQTT_URL);
+
 
 // Utility function to circumvent a bug in older versions of the 
 // Sming FileSystem class for fileGetContent(). 
@@ -127,12 +129,12 @@ bool OtaCore::init(onInitCallback cb) {
     Serial1.printf("System Chip ID: %x\r\n", system_get_chip_id());
     Serial1.printf("SPI Flash ID: %x\r\n", spi_flash_get_id());
 	
-	mqtt = new MqttClient(MQTT_HOST, MQTT_PORT, onMqttReceived);
+	mqtt = new MqttClient(); //MQTT_HOST, MQTT_PORT, onMqttReceived);
 	
 	Serial1.printf("\r\nCurrently running rom %d.\r\n", slot);
 
-	WifiStation.enable(true);
 	WifiStation.config(WIFI_SSID, WIFI_PWD);
+	WifiStation.enable(true);
 	WifiStation.connect();
 	WifiAccessPoint.enable(false);
 
@@ -248,9 +250,15 @@ void OtaCore::startMqttClient() {
 		debugf("Unable to set the last will and testament. Most probably there is not enough memory on the device.");
 	}
 	
+	Serial1.println("MQTT broker: " + mqtt_url.toString());
+	
+	mqtt->setCallback(onMqttReceived);
+
+	// Assign a disconnect callback function.
+	mqtt->setCompleteDelegate(checkMQTTDisconnect);
+	
 #ifdef ENABLE_SSL
 	//mqtt->connect(MAC, true, SSL_SERVER_VERIFY_LATER);
-	mqtt->connect(MAC, MQTT_USERNAME, MQTT_PWD, true);
 	mqtt->addSslOptions(SSL_SERVER_VERIFY_LATER);
 
 	// DEBUG: list files on file system.
@@ -297,14 +305,17 @@ void OtaCore::startMqttClient() {
 	delete[] crtFile;
 	
     Serial1.printf("Free Heap: %d\r\n", system_get_free_heap_size());
+	
+	//mqtt->connect(mqtt_url, MAC, true);
+	
 #elif defined USE_MQTT_PASSWORD
-	mqtt->connect(MAC, MQTT_USERNAME, MQTT_PWD); // No SSL
+	//mqtt->connect(mqtt_url, MAC); // No SSL
 #else
-	mqtt->connect(MAC); // Anonymous login.
+	//mqtt->connect(mqtt_url, MAC); // Anonymous login.
 #endif
 
-	// Assign a disconnect callback function.
-	mqtt->setCompleteDelegate(checkMQTTDisconnect);
+	// Connect.
+	mqtt->connect(mqtt_url, MAC);
 	
 	// Subscribe to relevant topics.
 	mqtt->subscribe(MQTT_PREFIX"upgrade");

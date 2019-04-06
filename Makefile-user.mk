@@ -29,15 +29,31 @@ endif
 # If not left empty, should end with a '/' to avoid merging with topic names.
 MQTT_PREFIX = 
 
+# MQTT URL. This uses the earlier defined MQTT details to compose a full URL.
+# No editing required.
+ifdef ENABLE_SSL
+MQTT_URL := mqtts://
+else
+MQTT_URL := mqtt://
+endif
+
+ifdef USE_MQTT_PASSWORD
+MQTT_URL := $(MQTT_URL)$(MQTT_USERNAME):$(MQTT_PWD)@
+endif
+
+MQTT_URL := $(MQTT_URL)$(MQTT_HOST):$(MQTT_PORT)
+
 ## OTA
 # OTA (update) URL. Only change the host name (and port).
 OTA_URL = http://ota.host.net/ota.php?uid=
 
+# Pass flags to compiler
 USER_CFLAGS := $(USER_CFLAGS) -DWIFI_SSID="\"$(WIFI_SSID)"\"
 USER_CFLAGS := $(USER_CFLAGS) -DWIFI_PWD="\"$(WIFI_PWD)"\"
+USER_CFLAGS := $(USER_CFLAGS) -DMQTT_URL="\"$(MQTT_URL)"\"
 USER_CFLAGS := $(USER_CFLAGS) -DMQTT_HOST="\"$(MQTT_HOST)"\"
-USER_CFLAGS := $(USER_CFLAGS) -DMQTT_PORT="$(MQTT_PORT)"
-USER_CFLAGS := $(USER_CFLAGS) -DMQTT_USERNAME="\"$(MQTT_USERNAME)"\"
+# USER_CFLAGS := $(USER_CFLAGS) -DMQTT_PORT="$(MQTT_PORT)"
+# USER_CFLAGS := $(USER_CFLAGS) -DMQTT_USERNAME="\"$(MQTT_USERNAME)"\"
 USER_CFLAGS := $(USER_CFLAGS) -DOTA_URL="\"$(OTA_URL)"\"
 USER_CFLAGS := $(USER_CFLAGS) -DMQTT_PWD="\"$(MQTT_PWD)"\"
 ifdef USE_MQTT_PASSWORD
