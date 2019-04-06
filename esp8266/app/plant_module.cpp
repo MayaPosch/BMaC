@@ -71,7 +71,8 @@ bool PlantModule::start() {
 	// gain: 128 or 64 for channel A; channel B works with 32 gain factor only
 	if (!OtaCore::claimPin(ESP8266_gpio01)) { return false; }
 	if (!OtaCore::claimPin(ESP8266_gpio03)) { return false; }
-	scale = new HX711(1, 3, 128);
+	scale = new HX711();
+	scale->begin(1, 3, 128);
 	
 	// Create timer.
 	// Read the current value every 60 seconds.
