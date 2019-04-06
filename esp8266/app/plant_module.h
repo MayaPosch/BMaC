@@ -16,11 +16,11 @@
 #include "base_module.h"
 
 #include <Libraries/APA102/apa102.h>
-#include <Libraries/HX711/hx711.h>
+#include <Libraries/HX711/HX711.h>
 #include <Network/HttpServer.h>
 
 
-#define PLANT_GPIO_PIN 5	// GPIO 5 (D1) by default.
+#define PLANT_GPIO_PIN 16	// GPIO 16 (D0) by default.
 #define NUM_APA102 1		// Number of connected LEDs.
 
 
@@ -31,6 +31,7 @@ class PlantModule {
 	static String publishTopic;
 	static HttpServer server;
 	static APA102* LED;
+	static HX711* scale;
 	
 	static void onRequest(HttpRequest& request, HttpResponse& response);
 	

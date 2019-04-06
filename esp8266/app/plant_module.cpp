@@ -21,6 +21,7 @@ uint16 PlantModule::humidityTrigger = 530;
 String PlantModule::publishTopic;
 HttpServer PlantModule::server;
 APA102* PlantModule::LED = 0;
+HX711* PlantModule::scale = 0;
 
 
 enum {
@@ -54,7 +55,7 @@ bool PlantModule::start() {
 	// Start the webserver.
 	server.listen(80);
 	//server.addPath("/", onIndex);
-	server.setDefaultHandler(PlantModule::onRequest);
+	server.paths.setDefault(PlantModule::onRequest);
 	
 	// Set the APA102 RGB LED to display green.
 	LED = new APA102(NUM_APA102);
@@ -62,6 +63,15 @@ bool PlantModule::start() {
 	LED->clear();
 	LED->setAllPixel(0, 255, 0); // RGB
 	LED->show();
+	
+	// Set up the HX711-based scale instance.
+	// Use pins: 
+	// GPIO 1: Data.
+	// GPIO 3: Clock.
+	// gain: 128 or 64 for channel A; channel B works with 32 gain factor only
+	if (!OtaCore::claimPin(ESP8266_gpio01)) { return false; }
+	if (!OtaCore::claimPin(ESP8266_gpio03)) { return false; }
+	scale = new HX711(1, 3, 128);
 	
 	// Create timer.
 	// Read the current value every 60 seconds.
@@ -82,6 +92,11 @@ bool PlantModule::shutdown() {
 	if (LED) {
 		delete LED;
 		LED = 0;
+	}
+	
+	if (scale) {
+		delete scale;
+		scale = 0;
 	}
 	
 	OtaCore::deregisterTopic(MQTT_PREFIX + String("plants/") + OtaCore::getLocation());
@@ -148,6 +163,15 @@ void PlantModule::commandCallback(String message) {
 
 // --- READ SENSOR ---
 void PlantModule::readSensor() {
+	// Read out the scale value.
+	if (scale->is_ready()) {
+		long weight = scale->read();
+		
+		// Publish reading.
+		OtaCore::publish(MQTT_PREFIX"nsa/plant/scale_weight_raw", OtaCore::getLocation() + ";" + 
+																String(weight));
+	}
+	
 	// Read the analogue (ADC) pin for its current value and publish this value.
 	int16_t val = 0;
 	val = analogRead(A0); // calls system_adc_read().
