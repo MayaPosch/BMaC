@@ -30,6 +30,10 @@
 ## Com port speed
 # COM_SPEED	= 115200
 
+# Arduino-style libraries.
+ARDUINO_LIBRARIES := APA102 DHTesp BME280 MCP23008 HX711
+
+
 ## Configure flash parameters (for ESP12-E and other new boards):
 SPI_MODE = dio
 
@@ -60,7 +64,8 @@ SPIFF_SIZE      ?= 65536
 #LIBS := $(LIBS) stdc++ supc++ microc
 
 # Firmware version
-include ./version
+#include version
+VERSION = 0.2
 USER_CFLAGS = -DVERSION="\"$(VERSION)\""
 
 # Environment options:
@@ -111,8 +116,8 @@ MQTT_URL := $(MQTT_URL)$(MQTT_HOST):$(MQTT_PORT)
 OTA_URL = http://ota.host.net/ota.php?uid=
 
 # Pass flags to compiler
-USER_CFLAGS := $(USER_CFLAGS) -DWIFI_SSID="\"$(WIFI_SSID)"\"
-USER_CFLAGS := $(USER_CFLAGS) -DWIFI_PWD="\"$(WIFI_PWD)"\"
+USER_CFLAGS := $(USER_CFLAGS) -D__WIFI_SSID="\"$(WIFI_SSID)"\"
+USER_CFLAGS := $(USER_CFLAGS) -D__WIFI_PWD="\"$(WIFI_PWD)"\"
 USER_CFLAGS := $(USER_CFLAGS) -DMQTT_URL="\"$(MQTT_URL)"\"
 USER_CFLAGS := $(USER_CFLAGS) -DMQTT_HOST="\"$(MQTT_HOST)"\"
 # USER_CFLAGS := $(USER_CFLAGS) -DMQTT_PORT="$(MQTT_PORT)"
