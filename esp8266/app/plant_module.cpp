@@ -236,5 +236,5 @@ void PlantModule::onRequest(HttpRequest& request, HttpResponse& response) {
 	vars["raw_value"] = String(val);
 	vars["percentage"] = String(perc);
 	
-	response.sendTemplate(tmpl); // will be automatically deleted
+	response.sendNamedStream(tmpl); // will be automatically deleted
 }

@@ -25,6 +25,7 @@ bool MotionModule::firstLow = true;
 // --- INITIALIZE ---
 bool MotionModule::initialize() {
 	BaseModule::registerModule(MOD_IDX_MOTION, MotionModule::start, MotionModule::shutdown);
+	return true;
 }
 
 

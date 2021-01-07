@@ -22,6 +22,7 @@ String JuraTermModule::mqttTxBuffer;
 // --- INITIALIZE ---
 bool JuraTermModule::initialize() {
 	BaseModule::registerModule(MOD_IDX_JURATERM, JuraTermModule::start, JuraTermModule::shutdown);
+	return true;
 }
 
 
@@ -83,7 +84,7 @@ bool JuraTermModule::start() {
 	Serial.end();
 	delay(10);
 	Serial.begin(9600);
-	Serial.setCallback(&JuraTermModule::onSerialReceived);
+	Serial.onDataReceived(&JuraTermModule::onSerialReceived);
 	
 	return true;
 }
@@ -181,7 +182,7 @@ void JuraTermModule::onSerialReceived(Stream &stream, char arrivedChar, unsigned
 		// Decode and send the command to the first UART.
 		//
 		// Write payload bits into target byte.
-		uint8_t d4;
+		uint8_t d4 = 0;
 		bitWrite(d4, 0, bitRead(d0, 2));
 		bitWrite(d4, 1, bitRead(d0, 5));
 		bitWrite(d4, 2, bitRead(d1, 2));

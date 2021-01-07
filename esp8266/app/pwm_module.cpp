@@ -32,6 +32,7 @@ enum {
 // --- INITIALIZE ---
 bool PwmModule::initialize() {
 	BaseModule::registerModule(MOD_IDX_PWM, PwmModule::start, PwmModule::shutdown);
+	return true;
 }
 
 

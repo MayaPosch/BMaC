@@ -25,6 +25,7 @@ String JuraModule::mqttTxBuffer;
 // --- INITIALIZE ---
 bool JuraModule::initialize() {
 	BaseModule::registerModule(MOD_IDX_JURA, JuraModule::start, JuraModule::shutdown);
+	return true;
 }
 
 
@@ -92,7 +93,7 @@ bool JuraModule::start() {
 	Serial.end();
 	delay(10);
 	Serial.begin(9600);
-	Serial.setCallback(&JuraModule::onSerialReceived);
+	Serial.onDataReceived(&JuraModule::onSerialReceived);
 	
 	// Callback for reading out statistics every minute, assuming that reading
 	// more often is kind of ridiculous considering we're talking about a coffee
@@ -189,7 +190,7 @@ void JuraModule::onSerialReceived(Stream &stream, char arrivedChar, unsigned sho
 		// Decode and send the command to the first UART.
 		//
 		// Write payload bits into target byte.
-		uint8_t d4;
+		uint8_t d4 = 0;
 		bitWrite(d4, 0, bitRead(d0, 2));
 		bitWrite(d4, 1, bitRead(d0, 5));
 		bitWrite(d4, 2, bitRead(d1, 2));

@@ -17,8 +17,8 @@
 #define OTA_CORE_H
 
 
-#include <user_config.h>
-#include <SmingCore/SmingCore.h>
+#include <Network/RbootHttpUpdater.h>
+#include <SmingCore.h>
 
 
 enum {
@@ -64,7 +64,7 @@ typedef void (*onInitCallback)();
 
 class OtaCore {
 	static Timer procTimer;
-	static rBootHttpUpdate* otaUpdater;
+	static RbootHttpUpdater* otaUpdater;
 	static MqttClient* mqtt;
 	static String MAC;
 	static HashMap<String, topicCallback>* topicCallbacks;
@@ -78,11 +78,11 @@ class OtaCore {
 	static uint32 esp8266_pins;
 
 	static void otaUpdate();
-	static void otaUpdate_CallBack(rBootHttpUpdate& update, bool result);
+	static void otaUpdate_CallBack(RbootHttpUpdater& update, bool result);
 	static void startMqttClient();
 	static void checkMQTTDisconnect(TcpClient& client, bool flag);
-	static void connectOk(IPAddress ip, IPAddress mask, IPAddress gateway);
-	static void connectFail(String ssid, uint8_t ssidLength, uint8_t *bssid, uint8_t reason);
+	static void connectOk(IpAddress ip, IpAddress mask, IpAddress gateway);
+	static void connectFail(const String& ssid, MacAddress bssid, WifiDisconnectReason reason);
 	static void onMqttReceived(String topic, String message);
 	static void updateModules(uint32 input);
 	static bool mapGpioToBit(int pin, ESP8266_pins &addr);

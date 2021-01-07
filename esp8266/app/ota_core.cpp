@@ -28,7 +28,7 @@
 
 // Static initialisations.
 Timer OtaCore::procTimer;
-rBootHttpUpdate* OtaCore::otaUpdater = 0;
+RbootHttpUpdater* OtaCore::otaUpdater = 0;
 MqttClient* OtaCore::mqtt = 0;
 String OtaCore::MAC;
 HashMap<String, topicCallback>* OtaCore::topicCallbacks = new HashMap<String, topicCallback>();
@@ -133,7 +133,7 @@ bool OtaCore::init(onInitCallback cb) {
 	
 	Serial1.printf("\r\nCurrently running rom %d.\r\n", slot);
 
-	WifiStation.config(WIFI_SSID, WIFI_PWD);
+	WifiStation.config(__WIFI_SSID, __WIFI_PWD);
 	WifiStation.enable(true);
 	WifiStation.connect();
 	WifiAccessPoint.enable(false);
@@ -144,11 +144,13 @@ bool OtaCore::init(onInitCallback cb) {
 	
 	// Call init callback.
 	(*cb)();
+	
+	return true;
 }
 
 
 // --- OTA UPDATE CALLBACK ---
-void OtaCore::otaUpdate_CallBack(rBootHttpUpdate& update, bool result) {
+void OtaCore::otaUpdate_CallBack(RbootHttpUpdater& update, bool result) {
 	OtaCore::log(LOG_INFO, "In OTA callback...");
 	if (result == true) { // success
 		uint8 slot = rboot_get_current_rom();
@@ -203,7 +205,7 @@ void OtaCore::otaUpdate() {
 	// Needs a clean object, otherwise if run before & failed, 
 	// it'll not run again.
 	if (otaUpdater) { delete otaUpdater; }
-	otaUpdater = new rBootHttpUpdate();
+	otaUpdater = new RbootHttpUpdater();
 	
 	// Select ROM slot to flash. This is always the other slot than which we
 	// last booted from.
@@ -333,7 +335,7 @@ void OtaCore::startMqttClient() {
 
 // --- CONNECT OK ---
 // Will be called when the WiFi client has connected to the network.
-void OtaCore::connectOk(IPAddress ip, IPAddress mask, IPAddress gateway) {
+void OtaCore::connectOk(IpAddress ip, IpAddress mask, IpAddress gateway) {
 	Serial1.println("I'm CONNECTED. IP: " + ip.toString());
 	
 	// Get WiFi MAC address as this node's unique fingerprint.
@@ -366,7 +368,7 @@ void OtaCore::connectOk(IPAddress ip, IPAddress mask, IPAddress gateway) {
 
 // --- CONNECT FAIL ---
 // Will be called when WiFi station timeout was reached
-void OtaCore::connectFail(String ssid, uint8_t ssidLength, uint8_t* bssid, uint8_t reason) {
+void OtaCore::connectFail(const String& ssid, MacAddress bssid, WifiDisconnectReason reason) {
 	Serial1.println("I'm NOT CONNECTED. Need help :(");
 	debugf("Disconnected from %s. Reason: %d", ssid.c_str(), reason);
 	

@@ -369,7 +369,7 @@ void IOModule::commandCallback(String message) {
 												(char) 0x40 + (char) 0x00);
 		}
 		
-		uint8 pstate;
+		uint8 pstate = 0;
 		if (mcp) {
 			OtaCore::log(LOG_DEBUG, "Reading pin in library...");
 			pstate = (mcp->readGPIO() >> pnum) & 0x1;

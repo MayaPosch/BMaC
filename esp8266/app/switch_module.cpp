@@ -35,6 +35,7 @@ enum {
 // --- INITIALIZE ---
 bool SwitchModule::initialize() {
 	BaseModule::registerModule(MOD_IDX_SWITCH, SwitchModule::start, SwitchModule::shutdown);
+	return true;
 }
 
 
@@ -58,6 +59,8 @@ bool SwitchModule::start() {
 	
 	digitalWrite(SW1_SET_PIN, LOW);
 	digitalWrite(SW2_SET_PIN, LOW);
+	
+	return true;
 }
 
 
@@ -70,6 +73,8 @@ bool SwitchModule::shutdown() {
 	if (!OtaCore::releasePin(ESP8266_gpio04)) { return false; }
 	if (!OtaCore::releasePin(ESP8266_gpio14)) { return false; }
 	if (!OtaCore::releasePin(ESP8266_gpio12)) { return false; }
+	
+	return true;
 }
 
 

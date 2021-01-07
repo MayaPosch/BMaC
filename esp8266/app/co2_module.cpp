@@ -41,7 +41,7 @@ bool CO2Module::start() {
 	Serial.end();
 	delay(10);
 	Serial.begin(9600);
-	Serial.setCallback(&CO2Module::onSerialReceived);
+	Serial.onDataReceived(&CO2Module::onSerialReceived);
 	
 	// Create timer.
 	// Read the current value every 30 seconds.
