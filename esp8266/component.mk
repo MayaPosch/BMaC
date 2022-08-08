@@ -71,10 +71,8 @@ USER_CFLAGS = -DVERSION="\"$(VERSION)\""
 # Environment options:
 ## WiFi
 # WiFi SSID for the network to connect to and its password.
-#WIFI_SSID = MyWiFiNetwork
-WIFI_SSID = CIA7430QX
-#WIFI_PWD = MyWiFiPassword
-WIFI_PWD = 84697060122592298009
+WIFI_SSID = MyWiFiNetwork
+WIFI_PWD = MyWiFiPassword
 
 ## MQTT
 # MQTT host and port.
