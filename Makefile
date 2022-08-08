@@ -19,3 +19,5 @@ clean-server:
 	
 clean-node:
 	$(MAKE) -f Makefile.node clean
+	
+.PHONY: node server
