@@ -229,12 +229,13 @@ void PlantModule::readSensor() {
 
 
 void PlantModule::onRequest(HttpRequest& request, HttpResponse& response) {
-	TemplateFileStream* tmpl = new TemplateFileStream("index.html");
+	// TODO: update to current API.
+	/* TemplateFileStream* tmpl = new TemplateFileStream("index.html");
 	TemplateVariables& vars = tmpl->variables();
 	int16_t val = analogRead(A0);
 	int8_t perc = 100 - ((val - 379) / 3.87);
 	vars["raw_value"] = String(val);
 	vars["percentage"] = String(perc);
 	
-	response.sendNamedStream(tmpl); // will be automatically deleted
+	response.sendNamedStream(tmpl); // will be automatically deleted */
 }

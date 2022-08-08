@@ -83,7 +83,7 @@ class OtaCore {
 	static void checkMQTTDisconnect(TcpClient& client, bool flag);
 	static void connectOk(IpAddress ip, IpAddress mask, IpAddress gateway);
 	static void connectFail(const String& ssid, MacAddress bssid, WifiDisconnectReason reason);
-	static void onMqttReceived(String topic, String message);
+	static int onMqttReceived(MqttClient& client, mqtt_message_t* payload);
 	static void updateModules(uint32 input);
 	static bool mapGpioToBit(int pin, ESP8266_pins &addr);
 	

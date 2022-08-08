@@ -26,6 +26,10 @@
 #define SPI_CS 15
 
 
+#include <esp_spi_flash.h>
+#include <Network/Mqtt/MqttBuffer.h>
+
+
 // Static initialisations.
 Timer OtaCore::procTimer;
 RbootHttpUpdater* OtaCore::otaUpdater = 0;
@@ -49,17 +53,17 @@ const Url mqtt_url(MQTT_URL);
 // It doesn't deal with null bytes very well, which is a problem for 
 // binary files like our DER-formatted certificate and key.
 String getFileContent(const String fileName) {
-	file_t file = fileOpen(fileName.c_str(), eFO_ReadOnly);
+	file_t file = fileOpen(fileName.c_str(), File::ReadOnly);
 	
 	// Get size
-	fileSeek(file, 0, eSO_FileEnd);
+	fileSeek(file, 0, SeekOrigin::End);
 	int size = fileTell(file);
 	if (size <= 0) 	{
 		fileClose(file);
 		return "";
 	}
 	
-	fileSeek(file, 0, eSO_FileStart);
+	fileSeek(file, 0, SeekOrigin::Start);
 	char* buffer = new char[size + 1];
 	buffer[size] = 0;
 	fileRead(file, buffer, size);
@@ -74,24 +78,24 @@ String getFileContent(const String fileName) {
 // fileSetContent() function in FileSystem.cpp since it does not support
 // binary strings.
 void setFileContent(const String &fileName, const String &content) {
-	file_t file = fileOpen(fileName.c_str(), eFO_CreateNewAlways | eFO_WriteOnly);
+	file_t file = fileOpen(fileName.c_str(), File::CreateNewAlways | File::WriteOnly);
 	fileWrite(file, content.c_str(), content.length());
 	fileClose(file);
 }
 
 
 bool readIntoFileBuffer(const String filename, char* &buffer, unsigned int &size) {
-	file_t file = fileOpen(filename.c_str(), eFO_ReadOnly);
+	file_t file = fileOpen(filename.c_str(), File::ReadOnly);
 	
 	// Get size
-	fileSeek(file, 0, eSO_FileEnd);
+	fileSeek(file, 0, SeekOrigin::End);
 	size = fileTell(file);
 	if (size <= 0) 	{
 		fileClose(file);
 		return true;
 	}
 	
-	fileSeek(file, 0, eSO_FileStart);
+	fileSeek(file, 0, SeekOrigin::Start);
 	buffer = new char[size + 1];
 	buffer[size] = 0;
 	fileRead(file, buffer, size);
@@ -111,16 +115,16 @@ bool OtaCore::init(onInitCallback cb) {
 	// Initialise the sub module system.
 	BaseModule::init();
 	
-	//spiffs_mount(); // Mount file system, in order to work with files.
+	spiffs_mount(); // Mount file system, in order to work with files.
 	
 	// Mount the SpifFS manually. Automatic mounting is not
 	// compatible with RBoot (yet):
 	// https://github.com/SmingHub/Sming/issues/1009
 	int slot = rboot_get_current_rom();
-	u32_t offset;
+	/*u32_t offset;
 	if (slot == 0) { offset = 0x100000; }
 	else { offset = 0x300000; }
-	spiffs_mount_manual(offset, 65536);
+	spiffs_mount_manual(offset, 65536);*/
 	
 	// Print debug info.
 	Serial1.printf("\r\nSDK: v%s\r\n", system_get_sdk_version());
@@ -192,7 +196,7 @@ bool OtaCore::deregisterTopic(String topic) {
 // --- PUBLISH ---
 // Publishes the provided message to the MQTT broker on the specified topic.
 bool OtaCore::publish(String topic, String message, int qos /* = 1 */) {
-	OtaCore::mqtt->publishWithQoS(topic, message, qos);
+	OtaCore::mqtt->publish(topic, message, (mqtt_qos_t) qos);
 	return true;
 }
 
@@ -248,13 +252,14 @@ void OtaCore::checkMQTTDisconnect(TcpClient& client, bool flag) {
 // Run MQTT client
 void OtaCore::startMqttClient() {
 	procTimer.stop();
-	if (!mqtt->setWill("last/will","The connection from this device is lost:(", 1, true)) {
-		debugf("Unable to set the last will and testament. Most probably there is not enough memory on the device.");
+	if (!mqtt->setWill("last/will","The connection from this device is lost:(", 
+							MqttClient::getFlags(MQTT_QOS_AT_LEAST_ONCE, MQTT_RETAIN_TRUE))) {
+		debugf("Unable to set mqtt will. Maybe not enough memory on the device.");
 	}
 	
 	Serial1.println("MQTT broker: " + mqtt_url.toString());
 	
-	mqtt->setCallback(onMqttReceived);
+	mqtt->setMessageHandler(onMqttReceived);
 
 	// Assign a disconnect callback function.
 	mqtt->setCompleteDelegate(checkMQTTDisconnect);
@@ -384,7 +389,9 @@ void OtaCore::connectFail(const String& ssid, MacAddress bssid, WifiDisconnectRe
 
 // --- ON MQTT RECEIVED ---
 // Callback for MQTT message events.
-void OtaCore::onMqttReceived(String topic, String message) {
+int OtaCore::onMqttReceived(MqttClient& client, mqtt_message_t* payload) {
+	String topic = MqttBuffer(payload->publish.topic_name);
+	String message = MqttBuffer(payload->publish.content);
 	Serial1.print(topic);
 	Serial1.print(":\n"); // Prettify alignment for printing
 	Serial1.println(message);
@@ -449,7 +456,7 @@ void OtaCore::onMqttReceived(String topic, String message) {
 			// those using the UART.
 			if (msg.length() != 4) { // Must be 32-bit integer.
 				Serial1.printf("Payload size wasn't 4 bytes: %d\n", msg.length());
-				return; 
+				return 1;
 			}
 			
 			uint32 input;
@@ -462,7 +469,7 @@ void OtaCore::onMqttReceived(String topic, String message) {
 		}
 		else if (cmd == "loc") {
 			// Set the new location string if it's different.
-			if (msg.length() < 1) { return; } // Incomplete message.
+			if (msg.length() < 1) { return 1; } // Incomplete message.
 			if (location != msg) {
 				location = msg;
 				fileSetContent("location.txt", location); // Save to flash.
@@ -473,7 +480,7 @@ void OtaCore::onMqttReceived(String topic, String message) {
 			uint32 active_mods = BaseModule::activeMods();
 			if (active_mods == 0) {
 				mqtt->publish(MQTT_PREFIX"cc/response", MAC + ";0");
-				return;
+				return 1;
 			}
 			
 			mqtt->publish(MQTT_PREFIX"cc/response", MAC + ";" + String((const char*) &active_mods, 4));
@@ -491,6 +498,8 @@ void OtaCore::onMqttReceived(String topic, String message) {
 			(*((*topicCallbacks)[topic]))(message);
 		}
 	}
+	
+	return 0;
 }
 
 

@@ -31,7 +31,7 @@
 # COM_SPEED	= 115200
 
 # Arduino-style libraries.
-ARDUINO_LIBRARIES := APA102 DHTesp BME280 MCP23008 HX711
+ARDUINO_LIBRARIES := APA102 DHTesp BME280 MCP23008 HX711 SDCard
 
 
 ## Configure flash parameters (for ESP12-E and other new boards):
@@ -71,12 +71,16 @@ USER_CFLAGS = -DVERSION="\"$(VERSION)\""
 # Environment options:
 ## WiFi
 # WiFi SSID for the network to connect to and its password.
-WIFI_SSID = MyWiFiNetwork
-WIFI_PWD = MyWiFiPassword
+#WIFI_SSID = MyWiFiNetwork
+WIFI_SSID = CIA7430QX
+#WIFI_PWD = MyWiFiPassword
+WIFI_PWD = 84697060122592298009
 
 ## MQTT
 # MQTT host and port.
-MQTT_HOST = mqtt.host.net
+#MQTT_HOST = mqtt.host.net
+#MQTT_HOST = orangepizero
+MQTT_HOST = servepi
 # For SSL support, uncomment the following line or compile with this parameter.
 #ENABLE_SSL=1
 # MQTT SSL port (for example):
@@ -113,7 +117,9 @@ MQTT_URL := $(MQTT_URL)$(MQTT_HOST):$(MQTT_PORT)
 
 ## OTA
 # OTA (update) URL. Only change the host name (and port).
-OTA_URL = http://ota.host.net/ota.php?uid=
+#OTA_URL = http://ota.host.net/ota.php?uid=
+#OTA_URL = http://orangepizero/ota.php?uid=
+OTA_URL = http://servepi/ota.php?uid=
 
 # Pass flags to compiler
 USER_CFLAGS := $(USER_CFLAGS) -D__WIFI_SSID="\"$(WIFI_SSID)"\"
