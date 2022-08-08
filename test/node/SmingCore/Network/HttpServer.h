@@ -23,8 +23,8 @@
 #include "../wiring/WString.h"
 #include "../wiring/WHashMap.h"
 #include "../Delegate.h"
-/* #include "Http/HttpResponse.h"
-#include "Http/HttpRequest.h"
+#include "Http/HttpResponse.h"
+/*#include "Http/HttpRequest.h"
 #include "Http/HttpResource.h"
 #include "Http/HttpServerConnection.h"
 #include "Http/HttpBodyParser.h" */
@@ -79,12 +79,12 @@ class HttpRequest {
 	//
 };
 
-class HttpResponse {
+/* class HttpResponse {
 	//
 	
 public:
 	void sendTemplate(TemplateFileStream* fs) { }
-};
+}; */
 
 typedef struct {
 	int maxActiveConnections = 10;  // << the maximum number of concurrent requests..

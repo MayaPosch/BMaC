@@ -41,6 +41,8 @@ enum HttpConnectionState {
 	eHCS_Sent
 };
 
+typedef enum http_status HttpStatus;
+
 /**
  * @brief Return a string name of the given error
  * @param err
