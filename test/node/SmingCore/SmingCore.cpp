@@ -129,6 +129,30 @@ void HardwareSerial::setCallback(StreamDataReceivedDelegate dataReceivedDelegate
 }
 
 
+void HardwareSerial::onDataReceived(StreamDataReceivedDelegate dataReceivedDelegate) {
+	HWSDelegate = dataReceivedDelegate;
+	
+	// Call the remote method.
+	/* vector<NymphType*> values;
+	values.push_back(new NymphString(WifiStation.getMAC()));
+	values.push_back(new NymphString("dataReceivedCallback"));
+	NymphType* returnValue = 0;
+	if (!NymphRemoteServer::callMethod(StationClass::handle, "registerUartCb", values, returnValue, result)) {
+		std::cout << "Error calling remote method: " << result << std::endl;
+		NymphRemoteServer::disconnect(StationClass::handle, result);
+		NymphRemoteServer::shutdown();
+		return false;
+	}
+	
+	if (returnValue->type() != NYMPH_BOOL) {
+		std::cout << "Return value wasn't a boolean. Type: " << returnValue->type() << std::endl;
+		NymphRemoteServer::disconnect(StationClass::handle, result);
+		NymphRemoteServer::shutdown();
+		return false;
+	} */
+}
+
+
 void HardwareSerial::dataReceivedCallback(NymphMessage* msg, void* data) {
 	// Get the data from the message.
 	rxBuffer = ((NymphString*) msg->parameters()[0])->getValue();
@@ -215,9 +239,9 @@ rboot_config rboot_get_config() {
 }
 
 // TODO: implement when testing OTA updates.
-void rBootHttpUpdate::addItem(int offset, String firmwareFileUrl) { }
-void rBootHttpUpdate::setCallback(OtaUpdateDelegate reqUpdateDelegate) { }
-void rBootHttpUpdate::start() { }
+void rBootHttpUpdater::addItem(int offset, String firmwareFileUrl) { }
+void rBootHttpUpdater::setCallback(OtaUpdateDelegate reqUpdateDelegate) { }
+void rBootHttpUpdater::start() { }
 
 
 // --- SPIFFS
