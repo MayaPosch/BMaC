@@ -18,9 +18,9 @@ OUTPUT = bmac_esp8266
 OUTLIB = lib$(OUTPUT).a
 INCLUDE = -I $(ROOT)/ \
 			-I $(ROOT)/SmingCore/ \
-			-I $(ROOT)/SmingCore/network \
-			-I $(ROOT)/SmingCore/network/libmosquitto \
-			-I $(ROOT)/SmingCore/network/libmosquitto/cpp \
+			-I $(ROOT)/SmingCore/Network \
+			-I $(ROOT)/SmingCore/Network/libmosquitto \
+			-I $(ROOT)/SmingCore/Network/libmosquitto/cpp \
 			-I $(ROOT)/SmingCore/wiring \
 			-I $(ROOT)/Libraries/BME280 \
 			-I $(ROOT)/Libraries/MCP23008 \
