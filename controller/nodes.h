@@ -31,8 +31,17 @@ using namespace Poco::Net;
 class Listener;
 
 
+struct PwmChannel {
+	bool state;		// enabled state of channel.
+	uint8_t duty;	// Current duty cycle (0-100%).
+	bool valid;		// Validation state.
+};
+
+
 struct NodeInfo {
 	std::string uid;
+	std::string location;
+	uint32_t modules;
 	float posx;
 	float posy;
 	float current;		// current temperature for this node.
@@ -77,6 +86,8 @@ class Nodes {
 	static HTTPClientSession* influxClient;
 	static std::string influxDb;
 	static bool secure;
+	static std::vector<NodeInfo> nodes;
+	static std::vector<NodeInfo> newNodes;
 	static Listener* listener;
 	static Timer* tempTimer;
 	static Timer* nodesTimer;
@@ -91,6 +102,8 @@ public:
 	static bool getNodeInfo(std::string uid, NodeInfo &info);
 	static bool getValveInfo(std::string uid, ValveInfo &info);
 	static bool getSwitchInfo(std::string uid, SwitchInfo &info);
+	static std::string nodesToJson();
+	static std::string unassignedToJson();
 	//static bool getNodesInfo(vector<NodeInfo> &info);
 	static bool setTargetTemperature(std::string uid, float temp);
 	static bool setCurrentTemperature(std::string uid, float temp);

@@ -43,23 +43,23 @@ Listener::Listener(std::string defaultFirmware) {
 	client.init(std::bind(&Listener::logHandler, this, _1, _2), NYMPH_LOG_LEVEL_TRACE);
 	client.setMessageHandler(std::bind(&Listener::messageHandler, this, _1, _2, _3));
 	
-	int keepalive = 60;
+	//int keepalive = 60;
 	//connect(host.c_str(), port, keepalive);
 	
 	// Set up SQLite database link.
-	Data::SQLite::Connector::registerConnector();
-	session = new Poco::Data::Session("SQLite", "nodes.db");
+	/* Data::SQLite::Connector::registerConnector();
+	session = new Poco::Data::Session("SQLite", "nodes.db"); */
 	
 	// Ensure the database has a valid nodes table.
-	(*session) << "CREATE TABLE IF NOT EXISTS nodes (uid TEXT UNIQUE, \
+	/* (*session) << "CREATE TABLE IF NOT EXISTS nodes (uid TEXT UNIQUE, \
 		location TEXT, \
 		modules INT, \
 		posx FLOAT, \
-		posy FLOAT)", now;
+		posy FLOAT)", now; */
 		
 	// Ensure we have a valid firmware table.
-	(*session) << "CREATE TABLE IF NOT EXISTS firmware (uid TEXT UNIQUE, \
-		file TEXT)", now;
+	/* (*session) << "CREATE TABLE IF NOT EXISTS firmware (uid TEXT UNIQUE, \
+		file TEXT)", now; */
 
 	// Load configuration settings.
 	this->defaultFirmware = defaultFirmware;
@@ -139,15 +139,23 @@ void Listener::messageHandler(int handle, std::string topic, std::string payload
 	// * On Connect.
 	// * Subscriptions.
 	if (topic == "cc/config") {
-		if (payload.length() < 1) {
+		if (payload.length() < 1 || payload.length() != 6) {
 			// Invalid payload. Reject.
 			std::cerr << "Invalid payload: " << payload << ". Reject." << std::endl;
 			return;
 		}
 		
+		// TODO: Get the modules configuration for the specified node ID.
+		// TODO: Handle an unknown node.
+		NodeInfo node;
+		//node.uid = payload;
+		bool res = Nodes::getNodeInfo(payload, node);
+		//node.modules = Nodes::getNodeModules(payload);
+		//node.location = Nodes::getNodeLocation(payload);
+		
 		// Payload should be the UID of the node. Retrieve the configuration for
 		// this UID and publish it on 'cc/<UID>' with the configuration as payload.
-		Data::Statement select(*session);
+		/* Data::Statement select(*session);
 		Node node;
 		node.uid = payload;
 		select << "SELECT location, modules FROM nodes WHERE uid=?",
@@ -155,10 +163,11 @@ void Listener::messageHandler(int handle, std::string topic, std::string payload
 				into (node.modules),
 				use (payload);
 				
-		size_t rows = select.execute();
+		size_t rows = select.execute(); */
 		
 		// Send result.
-		if (rows == 1) {
+		//if (rows == 1) {
+		if (res) {
 			std::string topic = "cc/" + payload;
 			std::string response = "mod;" + std::string((const char*) &node.modules, 4);
 			//publish(0, topic.c_str(), response.length(), response.c_str());
@@ -167,20 +176,21 @@ void Listener::messageHandler(int handle, std::string topic, std::string payload
 			//publish(0, topic.c_str(), response.length(), response.c_str());
 			publishMessage(topic, response);
 		}
-		else if (rows < 1) {
+		//else if (rows < 1) {
+		else {
 			// No node with this UID found.
-			std::cerr << "Error: No data set found for uid " << payload << std::endl;
-		}
+			std::cout << "No data found for uid " << payload << ". Added as new node." << std::endl;
+		}/* 
 		else {
 			// Multiple data sets were found, which shouldn't be possible...
 			std::cerr << "Error: Multiple data sets found for uid " << payload << std::endl;
-		}
+		} */
 	}
 	else if (topic == "cc/ui/config") {
 		// Payload is the desired resource to return:
 		// * 'map'		- The layout image indicating node positioning.
 		// * 'nodes'	- UID & position info (x/y) for each node.
-		if (payload == "map") {
+		/* if (payload == "map") {
 			// The map is expected to exist in the executable's folder (./).
 			// Its name is 'map', with or without extension. If multiple files
 			// with the name exist, the first one is taken.
@@ -266,7 +276,7 @@ void Listener::messageHandler(int handle, std::string topic, std::string payload
 			
 			//publish(0, "cc/nodes/all", header.length(), header.c_str());
 			publishMessage("cc/nodes/all", header);
-		}
+		} */
 	}
 	else if (topic == "cc/nodes/new") {
 		// The payload should contain the information to create a new node.
@@ -287,7 +297,7 @@ void Listener::messageHandler(int handle, std::string topic, std::string payload
 		// 0x4	- Jura
 		// 0x8	- JuraTerm
 		
-		uint32_t index = 0;
+		/* uint32_t index = 0;
 		uint32_t msgLength = *((uint32_t*) payload.substr(index, 4).data());
 		index += 4;
 		std::string signature = payload.substr(index, 4);
@@ -328,13 +338,13 @@ void Listener::messageHandler(int handle, std::string topic, std::string payload
 		(*session) << "INSERT INTO firmware VALUES(?, ?)",
 				use(node.uid),
 				use(defaultFirmware),
-				now;
+				now; */
 	}
 	else if (topic == "cc/nodes/update") {
 		// Update a single node.
 		// The payload contains the usual node info. Deserialise it and store it
 		// in the database.
-		uint32_t index = 0;
+		/* uint32_t index = 0;
 		uint32_t msgLength = *((uint32_t*) payload.substr(index, 4).data());
 		index += 4;
 		std::string signature = payload.substr(index, 4);
@@ -369,12 +379,12 @@ void Listener::messageHandler(int handle, std::string topic, std::string payload
 				use(node.posy),
 				use(node.modules),
 				use(node.uid),
-				now;
+				now; */
 	}
 	else if (topic == "cc/nodes/delete") {
 		// Delete the node with the specified UID.
 		// Payload is the UID to delete.
-		std::cout << "Deleting node with UID: " << payload << std::endl;
+		/* std::cout << "Deleting node with UID: " << payload << std::endl;
 		
 		Data::Statement del(*session);
 		del << "DELETE FROM nodes WHERE uid = ?",
@@ -383,7 +393,7 @@ void Listener::messageHandler(int handle, std::string topic, std::string payload
 				
 		(*session) << "DELETE FROM firmware WHERE uid = ?",
 				use(payload),
-				now;
+				now; */
 	}
 	else if (topic == "nsa/events/co2") {
 		// CO2-related events. Currently hard-coded triggers in the node 
@@ -399,7 +409,7 @@ void Listener::messageHandler(int handle, std::string topic, std::string payload
 		// * ok
 		// * warn
 		// * crit
-		StringTokenizer st(payload, ";", StringTokenizer::TOK_TRIM | StringTokenizer::TOK_IGNORE_EMPTY);
+		/* StringTokenizer st(payload, ";", StringTokenizer::TOK_TRIM | StringTokenizer::TOK_IGNORE_EMPTY);
 		if (st.count() < 4) {
 			std::cerr << "CO2 event: Wrong number of arguments. Payload: " << payload << std::endl;
 			return; 
@@ -431,7 +441,7 @@ void Listener::messageHandler(int handle, std::string topic, std::string payload
 			std::cout << "Exception caught while attempting to connect." << std::endl;
 			std::cerr << exc.displayText() << std::endl;
 			return;
-		}
+		} */
 	}
 	else if (topic == "cc/firmware") {
 		if (payload == "list") {
@@ -500,16 +510,18 @@ void Listener::messageHandler(int handle, std::string topic, std::string payload
 		
 		std::string uid = st[0];
 		
-		nodesLock.lock();
+		// TODO: check that this node UID is known.
+		
+		/* nodesLock.lock();
 		std::map<std::string, NodeInfo>::iterator it;
 		it = nodes.find(uid);
 		if (it == nodes.end()) {
 			std::cerr << "Unknown UID. Skipping.\n";
 			nodesLock.unlock();
 			return;
-		}
+		} */
 		
-		std::cout << "PWM receive for UID " << uid << ", validate: " << 
+		/* std::cout << "PWM receive for UID " << uid << ", validate: " << 
 									(uint32_t) it->second.validate << std::endl;
 		
 		if (it->second.validate == 0) {
@@ -562,7 +574,7 @@ void Listener::messageHandler(int handle, std::string topic, std::string payload
 				// Look for the '1' confirmation.
 				if (st[1] != "1") {
 					std::cerr << "Initializing node '" + uid + "' failed. Skipping.\n";
-					nodesLock.unlock();
+					//nodesLock.unlock();
 					return;
 				}
 				
@@ -588,7 +600,7 @@ void Listener::messageHandler(int handle, std::string topic, std::string payload
 			std::string res = st[1];
 			if (res.length() != 2) {
 				std::cerr << "Received wrong response length from node for duty level. Skipping.\n";
-				nodesLock.unlock();
+				//nodesLock.unlock();
 				return;
 			}
 			
@@ -766,9 +778,9 @@ void Listener::messageHandler(int handle, std::string topic, std::string payload
 			}
 
 			it->second.validate = 3;
-		}
+		} */
 			
-		nodesLock.unlock();
+		//nodesLock.unlock();
 	}
 	else if (topic.compare(0, 11, "io/response") == 0) {
 		StringTokenizer st(payload, ";");
@@ -1143,7 +1155,7 @@ bool Listener::checkNodes() {
 	
 	int uidsl = uids.size();
 	//nodes.clear();
-	nodesLock.lock();
+	//nodesLock.lock();
 	for (unsigned int i = 0; i < uidsl; ++i) {
 		// Start the validation sequence for this node.
 		NodeInfo info;
@@ -1161,7 +1173,7 @@ bool Listener::checkNodes() {
 		
 		// Store info for this node.
 		info.validate = 0; // starting a new validation cycle.
-		nodes[uids[i]] = info;
+		//nodes[uids[i]] = info;
 		valves[uids[i]] = vinfo;
 		
 		// Request list of active pins from the node.
@@ -1178,7 +1190,7 @@ bool Listener::checkNodes() {
 		publishMessage(topic, pl);
 	}
 	
-	nodesLock.unlock();
+	//nodesLock.unlock();
 	return true;
 }
 
@@ -1220,3 +1232,7 @@ bool Listener::checkSwitch() {
 }
 
 
+// --- GET LOCAL IP ---
+std::string Listener::getLocalIP() {
+	return client.getLocalAddress(handle);
+}

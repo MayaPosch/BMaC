@@ -25,16 +25,26 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <csignal>
+#include <mutex>
+#include <condition_variable>
 
-#include <Poco/Util/IniFileConfiguration.h>
-#include <Poco/AutoPtr.h>
+#include "sarge.h"
+#include "INIReader.h"
+
+//#include <Poco/Util/IniFileConfiguration.h>
+//#include <Poco/AutoPtr.h>
 #include <Poco/Net/HTTPServer.h>
 #include <Poco/StringTokenizer.h>
 #include <Poco/String.h>
 
-using namespace Poco::Util;
+//using namespace Poco::Util;
 using namespace Poco;
 using namespace Poco::Net;
+
+
+// Globals.
+std::condition_variable sigcv;
 
 
 // --- LOG HANDLER ---
@@ -43,11 +53,14 @@ void logHandler(int level, std::string text) {
 }
 
 
+void signal_handler(int signal) {
+	sigcv.notify_one();
+}
+
+
 int main(int argc, char* argv[]) {
-	std::cout << "Starting MQTT BMaC Control server...\n";
-	
 	// Read configuration.
-	std::string configFile;
+	/* std::string configFile;
 	if (argc > 1) { configFile = argv[1]; }
 	else { configFile = "config.ini"; }
 	
@@ -55,17 +68,57 @@ int main(int argc, char* argv[]) {
 	std::string mqtt_host = config->getString("MQTT.host", "localhost");
 	int mqtt_port = config->getInt("MQTT.port", 1883);
 	std::string configTopics = config->getString("MQTT.topics");
-	std::string defaultFirmware = config->getString("Firmware.default", "ota_unified.bin");
+	std::string defaultFirmware = config->getString("Firmware.default", "ota_unified.bin"); */
+	
+	// Parse the command line arguments.
+	Sarge sarge;
+	sarge.setArgument("h", "help", "Get this help message.", false);
+	sarge.setArgument("c", "configuration", "Path to configuration file.", true);
+	sarge.setArgument("v", "version", "Output the software version and exit.", false);
+	sarge.setDescription("Building Management and Control server. Details: https://github.com/MayaPosch/BMaC/.");
+	sarge.setUsage("nymphcast_server <options>");
+	
+	sarge.parseArguments(argc, argv);
+	
+	if (sarge.exists("help")) {
+		sarge.printHelp();
+		return 0;
+	}
+	
+	if (sarge.exists("version")) {
+		std::cout << "BMaC server version: " << __VERSION << std::endl;
+		return 0;
+	}
+	
+	std::string config_file;
+	if (!sarge.getFlag("configuration", config_file)) {
+		std::cerr << "No configuration file provided in command line arguments." << std::endl;
+		return 1;
+	}
+	
+	std::cout << "Starting MQTT BMaC Control server...\n";
+	
+	// Read in the configuration.
+	INIReader config(config_file);
+	if (config.ParseError() != 0) {
+		std::cerr << "Unable to load configuration file: " << config_file << std::endl;
+		return 1;
+	}
+	
+	std::string mqtt_host = config.Get("MQTT", "host", "localhost");
+	int mqtt_port = config.GetInteger("MQTT", "port", 1883);
+	std::string configTopics = config.Get("MQTT", "topics", "");
+	std::string defaultFirmware = config.Get("Firmware", "default", "ota_unified.bin");
 	
 	std::cout << "Initialised MQTT library.\n";
 	Listener listener(defaultFirmware);
 	listener.init("BMaC_Controller", mqtt_host, mqtt_port);
 	
 	// Initialise the Nodes class.
-	std::string influx_host = config->getString("Influx.host", "localhost");
-	int influx_port = config->getInt("Influx.port", 8086);
-	std::string influx_sec = config->getString("Influx.secure", "false");
-	std::string influx_db = config->getString("Influx.db", "test");
+	std::string influx_host = config.Get("", "Influx.host", "localhost");
+	int influx_port = config.GetInteger("", "Influx.port", 8086);
+	std::string influx_sec = config.Get("", "Influx.secure", "false");
+	std::string influx_db = config.Get("", "Influx.db", "test");
 	Nodes::init(influx_host, influx_port, influx_db, influx_sec, &listener);
 	
 	// Connect to the MQTT broker.
@@ -107,14 +160,28 @@ int main(int argc, char* argv[]) {
 	}
 	
 	// Initialise the HTTP server.
-	uint16_t port = config->getInt("HTTP.port", 8080);
+	uint16_t port = config.GetInteger("HTTP", "port", 8080);
 	HTTPServerParams* params = new HTTPServerParams;
 	params->setMaxQueued(100);
 	params->setMaxThreads(10);
 	HTTPServer httpd(new RequestHandlerFactory, port, params);
 	httpd.start();
 	
+	// Publish the OTA URL as a retained message.
+	// Use IP interface that is connected to the MQTT broker as target.
+	std::string localIP = listener.getLocalIP();
+	std::string m = "http://" + localIP + ":" + std::to_string(port) + "/ota.php?uid=";
+	listener.publishMessage("cc/ota_url", m, 0, true);
+	
 	std::cout << "Created listener, entering loop...\n";
+	
+	// Install signal handler to terminate the server.
+	signal(SIGINT, signal_handler);
+	
+	// Lock and wait.
+	std::mutex sigmutex;
+	std::unique_lock<std::mutex> lk(sigmutex);
+	sigcv.wait(lk);
 	
 	/* int rc;
 	while(1) {

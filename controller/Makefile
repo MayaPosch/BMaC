@@ -6,10 +6,14 @@ ifndef ARCH
 ARCH := $(shell g++ -dumpmachine)/
 endif
 
+# Include the file with the versioning information ('VERSION' variable).
+include version.mk
+VERSIONINFO = -D__VERSION="\"$(VERSION)\""
+
 LDFLAGS := $(LDFLAGS) 
 LIBS 	:= -lnymphmqtt -lbytebauble -lPocoNet -lPocoNetSSL -lPocoUtil -lPocoData \
 			-lPocoDataSQLite -lPocoFoundation -lPocoJSON 
-CFLAGS := $(CFLAGS) -g3 -std=c++11
+CFLAGS := $(CFLAGS) -g3 -std=c++11 $(VERSIONINFO)
 
 TARGET = bmaccontrol
 SOURCES := $(wildcard *.cpp)
@@ -55,6 +59,7 @@ server: makedir $(OBJECTS)
 	#$(GCC) -o $(TARGET) $(SOURCES) $(CFLAGS) $(LDFLAGS)
 
 clean : 
-	-rm -f *.o accontrol
+	#-rm -f *.o accontrol
+	$(RM) $(OBJECTS)
 
 .PHONY: all clean

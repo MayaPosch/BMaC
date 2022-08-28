@@ -1,0 +1,221 @@
+<!doctype html>
+<html ng-app="bmac-controller">
+<head lang="en">
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimal-ui, user-scalable=no"/>
+    <title>BMaC Control - Node Management</title>
+</head>
+<style>
+	table {
+		padding: 10px;
+	}
+		
+	form {
+		margin: 5px;
+		margin-left: 10px;
+	}
+		
+	table, th, td {
+		border: 1px solid black;
+		border-collapse: collapse;
+	}
+</style>
+
+<body>
+
+<!--
+	Notes:
+		- This page displays the status on currently active and configured nodes.
+		- Node information is refreshed periodically from the control server.
+-->
+
+<script type="text/javascript">
+/*- 	function updateNodeInfo() {
+		var http = new XMLHttpRequest();
+		http.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				var result = JSON.parse(this.responseText);
+				var out = '<table><tr><td><b>Node:</b></td><td>' + result.id + '</td></tr>';
+				out += '<tr><td><b>Temperature:</b></td><td>' + result.temperatureCurrent + '</td></tr>';
+				out += '<tr><td><b>Adjusted:</b></td><td>' + (result.temperatureCurrent - 1) + '</td></tr>';
+				out += '<tr><td><b>Target:</b></td><td>' + result.temperatureTarget + '</td></tr>';
+				document.getElementById("nodeinfo").innerHTML = out;
+			}
+		};
+		
+		http.open("GET", "/ac/grossraum-3", true);
+		http.send();
+	}
+	
+	function updateTargetTemperature() {	
+		var http = new XMLHttpRequest();
+		var request = {};
+		var newtarget = document.getElementById("newtargettemperature").value;
+		request.temperatureTarget = newtarget;
+		http.open("POST", "/ac/grossraum-3", true);
+		http.send(JSON.stringify(request));
+		window.alert('New temperature has been set.');
+		return false;
+	}
+	
+	updateNodeInfo();
+	window.setInterval(updateNodeInfo, 30 * 1000); // Every 30 seconds. */
+	
+	function updateNodeInfo() {
+		var http = new XMLHttpRequest();
+		http.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				var result = JSON.parse(this.responseText);
+				var out = "<table><tr><th>UID (MAC)</th>\n";
+				out += "<th>Location</th>\n";
+				out += "<th>Modules</th>\n";
+				/*out += "<th>THP</th>\n";
+				out += "<th>CO2</th>\n";
+				out += "<th>Jura</th>\n";
+				out += "<th>JuraTerm</th>\n";
+				out += "<th>Motion</th>\n";
+				out += "<th>PWM</th>\n";
+				out += "<th>IO</th>\n";
+				out += "<th>Switch</th>\n";
+				out += "<th>Plant</th>\n";*/
+				out += "<th>Saved</th>\n";
+				out += "<th>Update</th></tr>\n";
+				
+				// Iterate through the array of node objects.
+				for (let i in result.nodes) {
+					out += '<tr><td><input type="text" ' + result.uid + '</td>';
+					out += '<td>' + result.location + '</td>';
+					
+					out += '<td>';
+					out += '<input type="checkbox" id="THP" name="THP" value="THP"';
+					out += (result.modules.THP === true) ? ' checked>' : '>';
+					out += '<input type="checkbox" id="CO2" name="CO2" value="CO2"';
+					out += (result.modules.CO2 === true) ? ' checked>' : '>';
+					out += '<input type="checkbox" id="Jura" name="Jura" value="Jura"';
+					out += (result.modules.Jura === true) ? ' checked>' : '>';
+					out += '<input type="checkbox" id="JuraTerm" name="JuraTerm" value="JuraTerm"';
+					out += (result.modules.JuraTerm === true) ? ' checked>' : '>';
+					out += '<input type="checkbox" id="Motion" name="Motion" value="Motion"';
+					out += (result.modules.Motion === true) ? ' checked>' : '>';
+					out += '<input type="checkbox" id="PWM" name="PWM" value="PWM"';
+					out += (result.modules.PWM === true) ? ' checked>' : '>';
+					out += '<input type="checkbox" id="IO" name="IO" value="IO"';
+					out += (result.modules.IO === true) ? ' checked>' : '>';
+					out += '<input type="checkbox" id="Switch" name="Switch" value="Switch"';
+					out += (result.modules.Switch === true) ? ' checked>' : '>';
+					out += '<input type="checkbox" id="Plant" name="Plant" value="Plant"';
+					out += (result.modules.Plant === true) ? ' checked>' : '>';
+					out += '</td>';
+					
+					out += '<td bgcolor="#00ff00">&nbsp;</td>';
+					out += '<td><input type="button" name="update" value="Update" onClick="clickAlert()"></td>'
+					out += '</tr></table>';
+				}
+				
+				document.getElementById("nodeinfo").innerHTML = out;
+			}
+		};
+		
+		http.open("GET", "/cc/nodes/assigned", true);
+		http.send();
+	}
+	
+	
+	
+	function updateUnassignedNodes() {
+		var http = new XMLHttpRequest();
+		http.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				var result = JSON.parse(this.responseText);
+				var out = '<table><tr><th>UID (MAC)</th>\n';
+				out += "<th>Location</th>\n";
+				out += "<th>Update</th></tr>\n";
+				
+				// Iterate through the array of nodes.
+				for (let i in result.nodes) {
+					out += '<tr><td>' + result.uid + '</td>';
+					out += '<td>' + result.location + '</td>';
+					out += '<td><input type="button" value="Assign" onClick="clickAlert()"></td></tr>';
+				}
+				
+				document.getElementById("new_nodes").innerHTML = out;
+			}
+		};
+		
+		http.open("GET", "/cc/nodes/unassigned", true);
+		http.send();
+	}
+	
+	
+	 function clickAlert() {
+		alert("Oh hai");
+	}
+	
+	
+	function assignNewNode() {
+		//
+	}
+	
+	
+	function updateNode() {
+		//
+	}
+	
+</script>
+
+	<div class="status">
+		<!-- Server connection & refresh status -->
+		
+	</div>
+
+	<h2>Registered Nodes</h2>
+	<div class="nodes" id="nodes">
+		<!-- Current list of nodes. -->
+		<table >
+			<tr>
+				<th>UID (MAC)</th>
+				<th>Location</th>
+				<th>Active modules</th>
+				<th>Saved</th>
+				<th>Update</th>
+			</tr>
+			<tr>
+				<td>A020A61BE8E3</td>
+				<td>A-1</td>
+				<td>BME280, CO2</td>
+				<td bgcolor="#ff0000">&nbsp;</td>
+				<td><input type="button" name="update" value="Update" onClick="clickAlert()"></td>
+			</tr>
+		</table>
+	</div>
+	
+	<!-- <div class="nodeinfo">
+		<!-- Display detailed information on the currently selected node. --><!--
+		<h2>Node Info</h2>
+		<p>Select node to view its info.</p>
+	</div> -->
+	
+	<h2>New Nodes</h2>
+	<div class="new_nodes" id="new_nodes">
+		<!-- List of newly announced nodes that can be added to the system. -->
+		<table>
+			<tr>
+				<th>UID (MAC)</th>
+				<th>Location</th>
+			</tr>
+		</table>
+	</div>
+	
+	<!-- <p>
+	<form id="nodeform" onsubmit="event.preventDefault(); updateTargetTemperature();">
+		Target temperature:<br>
+		<input type="number" min="15" max="30" id="newtargettemperature"><br>
+		<br><input type="submit" name="Submit", value="submit">
+	</form>
+	</p> -->
+
+	<!-- <script src="webjars/jquery/2.1.1/jquery.min.js"></script>
+	<script src="webjars/navigation-bar/bundle.js"></script> -->
+</body>
+</html>

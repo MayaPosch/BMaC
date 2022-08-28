@@ -35,6 +35,8 @@ HTTPClientSession* Nodes::influxClient;
 std::string Nodes::influxDb;
 Listener* Nodes::listener;
 bool Nodes::secure;
+std::vector<NodeInfo> Nodes::nodes;
+std::vector<NodeInfo> Nodes::newNodes;
 Timer* Nodes::tempTimer;
 Timer* Nodes::nodesTimer;
 Timer* Nodes::switchTimer;
@@ -67,6 +69,8 @@ void Nodes::init(std::string influxHost, int influxPort, std::string influxDb,
 	// Ensure the database has a valid nodes table.
 	// Layout:
 	// * uid TEXT UNIQUE
+	// * location TEXT
+	// * modules INT
 	// * posx FLOAT
 	// * posy FLOAT
 	// * current FLOAT
@@ -84,6 +88,8 @@ void Nodes::init(std::string influxHost, int influxPort, std::string influxDb,
 	// * ch3_state INT
 	// * ch3_duty INT
 	(*session) << "CREATE TABLE IF NOT EXISTS nodes (uid TEXT UNIQUE, \
+		location TEXT, \
+		modules INT, \
 		posx FLOAT, \
 		posy FLOAT, \
 		current FLOAT, \
@@ -100,6 +106,10 @@ void Nodes::init(std::string influxHost, int influxPort, std::string influxDb,
 		ch3_io INT, \
 		ch3_state INT, \
 		ch3_duty INT)", now;
+		
+	// Ensure we have a valid firmware table.
+	(*session) << "CREATE TABLE IF NOT EXISTS firmware (uid TEXT UNIQUE, \
+		file TEXT)", now;
 		
 	// Ensure we have a valid valves table.
 	// * uid TEXT UNIQUE
@@ -118,6 +128,33 @@ void Nodes::init(std::string influxHost, int influxPort, std::string influxDb,
 	// * state INT
 	(*session) << "CREATE TABLE IF NOT EXISTS switches (uid TEXT UNIQUE, \
 		state INT)", now;
+		
+	// Load the node information from the database into memory.
+	Data::Statement select(*session);
+	NodeInfo info;
+	select << "SELECT location, modules, posx, posy, current, target, ch0_state, ch0_duty, \
+				ch1_state, ch1_duty, ch2_state, ch2_duty, ch3_state, ch3_duty \
+				FROM nodes",
+				into (info.location),
+				into (info.modules),
+				into (info.posx),
+				into (info.posy),
+				into (info.current),
+				into (info.target),
+				into (info.ch0_state),
+				into (info.ch0_duty),
+				into (info.ch1_state),
+				into (info.ch1_duty),
+				into (info.ch2_state),
+				into (info.ch2_duty),
+				into (info.ch3_state),
+				into (info.ch3_duty),
+				range(0, 1);
+				
+	while (!select.done()) {
+		select.execute();
+		nodes.push_back(info);
+	}
 		
 	// Start the timers for checking the condition of each node.
 	// One for the current PWM status (active pins, duty cycle), one for 
@@ -160,9 +197,11 @@ bool Nodes::getNodeInfo(std::string uid, NodeInfo &info) {
 	
 	Data::Statement select(*session);
 	info.uid = uid;
-	select << "SELECT posx, posy, current, target, ch0_state, ch0_duty, \
+	select << "SELECT location, modules, posx, posy, current, target, ch0_state, ch0_duty, \
 				ch1_state, ch1_duty, ch2_state, ch2_duty, ch3_state, ch3_duty \
 				FROM nodes WHERE uid=?",
+				into (info.location),
+				into (info.modules),
 				into (info.posx),
 				into (info.posy),
 				into (info.current),
@@ -178,7 +217,13 @@ bool Nodes::getNodeInfo(std::string uid, NodeInfo &info) {
 				use (uid);
 				
 	size_t rows = select.execute();
-	if (rows != 1) { return false; }
+	if (rows != 1) { 
+		// Add unknown UIDs to an in-memory list, for retrieval by management software.
+		info.uid = uid;
+		newNodes.push_back(info);
+		
+		return false; 
+	}
 	
 	return true;
 }
@@ -223,6 +268,85 @@ bool Nodes::getSwitchInfo(std::string uid, SwitchInfo &info) {
 	if (rows != 1) { return false; }
 	
 	return true;
+}
+
+
+// ---	NODES TO JSON ---
+// Returns a JSON array containing the assigned nodes.
+// TODO: Buffer the output.
+std::string Nodes::nodesToJson() {
+	std::string out = "[ ";
+	
+	for (int i = 0; i < nodes.size(); ++i) {
+		out += "{ \"uid\": \"" + nodes[i].uid + "\", ";
+		out += "\"location\": \"" + nodes[i].location + "\", ";
+		
+		// Modules section.
+		// The bit flags match up with a module:
+		// * 0x01: 	THPModule
+		// * 0x02: 	CO2Module
+		// * 0x04: 	JuraModule
+		// * 0x08: 	JuraTermModule
+		// * 0x10: 	MotionModule
+		// * 0x20: 	PwmModule
+		// * 0x40: 	IOModule
+		// * 0x80: 	SwitchModule
+		// * 0x100: PlantModule
+		// ---
+		// Of these, the CO2, Jura and JuraTerm modules are mutually
+		// exclusive, since they all use the UART (Serial).
+		// If two or more of these are still specified in the bitflags,
+		// only the first module will be enabled and the others
+		// ignored.
+		//
+		// The Switch module currently uses the same pins as the i2c bus,
+		// as well as a number of the PWM pins (D5, 6).
+		// This means that it excludes all modules but the MotionModule and
+		// those using the UART.
+		// (Above copied from node firmware source)
+		out += "\"modules\": { ";
+		out += "\"THP\": ";
+		(nodes[i].modules & 0x01) ? out += "true, " : out += "false, ";
+		out += "\"CO2\": ";
+		(nodes[i].modules & 0x02) ? out += "true, " : out += "false, ";
+		out += "\"Jura\": ";
+		(nodes[i].modules & 0x04) ? out += "true, " : out += "false, ";
+		out += "\"JuraTerm\": ";
+		(nodes[i].modules & 0x08) ? out += "true, " : out += "false, ";
+		out += "\"Motion\": ";
+		(nodes[i].modules & 0x10) ? out += "true, " : out += "false, ";
+		out += "\"PWM\": ";
+		(nodes[i].modules & 0x20) ? out += "true, " : out += "false, ";
+		out += "\"IO\": ";
+		(nodes[i].modules & 0x40) ? out += "true, " : out += "false, ";
+		out += "\"Switch\": ";
+		(nodes[i].modules & 0x80) ? out += "true, " : out += "false, ";
+		out += "\"Plant\": ";
+		(nodes[i].modules & 0x100) ? out += "true" : out += "false";
+		
+		out += "} ";
+	}
+	
+	out += "]";
+	
+	return out;
+}
+
+
+// --- UNASSIGNED TO JSON ---
+// Returns a JSON array containing unassigned nodes.
+// TODO: Buffer the output.
+std::string Nodes::unassignedToJson() {
+	std::string out = "[ ";
+	
+	for (int i = 0; i < newNodes.size(); ++i) {
+		out += "{ \"uid\": \"" + newNodes[i].uid + "\", ";
+		out += "\"location\": \"" + newNodes[i].location + "\" ";
+	}
+	
+	out += "]";
+	
+	return out;
 }
 
 

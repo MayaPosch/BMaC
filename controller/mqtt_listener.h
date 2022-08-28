@@ -41,10 +41,10 @@ class Listener {
 	bool secure;
 	
 	std::map<std::string, std::string> series;
-	std::map<std::string, NodeInfo> nodes;
+	//std::map<std::string, NodeInfo> nodes;
 	std::map<std::string, ValveInfo> valves;
 	std::map<std::string, SwitchInfo> switches;
-	Mutex nodesLock;
+	//Mutex nodesLock;
 	Mutex valvesLock;
 	Mutex switchesLock;
 	bool heating;
@@ -64,6 +64,8 @@ public:
 	bool publishMessage(std::string topic, std::string msg, uint8_t qos = 0, bool retain = false);
 	bool checkNodes();
 	bool checkSwitch();
+	
+	std::string getLocalIP();
 };
 
 #endif

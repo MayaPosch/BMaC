@@ -51,13 +51,14 @@ public:
 		response.setContentType("application/json"); // JSON mime-type
 		response.setChunkedTransferEncoding(true); 
 		
-		// First path segment is 'ac'. If there's no second segment, return the
+		// First path segment is 'cc'. If there's no second segment, return the
 		// list of units. Otherwise check there's a valid ID and whether it's a 
 		// POST or GET request.
 		if (parts.size() == 1) {
 			// Return list.
 			std::ostream& ostr = response.send();
-			ostr << "{ }";
+			ostr << "{ \"nodes\": " << Nodes::nodesToJson() << 
+					", \"unassigned\": " << Nodes::unassignedToJson() << " }";
 		}
 		else if (parts.size() == 2) {
 			std::string id = parts[1];
@@ -128,6 +129,31 @@ public:
 				ostr << "\"temperatureCurrent\": " << info.current << ",";
 				ostr << "\"temperatureTarget\": " << info.target << "";
 				ostr << "}";
+			}
+		}
+		else if (parts.size() == 3) {
+			if (parts[1] != "nodes") {
+				// Set 400 error.
+				response.setStatus(HTTPResponse::HTTP_BAD_REQUEST);
+				std::ostream& ostr = response.send();
+				ostr << "{ \"error\": \"Invalid request.\" }";
+			}
+			
+			if (parts[2] == "assigned") {
+				//Return list.
+				std::ostream& ostr = response.send();
+				ostr << "{ \"nodes\": " << Nodes::nodesToJson() << " }";
+			}
+			else if (parts[2] == "unassigned") {
+				//Return list.
+				std::ostream& ostr = response.send();
+				ostr << "{ \"unassigned\": " << Nodes::unassignedToJson() << " }";
+			}
+			else {
+				// Set 400 error.
+				response.setStatus(HTTPResponse::HTTP_BAD_REQUEST);
+				std::ostream& ostr = response.send();
+				ostr << "{ \"error\": \"Invalid request.\" }";
 			}
 		}
 		else {
