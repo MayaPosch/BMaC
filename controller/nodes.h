@@ -86,6 +86,7 @@ class Nodes {
 	static HTTPClientSession* influxClient;
 	static std::string influxDb;
 	static bool secure;
+	static std::string defaultFirmware;
 	static std::vector<NodeInfo> nodes;
 	static std::vector<NodeInfo> newNodes;
 	static Listener* listener;
@@ -96,10 +97,11 @@ class Nodes {
 	//static vector<string> uids;
 	
 public:
-	static void init(std::string influxHost, int influxPort, std::string influxDb, 
-										std::string influx_sec, Listener* listener);
+	static void init(std::string defaultFirmware, std::string influxHost, int influxPort, 
+						std::string influxDb, std::string influx_sec, Listener* listener);
 	static void stop();
 	static bool getNodeInfo(std::string uid, NodeInfo &info);
+	static bool updateNodeInfo(std::string uid, NodeInfo &node);
 	static bool getValveInfo(std::string uid, ValveInfo &info);
 	static bool getSwitchInfo(std::string uid, SwitchInfo &info);
 	static std::string nodesToJson();

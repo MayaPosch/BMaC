@@ -150,8 +150,88 @@ public:
 				ostr << "{ \"unassigned\": " << Nodes::unassignedToJson() << " }";
 			}
 			else if (parts[2] == "update") {
-				// TODO: Parse JSON, update local node information.
+				// Check POST or GET.
+				std::string method = request.getMethod();
+			
+				// Parse JSON, update local node information.
+				if (method == HTTPRequest::HTTP_POST) {
+					// Set 400 error.
+					response.setStatus(HTTPResponse::HTTP_BAD_REQUEST);
+					std::ostream& ostr = response.send();
+					ostr << "{ \"error\": \"Invalid request.\" }";
+				}
+					
+				// Validate and set provided data for ID.
+				std::istream &i = request.stream();
+				int len = request.getContentLength();
+				char* buffer = new char[len];
+				i.read(buffer, len);
+				std::string content = std::string(buffer, len);
+				delete[] buffer;
 				
+				Parser parser;
+				Dynamic::Var result = parser.parse(content);
+				Object::Ptr object = result.extract<Object::Ptr>();
+				if (!object->has("uid")) {
+					response.setStatus(HTTPResponse::HTTP_BAD_REQUEST);
+					std::ostream& ostr = response.send();
+					ostr << "{ \"error\": \"Invalid request.\" }";
+					return;
+				}
+				
+				// Get the values from the JSON object.
+				NodeInfo node;
+				node.uid = object->getValue<std::string>("uid");
+				node.location = object->getValue<std::string>("location");
+				
+				// Modules section.
+				// Modules section.
+				// The bit flags match up with a module:
+				// * 0x01: 	THPModule
+				// * 0x02: 	CO2Module
+				// * 0x04: 	JuraModule
+				// * 0x08: 	JuraTermModule
+				// * 0x10: 	MotionModule
+				// * 0x20: 	PwmModule
+				// * 0x40: 	IOModule
+				// * 0x80: 	SwitchModule
+				// * 0x100: PlantModule
+				Object::Ptr modobj = object->getObject("modules");
+				bool thp 	= object->getValue<bool>("THP");
+				bool co2 	= object->getValue<bool>("CO2");
+				bool jura 	= object->getValue<bool>("Jura");
+				bool jt 	= object->getValue<bool>("JuraTerm");
+				bool motion = object->getValue<bool>("Motion");
+				bool pwm 	= object->getValue<bool>("PWM");
+				bool io		= object->getValue<bool>("IO");
+				bool sw		= object->getValue<bool>("Switch");
+				bool plant	= object->getValue<bool>("Plant");
+				
+				node.modules = 0;
+				if (thp) 	{ node.modules |= 0x01; }
+				if (co2) 	{ node.modules |= 0x02; }
+				if (jura) 	{ node.modules |= 0x04; }
+				if (jt) 	{ node.modules |= 0x08; }
+				if (motion) { node.modules |= 0x10; }
+				if (pwm) 	{ node.modules |= 0x20; }
+				if (io) 	{ node.modules |= 0x40; }
+				if (sw) 	{ node.modules |= 0x80; }
+				if (plant) 	{ node.modules |= 0x100; }
+				
+				bool res = Nodes::updateNodeInfo(node.uid, node);
+				
+				// Validate temperature.
+				if (res) {
+					response.setStatus(HTTPResponse::HTTP_BAD_REQUEST);
+					std::ostream& ostr = response.send();
+					ostr << "{ \"error\": \"Failed to update node data.\" }";
+					return;
+				}
+				
+				// Return response.
+				std::ostream& ostr = response.send();
+				ostr << "{ \"error\": \"No error.\"";
+				ostr << "}";
 			}
 			else {
 				// Set 400 error.

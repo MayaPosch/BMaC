@@ -35,6 +35,7 @@ HTTPClientSession* Nodes::influxClient;
 std::string Nodes::influxDb;
 Listener* Nodes::listener;
 bool Nodes::secure;
+std::string Nodes::defaultFirmware;
 std::vector<NodeInfo> Nodes::nodes;
 std::vector<NodeInfo> Nodes::newNodes;
 Timer* Nodes::tempTimer;
@@ -46,9 +47,10 @@ Nodes* Nodes::selfRef;
 
 // --- INIT ---
 // Initialise the static class.
-void Nodes::init(std::string influxHost, int influxPort, std::string influxDb, 
+void Nodes::init(std::string defaultFirmware, std::string influxHost, int influxPort, std::string influxDb, 
 									std::string influx_sec, Listener* listener) {
 	// Assign parameters.
+	Nodes::defaultFirmware = defaultFirmware;
 	Nodes::listener = listener;
 	Nodes::influxDb = influxDb;
 	if (influx_sec == "true") { 
@@ -225,6 +227,28 @@ bool Nodes::getNodeInfo(std::string uid, NodeInfo &info) {
 		
 		return false; 
 	}
+	
+	return true;
+}
+
+
+// --- UPDATE NODE INFO ---
+bool Nodes::updateNodeInfo(std::string uid, NodeInfo &node) {
+	// Update a node if it already exists, otherwise insert it as a new entry.
+	Data::Statement insert(*session);
+		insert << "INSERT INTO nodes VALUES(?, ?, ?, ?, ?)",
+				use(node.uid),
+				use(node.location),
+				use(node.modules),
+				use(node.posx),
+				use(node.posy),
+				now;
+				
+		// Store node UID with default firmware name as well.
+		(*session) << "INSERT INTO firmware VALUES(?, ?)",
+				use(node.uid),
+				use(defaultFirmware),
+				now;
 	
 	return true;
 }

@@ -119,7 +119,7 @@ int main(int argc, char* argv[]) {
 	int influx_port = config.GetInteger("", "Influx.port", 8086);
 	std::string influx_sec = config.Get("", "Influx.secure", "false");
 	std::string influx_db = config.Get("", "Influx.db", "test");
-	Nodes::init(influx_host, influx_port, influx_db, influx_sec, &listener);
+	Nodes::init(defaultFirmware, influx_host, influx_port, influx_db, influx_sec, &listener);
 	
 	// Connect to the MQTT broker.
 	if (!listener.connectBroker()) {
