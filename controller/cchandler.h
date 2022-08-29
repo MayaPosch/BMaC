@@ -149,6 +149,10 @@ public:
 				std::ostream& ostr = response.send();
 				ostr << "{ \"unassigned\": " << Nodes::unassignedToJson() << " }";
 			}
+			else if (parts[2] == "update") {
+				// TODO: Parse JSON, update local node information.
+				
+			}
 			else {
 				// Set 400 error.
 				response.setStatus(HTTPResponse::HTTP_BAD_REQUEST);

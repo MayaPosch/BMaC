@@ -219,6 +219,7 @@ bool Nodes::getNodeInfo(std::string uid, NodeInfo &info) {
 	size_t rows = select.execute();
 	if (rows != 1) { 
 		// Add unknown UIDs to an in-memory list, for retrieval by management software.
+		std::cout << "Adding new node with UID " << uid << " to unassigned list." << std::endl;
 		info.uid = uid;
 		newNodes.push_back(info);
 		

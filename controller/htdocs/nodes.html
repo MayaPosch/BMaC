@@ -67,7 +67,9 @@
 		http.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
 				var result = JSON.parse(this.responseText);
-				var out = "<table><tr><th>UID (MAC)</th>\n";
+				var out = '<table id="registered_nodes">';
+				out += '<caption>Registered Nodes</caption>';
+				out += '<tr><th>UID (MAC)</th>\n";
 				out += "<th>Location</th>\n";
 				out += "<th>Modules</th>\n";
 				/*out += "<th>THP</th>\n";
@@ -84,32 +86,34 @@
 				
 				// Iterate through the array of node objects.
 				for (let i in result.nodes) {
-					out += '<tr><td><input type="text" ' + result.uid + '</td>';
-					out += '<td>' + result.location + '</td>';
+					out += '<tr id ="row_' + result.nodes[i].uid + '">';
+					out += '<td>' + result.nodes[i].uid + '</td>';
+					out += '<td contenteditable="true">' + result.nodes[i].location + '</td>';
 					
 					out += '<td>';
 					out += '<input type="checkbox" id="THP" name="THP" value="THP"';
-					out += (result.modules.THP === true) ? ' checked>' : '>';
+					out += (result.nodes[i].modules.THP === true) ? ' checked>' : '>';
 					out += '<input type="checkbox" id="CO2" name="CO2" value="CO2"';
-					out += (result.modules.CO2 === true) ? ' checked>' : '>';
+					out += (result.nodes[i].modules.CO2 === true) ? ' checked>' : '>';
 					out += '<input type="checkbox" id="Jura" name="Jura" value="Jura"';
-					out += (result.modules.Jura === true) ? ' checked>' : '>';
+					out += (result.nodes[i].modules.Jura === true) ? ' checked>' : '>';
 					out += '<input type="checkbox" id="JuraTerm" name="JuraTerm" value="JuraTerm"';
-					out += (result.modules.JuraTerm === true) ? ' checked>' : '>';
+					out += (result.nodes[i].modules.JuraTerm === true) ? ' checked>' : '>';
 					out += '<input type="checkbox" id="Motion" name="Motion" value="Motion"';
-					out += (result.modules.Motion === true) ? ' checked>' : '>';
+					out += (result.nodes[i].modules.Motion === true) ? ' checked>' : '>';
 					out += '<input type="checkbox" id="PWM" name="PWM" value="PWM"';
-					out += (result.modules.PWM === true) ? ' checked>' : '>';
+					out += (result.nodes[i].modules.PWM === true) ? ' checked>' : '>';
 					out += '<input type="checkbox" id="IO" name="IO" value="IO"';
-					out += (result.modules.IO === true) ? ' checked>' : '>';
+					out += (result.nodes[i].modules.IO === true) ? ' checked>' : '>';
 					out += '<input type="checkbox" id="Switch" name="Switch" value="Switch"';
-					out += (result.modules.Switch === true) ? ' checked>' : '>';
+					out += (result.nodes[i].modules.Switch === true) ? ' checked>' : '>';
 					out += '<input type="checkbox" id="Plant" name="Plant" value="Plant"';
-					out += (result.modules.Plant === true) ? ' checked>' : '>';
+					out += (result.nodes[i].modules.Plant === true) ? ' checked>' : '>';
 					out += '</td>';
 					
 					out += '<td bgcolor="#00ff00">&nbsp;</td>';
-					out += '<td><input type="button" name="update" value="Update" onClick="clickAlert()"></td>'
+					out += '<td><input type="button" name="update" value="Update"';
+					out += ' onClick="updateNode(' + result.nodes[i].uid + ')"></td>'
 					out += '</tr></table>';
 				}
 				
@@ -128,15 +132,19 @@
 		http.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
 				var result = JSON.parse(this.responseText);
-				var out = '<table><tr><th>UID (MAC)</th>\n';
+				var out = '<table id="unassigned_nodes">';
+				out += '<caption>New Nodes</caption>';
+				out += '<tr><th>UID (MAC)</th>\n';
 				out += "<th>Location</th>\n";
 				out += "<th>Update</th></tr>\n";
 				
 				// Iterate through the array of nodes.
 				for (let i in result.nodes) {
-					out += '<tr><td>' + result.uid + '</td>';
-					out += '<td>' + result.location + '</td>';
-					out += '<td><input type="button" value="Assign" onClick="clickAlert()"></td></tr>';
+					out += '<tr id ="row_' + result.nodes[i].uid + '">';
+					out += '<td>' + result.nodes[i].uid + '</td>';
+					out += '<td>' + result.nodes[i].location + '</td>';
+					out += '<td><input type="button" value="Assign"';
+					out += ' onClick="assignNewNode(' + result.nodes[i].uid + ')"></td></tr>';
 				}
 				
 				document.getElementById("new_nodes").innerHTML = out;
@@ -153,23 +161,101 @@
 	}
 	
 	
-	function assignNewNode() {
-		//
+	function assignNewNode(uid) {
+		// Move the selected unassigned node to the list of assigned nodes, indicating an unsaved
+		// state.
+		// This allows the user to edit the node information before saving it with the
+		// 'updateNode' function.
+		
+		// Get the values from the selected row.
+		var row = document.getElementById("row_" + uid);
+		
+		var out += '<tr id ="row_' + uid + '">';
+		out += '<td contenteditable="true">' + uid + '</td>';
+		out += '<td>Unassigned</td>';
+		
+		out += '<td>';
+		out += '<input type="checkbox" id="THP" name="THP" value="THP">';
+		out += '<input type="checkbox" id="CO2" name="CO2" value="CO2">';
+		out += '<input type="checkbox" id="Jura" name="Jura" value="Jura">';
+		out += '<input type="checkbox" id="JuraTerm" name="JuraTerm" value="JuraTerm")';
+		out += '<input type="checkbox" id="Motion" name="Motion" value="Motion">';
+		out += '<input type="checkbox" id="PWM" name="PWM" value="PWM">';
+		out += '<input type="checkbox" id="IO" name="IO" value="IO">';
+		out += '<input type="checkbox" id="Switch" name="Switch" value="Switch">';
+		out += '<input type="checkbox" id="Plant" name="Plant" value="Plant">';
+		out += '</td>';
+		
+		out += '<td bgcolor="#ff0000">&nbsp;</td>';
+		out += '<td><input type="button" name="update" value="Update"';
+		out += ' onClick="updateNode(' + uid + ')"></td>'
+		out += '</tr>';
+		
+		// Insert row into registered nodes table at the end.
+		var table = document.getElementById("registered_nodes");
+		var table_len = (table.rows.length) - 1;
+		var row = table.insertRow(table_len).outerHTML = out;
+		
+		// Delete old row.
+		// TODO: Check support for remove() method.
+		row.remove();
 	}
 	
 	
-	function updateNode() {
-		//
+	function updateNode(uid) {
+		// If the row is in an unsaved state, gather the information and send the updated node
+		// information to the server.
+		var row = document.getElementById("row_" + uid);
+		var location 	= row.cells[1];
+		
+		const modules = { };
+		modules.THP 		= row.getElementById('THP').checked;
+		modules.CO2 		= row.getElementById('THP').checked;
+		modules.Jura 		= row.getElementById('THP').checked;
+		modules.JuraTerm 	= row.getElementById('THP').checked;
+		modules.Motion		= row.getElementById('THP').checked;
+		modules.PWM			= row.getElementById('THP').checked;
+		modules.IO 			= row.getElementById('THP').checked;
+		modules.Switch 		= row.getElementById('THP').checked;
+		modules.Plant		= row.getElementById('THP').checked;
+		
+		// TODO: handle unsaved state.
+		// Set the 'saved' cell to green here.
+		row.cells[3].bgcolor = "#00ff00";
+		
+		// Send the updated data as JSON.
+		modules.thp		= thp;
+		
+		const node = { };
+		node.uid 		= uid;
+		node.location 	= location;
+		node.modules = modules;
+		
+		var output = JSON.stringify(node);
+		
+		// Set up HTTP POST call.
+		var http = new XMLHttpRequest();
+		http.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				alert('Update successful.');
+			}
+			
+			alert('Error updating node.');
+		};
+		
+		http.open("GET", "/cc/nodes/update", true);
+		http.send(output);
 	}
 	
 </script>
 
 	<div class="status">
 		<!-- Server connection & refresh status -->
-		
+		<input type="button" value="Update Nodes" onClick="updateNodeInfo()">
+		<input type="button" value="Update Unassigned" onClick="updateUnassignedNodes()">
 	</div>
 
-	<h2>Registered Nodes</h2>
+	
 	<div class="nodes" id="nodes">
 		<!-- Current list of nodes. -->
 		<table >
@@ -196,7 +282,7 @@
 		<p>Select node to view its info.</p>
 	</div> -->
 	
-	<h2>New Nodes</h2>
+	
 	<div class="new_nodes" id="new_nodes">
 		<!-- List of newly announced nodes that can be added to the system. -->
 		<table>
