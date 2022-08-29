@@ -36,7 +36,7 @@ struct Node {
 
 
 // --- CONSTRUCTOR ---
-Listener::Listener(std::string defaultFirmware) {
+Listener::Listener() {
 	// Initialise the MQTT client.
 	//client.setClientId("BMaC_Controller");
 	using namespace std::placeholders;

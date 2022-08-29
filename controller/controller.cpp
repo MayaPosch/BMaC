@@ -111,7 +111,7 @@ int main(int argc, char* argv[]) {
 	std::string defaultFirmware = config.Get("Firmware", "default", "ota_unified.bin");
 	
 	std::cout << "Initialised MQTT library.\n";
-	Listener listener(defaultFirmware);
+	Listener listener;
 	listener.init("BMaC_Controller", mqtt_host, mqtt_port);
 	
 	// Initialise the Nodes class.

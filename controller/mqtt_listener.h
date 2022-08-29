@@ -54,10 +54,10 @@ class Listener {
 	void messageHandler(int handle, std::string topic, std::string payload);
 	
 public:
-	Listener(std::string defaultFirmware);
+	Listener();
 	~Listener();
 	
-	bool init(std::string clientId = "CC-UI", std::string host = "localhost", int port = 1883);
+	bool init(std::string clientId = "BMaC-controller", std::string host = "localhost", int port = 1883);
 	bool connectBroker();
     bool disconnectBroker();
 	bool addSubscription(std::string topic);

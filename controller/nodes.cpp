@@ -249,6 +249,15 @@ bool Nodes::updateNodeInfo(std::string uid, NodeInfo &node) {
 				use(node.uid),
 				use(defaultFirmware),
 				now;
+				
+	// TODO: Update target node.
+	std::string topic = "cc/" + uid;
+	std::string msg = "loc;" + node.location;
+	listener->publishMessage(topic, msg);
+	
+	msg = "mod;";
+	msg += std::string(((char*) &(node.modules)), 4);
+	listener->publishMessage(topic, msg);
 	
 	return true;
 }
