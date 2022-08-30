@@ -21,6 +21,7 @@
 #include <Poco/StreamCopier.h>
 #include <Poco/JSON/Parser.h>
 #include <Poco/JSON/Object.h>
+#include <Poco/Data/SQLite/SQLiteException.h>
 
 using namespace Poco;
 using namespace Poco::JSON;
@@ -109,9 +110,13 @@ void Nodes::init(std::string defaultFirmware, std::string influxHost, int influx
 		ch3_state INT, \
 		ch3_duty INT)", now;
 		
+	std::cout << "Checked for 'nodes' table." << std::endl;
+		
 	// Ensure we have a valid firmware table.
 	(*session) << "CREATE TABLE IF NOT EXISTS firmware (uid TEXT UNIQUE, \
 		file TEXT)", now;
+		
+	std::cout << "Checked for 'firmware' table." << std::endl;
 		
 	// Ensure we have a valid valves table.
 	// * uid TEXT UNIQUE
@@ -125,37 +130,49 @@ void Nodes::init(std::string defaultFirmware, std::string influxHost, int influx
 		ch2_valve INT, \
 		ch3_valve INT)", now;
 		
+	std::cout << "Checked for 'valves' table." << std::endl;
+		
 	// Ensure we have a valid switch table.
 	// * uid TEXT UNIQUE
 	// * state INT
 	(*session) << "CREATE TABLE IF NOT EXISTS switches (uid TEXT UNIQUE, \
 		state INT)", now;
 		
+	std::cout << "Checked for 'switches' table." << std::endl;
+	std::cout << "Reading in nodes from 'nodes' table..." << std::endl;
+		
 	// Load the node information from the database into memory.
-	Data::Statement select(*session);
-	NodeInfo info;
-	select << "SELECT location, modules, posx, posy, current, target, ch0_state, ch0_duty, \
-				ch1_state, ch1_duty, ch2_state, ch2_duty, ch3_state, ch3_duty \
-				FROM nodes",
-				into (info.location),
-				into (info.modules),
-				into (info.posx),
-				into (info.posy),
-				into (info.current),
-				into (info.target),
-				into (info.ch0_state),
-				into (info.ch0_duty),
-				into (info.ch1_state),
-				into (info.ch1_duty),
-				into (info.ch2_state),
-				into (info.ch2_duty),
-				into (info.ch3_state),
-				into (info.ch3_duty),
-				range(0, 1);
-				
-	while (!select.done()) {
-		select.execute();
-		nodes.push_back(info);
+	try {
+		Data::Statement select(*session);
+		NodeInfo info;
+		select << "SELECT location, modules, posx, posy, current, target, ch0_state, ch0_duty, \
+					ch1_state, ch1_duty, ch2_state, ch2_duty, ch3_state, ch3_duty \
+					FROM nodes",
+					into (info.location),
+					into (info.modules),
+					into (info.posx),
+					into (info.posy),
+					into (info.current),
+					into (info.target),
+					into (info.ch0_state),
+					into (info.ch0_duty),
+					into (info.ch1_state),
+					into (info.ch1_duty),
+					into (info.ch2_state),
+					into (info.ch2_duty),
+					into (info.ch3_state),
+					into (info.ch3_duty),
+					range(0, 1);
+					
+		while (!select.done()) {
+			select.execute();
+			nodes.push_back(info);
+		}
+	}
+	catch (Poco::Data::SQLite::InvalidSQLStatementException &e) {
+		//
+		std::cerr << "Exception: " << e.message() << std::endl;
+		return;
 	}
 		
 	// Start the timers for checking the condition of each node.
