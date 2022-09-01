@@ -102,6 +102,7 @@ public:
 	static void stop();
 	static bool getNodeInfo(std::string uid, NodeInfo &info);
 	static bool updateNodeInfo(std::string uid, NodeInfo &node);
+	static bool deleteNodeInfo(std::string uid);
 	static bool getValveInfo(std::string uid, ValveInfo &info);
 	static bool getSwitchInfo(std::string uid, SwitchInfo &info);
 	static std::string nodesToJson();

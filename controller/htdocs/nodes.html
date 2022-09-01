@@ -82,7 +82,9 @@
 				out += "<th>Switch</th>\n";
 				out += "<th>Plant</th>\n";*/
 				out += "<th>Saved</th>\n";
-				out += "<th>Update</th></tr>\n";
+				out += "<th>Update</th>\n";
+				out += "<th>Delete</th>\n";
+				out += '</tr>\n";
 				
 				// Iterate through the array of node objects.
 				for (let i in result.nodes) {
@@ -114,6 +116,8 @@
 					out += '<td bgcolor="#00ff00">&nbsp;</td>';
 					out += '<td><input type="button" name="update" value="Update"';
 					out += ' onClick="updateNode(' + result.nodes[i].uid + ')"></td>'
+					out += '<td><input type="button" name="delete" value="Delete"';
+					out += ' onClick="deleteNode(' + result.nodes[i].uid + ')"></td>'
 					out += '</tr></table>';
 				}
 				
@@ -243,7 +247,37 @@
 			alert('Error updating node.');
 		};
 		
-		http.open("GET", "/cc/nodes/update", true);
+		http.open("POST", "/cc/nodes/update", true);
+		http.send(output);
+	}
+	
+	
+	function deleteNode(uid) {
+		// Confirm deleting node.
+		if (!confirm("Really delete node " + uid + "? This cannot be undone.")) {
+			return;
+		}
+		
+		// Set up JSON object.
+		const node = { };
+		node.uid 		= uid;
+		
+		var output = JSON.stringify(node);
+		
+		// Send the request to the controller.
+		var http = new XMLHttpRequest();
+		http.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				alert('Delete successful.');
+				
+				// Update the list of nodes.
+				updateNodeInfo();
+			}
+			
+			alert('Error deleting node.');
+		};
+		
+		http.open("POST", "/cc/nodes/delete", true);
 		http.send(output);
 	}
 	

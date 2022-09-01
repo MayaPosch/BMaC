@@ -154,7 +154,7 @@ public:
 				std::string method = request.getMethod();
 			
 				// Parse JSON, update local node information.
-				if (method == HTTPRequest::HTTP_POST) {
+				if (method != HTTPRequest::HTTP_POST) {
 					// Set 400 error.
 					response.setStatus(HTTPResponse::HTTP_BAD_REQUEST);
 					std::ostream& ostr = response.send();
@@ -220,7 +220,56 @@ public:
 				
 				bool res = Nodes::updateNodeInfo(node.uid, node);
 				
-				// Validate temperature.
+				// Validate.
+				if (res) {
+					response.setStatus(HTTPResponse::HTTP_BAD_REQUEST);
+					std::ostream& ostr = response.send();
+					ostr << "{ \"error\": \"Failed to update node data.\" }";
+					return;
+				}
+				
+				// Return response.
+				std::ostream& ostr = response.send();
+				ostr << "{ \"error\": \"No error.\"";
+				ostr << "}";
+			}
+			else if (parts[2] == "delete") {
+				// Check POST or GET.
+				std::string method = request.getMethod();
+			
+				// Parse JSON, update local node information.
+				if (method != HTTPRequest::HTTP_POST) {
+					// Set 400 error.
+					response.setStatus(HTTPResponse::HTTP_BAD_REQUEST);
+					std::ostream& ostr = response.send();
+					ostr << "{ \"error\": \"Invalid request.\" }";
+				}
+					
+				// Validate and set provided data for ID.
+				std::istream &i = request.stream();
+				int len = request.getContentLength();
+				char* buffer = new char[len];
+				i.read(buffer, len);
+				std::string content = std::string(buffer, len);
+				delete[] buffer;
+				
+				Parser parser;
+				Dynamic::Var result = parser.parse(content);
+				Object::Ptr object = result.extract<Object::Ptr>();
+				if (!object->has("uid")) {
+					response.setStatus(HTTPResponse::HTTP_BAD_REQUEST);
+					std::ostream& ostr = response.send();
+					ostr << "{ \"error\": \"Invalid request.\" }";
+					return;
+				}
+				
+				// Get the values from the JSON object.
+				std::string uid = object->getValue<std::string>("uid");
+				
+				// Delete the node data.
+				bool res = Nodes::deleteNodeInfo(uid);
+				
+				// Validate.
 				if (res) {
 					response.setStatus(HTTPResponse::HTTP_BAD_REQUEST);
 					std::ostream& ostr = response.send();

@@ -261,13 +261,13 @@ bool Nodes::updateNodeInfo(std::string uid, NodeInfo &node) {
 				use(node.posy),
 				now;
 				
-		// Store node UID with default firmware name as well.
-		(*session) << "INSERT INTO firmware VALUES(?, ?)",
-				use(node.uid),
-				use(defaultFirmware),
-				now;
+	// Store node UID with default firmware name as well.
+	(*session) << "INSERT INTO firmware VALUES(?, ?)",
+			use(node.uid),
+			use(defaultFirmware),
+			now;
 				
-	// TODO: Update target node.
+	// Update target node.
 	std::string topic = "cc/" + uid;
 	std::string msg = "loc;" + node.location;
 	listener->publishMessage(topic, msg);
@@ -276,6 +276,18 @@ bool Nodes::updateNodeInfo(std::string uid, NodeInfo &node) {
 	msg += std::string(((char*) &(node.modules)), 4);
 	listener->publishMessage(topic, msg);
 	
+	return true;
+}
+
+
+// --- DELETE NODE INFO ---
+bool Nodes::deleteNodeInfo(std::string uid) {
+	// Update a node if it already exists, otherwise insert it as a new entry.
+	Data::Statement insert(*session);
+		insert << "DELETE FROM nodes WHERE uid=?",
+				use(uid),
+				now;
+		
 	return true;
 }
 
