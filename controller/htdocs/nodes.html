@@ -67,7 +67,7 @@
 		// If the row is in an unsaved state, gather the information and send the updated node
 		// information to the server.
 		var row = document.getElementById("row_" + uid);
-		var location 	= row.cells[1];
+		var location 	= row.cells[1].innerHTML;
 		
 		const modules = { };
 		modules.THP 		= row.cells[2].querySelector('#THP').checked;
