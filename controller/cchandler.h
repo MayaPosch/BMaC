@@ -48,8 +48,13 @@ public:
 		std::vector<std::string> parts;
 		uri.getPathSegments(parts);
 		
+		std::cout << "Response type set to JSON." << std::endl;
+		
 		response.setContentType("application/json"); // JSON mime-type
 		response.setChunkedTransferEncoding(true); 
+		
+		std::cout << "Path: " << uri.toString() << std::endl;
+		std::cout << "Path segments in request: " << parts.size() << std::endl;
 		
 		// First path segment is 'cc'. If there's no second segment, return the
 		// list of units. Otherwise check there's a valid ID and whether it's a 
@@ -152,6 +157,8 @@ public:
 			else if (parts[2] == "update") {
 				// Check POST or GET.
 				std::string method = request.getMethod();
+				
+				std::cout << "Got node update. Parsing..." << std::endl;
 			
 				// Parse JSON, update local node information.
 				if (method != HTTPRequest::HTTP_POST) {
@@ -169,6 +176,8 @@ public:
 				std::string content = std::string(buffer, len);
 				delete[] buffer;
 				
+				std::cout << "Got payload, parsing JSON..." << std::endl;
+				
 				Parser parser;
 				Dynamic::Var result = parser.parse(content);
 				Object::Ptr object = result.extract<Object::Ptr>();
@@ -179,10 +188,14 @@ public:
 					return;
 				}
 				
+				std::cout << "Extracting JSON values..." << std::endl;
+				
 				// Get the values from the JSON object.
 				NodeInfo node;
 				node.uid = object->getValue<std::string>("uid");
 				node.location = object->getValue<std::string>("location");
+				
+				std::cout << "1" << std::endl;
 				
 				// Modules section.
 				// Modules section.
@@ -197,15 +210,17 @@ public:
 				// * 0x80: 	SwitchModule
 				// * 0x100: PlantModule
 				Object::Ptr modobj = object->getObject("modules");
-				bool thp 	= object->getValue<bool>("THP");
-				bool co2 	= object->getValue<bool>("CO2");
-				bool jura 	= object->getValue<bool>("Jura");
-				bool jt 	= object->getValue<bool>("JuraTerm");
-				bool motion = object->getValue<bool>("Motion");
-				bool pwm 	= object->getValue<bool>("PWM");
-				bool io		= object->getValue<bool>("IO");
-				bool sw		= object->getValue<bool>("Switch");
-				bool plant	= object->getValue<bool>("Plant");
+				bool thp 	= modobj->getValue<bool>("THP");
+				bool co2 	= modobj->getValue<bool>("CO2");
+				bool jura 	= modobj->getValue<bool>("Jura");
+				bool jt 	= modobj->getValue<bool>("JuraTerm");
+				bool motion = modobj->getValue<bool>("Motion");
+				bool pwm 	= modobj->getValue<bool>("PWM");
+				bool io		= modobj->getValue<bool>("IO");
+				bool sw		= modobj->getValue<bool>("Switch");
+				bool plant	= modobj->getValue<bool>("Plant");
+				
+				std::cout << "2" << std::endl;
 				
 				node.modules = 0;
 				if (thp) 	{ node.modules |= 0x01; }
@@ -218,7 +233,11 @@ public:
 				if (sw) 	{ node.modules |= 0x80; }
 				if (plant) 	{ node.modules |= 0x100; }
 				
+				std::cout << "Updating node ..." << std::endl;
+				
 				bool res = Nodes::updateNodeInfo(node.uid, node);
+				
+				std::cout << "Node updated, sending response." << std::endl;
 				
 				// Validate.
 				if (res) {
