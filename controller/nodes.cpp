@@ -145,9 +145,10 @@ void Nodes::init(std::string defaultFirmware, std::string influxHost, int influx
 	try {
 		Data::Statement select(*session);
 		NodeInfo info;
-		select << "SELECT location, modules, posx, posy, current, target, ch0_state, ch0_duty, \
+		select << "SELECT uid, location, modules, posx, posy, current, target, ch0_state, ch0_duty, \
 					ch1_state, ch1_duty, ch2_state, ch2_duty, ch3_state, ch3_duty \
 					FROM nodes",
+					into (info.uid),
 					into (info.location),
 					into (info.modules),
 					into (info.posx),
@@ -166,7 +167,10 @@ void Nodes::init(std::string defaultFirmware, std::string influxHost, int influx
 					
 		while (!select.done()) {
 			select.execute();
-			nodes.push_back(info);
+			if (info.uid.length() > 5) {
+				std::cout << "Node: " << info.uid << std::endl;
+				nodes.push_back(info);
+			}
 		}
 	}
 	catch (Poco::Data::SQLite::InvalidSQLStatementException &e) {
@@ -174,6 +178,8 @@ void Nodes::init(std::string defaultFirmware, std::string influxHost, int influx
 		std::cerr << "Exception: " << e.message() << std::endl;
 		return;
 	}
+	
+	std::cout << "Read " << nodes.size() << " nodes from the database." << std::endl;
 		
 	// Start the timers for checking the condition of each node.
 	// One for the current PWM status (active pins, duty cycle), one for 
@@ -339,6 +345,8 @@ bool Nodes::getSwitchInfo(std::string uid, SwitchInfo &info) {
 // TODO: Buffer the output.
 std::string Nodes::nodesToJson() {
 	std::string out = "[ ";
+	
+	std::cout << "Converting " << nodes.size() << " nodes to JSON..." << std::endl;
 	
 	for (int i = 0; i < nodes.size(); ++i) {
 		out += "{ \"uid\": \"" + nodes[i].uid + "\", ";
