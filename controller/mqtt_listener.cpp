@@ -139,7 +139,7 @@ void Listener::messageHandler(int handle, std::string topic, std::string payload
 	// * On Connect.
 	// * Subscriptions.
 	if (topic == "cc/config") {
-		if (payload.length() < 1 || payload.length() != 6) {
+		if (payload.length() < 1 || payload.length() != 12) {
 			// Invalid payload. Reject.
 			std::cerr << "Invalid payload: " << payload << ". Reject." << std::endl;
 			return;

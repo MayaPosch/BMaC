@@ -414,7 +414,9 @@ std::string Nodes::unassignedToJson() {
 	
 	for (int i = 0; i < newNodes.size(); ++i) {
 		out += "{ \"uid\": \"" + newNodes[i].uid + "\", ";
-		out += "\"location\": \"" + newNodes[i].location + "\" ";
+		out += "\"location\": \"" + newNodes[i].location + "\" }";
+		
+		if ((i + 1) < newNodes.size()) { out += ", "; }
 	}
 	
 	out += "]";

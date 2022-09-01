@@ -228,12 +228,12 @@
 				out += "<th>Update</th></tr>\n";
 				
 				// Iterate through the array of nodes.
-				for (let i in result.nodes) {
-					out += '<tr id ="row_' + result.nodes[i].uid + '">';
-					out += '<td>' + result.nodes[i].uid + '</td>';
-					out += '<td>' + result.nodes[i].location + '</td>';
+				for (let i in result.unassigned) {
+					out += '<tr id ="row_' + result.unassigned[i].uid + '">';
+					out += '<td>' + result.unassigned[i].uid + '</td>';
+					out += '<td>' + result.unassigned[i].location + '</td>';
 					out += '<td><input type="button" value="Assign"';
-					out += ' onClick="assignNewNode(' + result.nodes[i].uid + ')"></td></tr>';
+					out += ' onClick="assignNewNode(' + result.unassigned[i].uid + ')"></td></tr>';
 				}
 				
 				document.getElementById("new_nodes").innerHTML = out;
