@@ -178,7 +178,7 @@ void Nodes::init(std::string defaultFirmware, std::string influxHost, int influx
 	// Start the timers for checking the condition of each node.
 	// One for the current PWM status (active pins, duty cycle), one for 
 	// updating the current temperature measured by each node.
-	selfRef = new Nodes;
+	/* selfRef = new Nodes;
 	tempTimer = new Timer(1000, 30 * 1000); 		// wait 1 s, 30 s interval.
 	nodesTimer = new Timer(5000, 30 * 1000); 		// wait 5 s, 30 s interval.
 	switchTimer = new Timer(1000, 60 * 60 * 1000);	// wait 1 s, 1 hour interval.
@@ -187,7 +187,7 @@ void Nodes::init(std::string defaultFirmware, std::string influxHost, int influx
 	TimerCallback<Nodes> switchCb(*selfRef, &Nodes::checkSwitch);
 	tempTimer->start(tempCb);
 	nodesTimer->start(nodesCb);
-	switchTimer->start(switchCb);
+	switchTimer->start(switchCb); */
 	
 	// Done.
 	initialized = true;

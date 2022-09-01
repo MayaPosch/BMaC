@@ -41,13 +41,13 @@ public:
 		
 		URI uri(request.getURI());
 		std::string path = uri.getPath();
-		if (path != "/") {
+		/* if (path != "/") {
 			// Return a 404.
 			response.setStatus(HTTPResponse::HTTP_NOT_FOUND);
 			std::ostream& ostr = response.send();
 			ostr << "File Not Found: " << path;
 			return;
-		}
+		} */
 		
 		URI::QueryParameters parts;
 		parts = uri.getQueryParameters();
@@ -111,12 +111,12 @@ public:
 				return;
 			}
 		}
-		else {
+		/* else {
 			// Return Bad Request
 			response.setStatus(HTTPResponse::HTTP_BAD_REQUEST);
 			response.send();
 			return;
-		}
+		} */
 		
 		// Validate user session.
 		// Get the cookies for this domain from the user, check whether we have
