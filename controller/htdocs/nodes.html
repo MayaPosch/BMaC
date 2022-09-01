@@ -70,23 +70,21 @@
 		var location 	= row.cells[1];
 		
 		const modules = { };
-		modules.THP 		= row.getElementById('THP').checked;
-		modules.CO2 		= row.getElementById('THP').checked;
-		modules.Jura 		= row.getElementById('THP').checked;
-		modules.JuraTerm 	= row.getElementById('THP').checked;
-		modules.Motion		= row.getElementById('THP').checked;
-		modules.PWM			= row.getElementById('THP').checked;
-		modules.IO 			= row.getElementById('THP').checked;
-		modules.Switch 		= row.getElementById('THP').checked;
-		modules.Plant		= row.getElementById('THP').checked;
+		modules.THP 		= row.cells[2].querySelector('#THP').checked;
+		modules.CO2 		= row.cells[2].querySelector('#CO2').checked;
+		modules.Jura 		= row.cells[2].querySelector('#Jura').checked;
+		modules.JuraTerm 	= row.cells[2].querySelector('#JuraTerm').checked;
+		modules.Motion		= row.cells[2].querySelector('#Motion').checked;
+		modules.PWM			= row.cells[2].querySelector('#PWM').checked;
+		modules.IO 			= row.cells[2].querySelector('#IO').checked;
+		modules.Switch 		= row.cells[2].querySelector('#Switch').checked;
+		modules.Plant		= row.cells[2].querySelector('#Plant').checked;
 		
 		// TODO: handle unsaved state.
 		// Set the 'saved' cell to green here.
 		row.cells[3].bgcolor = "#00ff00";
 		
 		// Send the updated data as JSON.
-		modules.thp		= thp;
-		
 		const node = { };
 		node.uid 		= uid;
 		node.location 	= location;
@@ -200,9 +198,9 @@
 					
 					out += '<td bgcolor="#00ff00">&nbsp;</td>';
 					out += '<td><input type="button" name="update" value="Update"';
-					out += ' onClick="updateNode(' + result.nodes[i].uid + ')"></td>'
+					out += ' onClick="updateNode(\'' + result.nodes[i].uid + '\')"></td>'
 					out += '<td><input type="button" name="delete" value="Delete"';
-					out += ' id="deleteNode(' + result.nodes[i].uid + ')"></td>'
+					out += ' id="deleteNode(\'' + result.nodes[i].uid + '\')"></td>'
 					out += '</tr></table>';
 				}
 				
@@ -212,41 +210,6 @@
 		
 		http.open("GET", "/cc/nodes/assigned", true);
 		http.send();
-	}
-	
-	
-	
-	function updateUnassignedNodes() {
-		var http = new XMLHttpRequest();
-		http.onreadystatechange = function() {
-			if (this.readyState == 4 && this.status == 200) {
-				var result = JSON.parse(this.responseText);
-				var out = '<table id="unassigned_nodes">';
-				out += '<caption>New Nodes</caption>';
-				out += '<tr><th>UID (MAC)</th>\n';
-				out += "<th>Location</th>\n";
-				out += "<th>Update</th></tr>\n";
-				
-				// Iterate through the array of nodes.
-				for (let i in result.unassigned) {
-					out += '<tr id ="row_' + result.unassigned[i].uid + '">';
-					out += '<td>' + result.unassigned[i].uid + '</td>';
-					out += '<td>' + result.unassigned[i].location + '</td>';
-					out += '<td><input type="button" value="Assign"';
-					out += ' onClick="assignNewNode(' + result.unassigned[i].uid + ')"></td></tr>';
-				}
-				
-				document.getElementById("new_nodes").innerHTML = out;
-			}
-		};
-		
-		http.open("GET", "/cc/nodes/unassigned", true);
-		http.send();
-	}
-	
-	
-	 function clickAlert() {
-		alert("Oh hai");
 	}
 	
 	
@@ -260,24 +223,35 @@
 		var row = document.getElementById("row_" + uid);
 		
 		var out = '<tr id ="row_' + uid + '">';
-		out += '<td contenteditable="true">' + uid + '</td>';
-		out += '<td>Unassigned</td>';
+		out += '<td>' + uid + '</td>';
+		out += '<td contenteditable="true">Unassigned</td>';
 		
 		out += '<td>';
 		out += '<input type="checkbox" id="THP" name="THP" value="THP">';
+		out += '<label for="THP">THP</label><br>';
 		out += '<input type="checkbox" id="CO2" name="CO2" value="CO2">';
+		out += '<label for="CO2">CO2</label><br>';
 		out += '<input type="checkbox" id="Jura" name="Jura" value="Jura">';
+		out += '<label for="Jura">Jura</label><br>';
 		out += '<input type="checkbox" id="JuraTerm" name="JuraTerm" value="JuraTerm")';
+		out += '<label for="JuraTerm">JuraTerm</label><br>';
 		out += '<input type="checkbox" id="Motion" name="Motion" value="Motion">';
+		out += '<label for="Motion">Motion</label><br>';
 		out += '<input type="checkbox" id="PWM" name="PWM" value="PWM">';
+		out += '<label for="PWM">PWM</label><br>';
 		out += '<input type="checkbox" id="IO" name="IO" value="IO">';
+		out += '<label for="IO">IO</label><br>';
 		out += '<input type="checkbox" id="Switch" name="Switch" value="Switch">';
+		out += '<label for="Switch">Switch</label><br>';
 		out += '<input type="checkbox" id="Plant" name="Plant" value="Plant">';
+		out += '<label for="Plant">Plant</label><br>';
 		out += '</td>';
 		
 		out += '<td bgcolor="#ff0000">&nbsp;</td>';
 		out += '<td><input type="button" name="update" value="Update"';
-		out += ' onClick="updateNode(' + uid + ')"></td>'
+		out += ' onClick="updateNode(\'' + uid + '\')"></td>'
+		out += '<td><input type="button" name="delete" value="Delete"';
+		out += ' id="deleteNode(\'' + uid + '\')"></td>'
 		out += '</tr>';
 		
 		// Insert row into registered nodes table at the end.
@@ -288,6 +262,39 @@
 		// Delete old row.
 		// TODO: Check support for remove() method.
 		row.remove();
+	}
+	
+	
+	function updateUnassignedNodes() {
+		var http = new XMLHttpRequest();
+		http.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				var res = JSON.parse(this.responseText);
+				var out = '<table id="unassigned_nodes">';
+				out += '<caption>New Nodes</caption>';
+				out += '<tr><th>UID (MAC)</th>\n';
+				out += "<th>Location</th>\n";
+				out += "<th>Update</th></tr>\n";
+				
+				// Iterate through the array of nodes.
+				for (let i in res.unassigned) {
+					out += '<tr id ="row_' + res.unassigned[i].uid + '">';
+					out += '<td>' + res.unassigned[i].uid + '</td>';
+					out += '<td>' + res.unassigned[i].location + '</td>';
+					out += '<td><input type="button" value="Assign" onClick="assignNewNode(\'' + res.unassigned[i].uid + '\')"></td></tr>';
+				}
+				
+				document.getElementById("new_nodes").outerHTML = out;
+			}
+		};
+		
+		http.open("GET", "/cc/nodes/unassigned", true);
+		http.send();
+	}
+	
+	
+	 function clickAlert() {
+		alert("Oh hai");
 	}
 	
 </script>
