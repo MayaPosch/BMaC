@@ -387,7 +387,9 @@ std::string Nodes::nodesToJson() {
 		out += "\"Plant\": ";
 		(nodes[i].modules & 0x100) ? out += "true" : out += "false";
 		
-		out += "} ";
+		out += "} }";
+		
+		if ((i + 1) < nodes.size()) { out += ", "; }
 	}
 	
 	out += "]";
