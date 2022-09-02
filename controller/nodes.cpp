@@ -257,9 +257,12 @@ bool Nodes::getNodeInfo(std::string uid, NodeInfo &info) {
 
 // --- UPDATE NODE INFO ---
 bool Nodes::updateNodeInfo(std::string uid, NodeInfo &node) {
+	std::cout << "Updating nodes table..." << std::endl;
+	
 	// Update a node if it already exists, otherwise insert it as a new entry.
 	Data::Statement insert(*session);
-		insert << "INSERT INTO nodes VALUES(?, ?, ?, ?, ?)",
+		insert << "INSERT OR REPLACE INTO nodes (uid, location, modules, posx, posy) \
+					VALUES(?, ?, ?, ?, ?)",
 				use(node.uid),
 				use(node.location),
 				use(node.modules),
@@ -267,11 +270,15 @@ bool Nodes::updateNodeInfo(std::string uid, NodeInfo &node) {
 				use(node.posy),
 				now;
 				
-	// Store node UID with default firmware name as well.
-	(*session) << "INSERT INTO firmware VALUES(?, ?)",
+	std::cout << "Updating firmware table..." << std::endl;
+				
+	// If the UID doesn't exist yet in the firmware table, insert the default.
+	(*session) << "INSERT OR ABORT INTO firmware VALUES(?, ?)",
 			use(node.uid),
 			use(defaultFirmware),
 			now;
+			
+	std::cout << "Updating node via MQTT..." << std::endl;
 				
 	// Update target node.
 	std::string topic = "cc/" + uid;
@@ -281,6 +288,9 @@ bool Nodes::updateNodeInfo(std::string uid, NodeInfo &node) {
 	msg = "mod;";
 	msg += std::string(((char*) &(node.modules)), 4);
 	listener->publishMessage(topic, msg);
+	
+	// If newly assigned node, from from unassigned list, assign to assigned list.
+	
 	
 	return true;
 }

@@ -240,7 +240,7 @@ public:
 				std::cout << "Node updated, sending response." << std::endl;
 				
 				// Validate.
-				if (res) {
+				if (!res) {
 					response.setStatus(HTTPResponse::HTTP_BAD_REQUEST);
 					std::ostream& ostr = response.send();
 					ostr << "{ \"error\": \"Failed to update node data.\" }";
