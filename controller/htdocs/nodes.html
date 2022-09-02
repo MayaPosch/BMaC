@@ -256,12 +256,16 @@
 		
 		// Insert row into registered nodes table at the end.
 		var table = document.getElementById("registered_nodes");
-		var table_len = (table.rows.length) - 1;
-		var row = table.insertRow(table_len).outerHTML = out;
+		//var table_len = (table.rows.length) - 1;
+		//var table_len = -1;
+		//var row = table.insertRow(table_len).outerHTML = out;
+		var row = table.insertRow(-1);
+		row.outerHTML = out;
 		
 		// Delete old row.
 		// TODO: Check support for remove() method.
-		row.remove();
+		//row.remove();
+		row.parentNode.removeChild(row);
 	}
 	
 	
