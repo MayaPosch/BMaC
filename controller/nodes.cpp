@@ -244,6 +244,15 @@ bool Nodes::getNodeInfo(std::string uid, NodeInfo &info) {
 	size_t rows = select.execute();
 	if (rows != 1) { 
 		// Add unknown UIDs to an in-memory list, for retrieval by management software.
+		// Start by checking whether it is a known UID.
+		std::vector<NodeInfo>::iterator it;
+		for (it = newNodes.begin(); it != newNodes.end(); ++it) {
+			if ((*it).uid == uid) {
+				std::cout << "UID was already known. Skipping." << std::endl;
+				return false;
+			}
+		}
+	
 		std::cout << "Adding new node with UID " << uid << " to unassigned list." << std::endl;
 		info.uid = uid;
 		newNodes.push_back(info);
@@ -290,7 +299,15 @@ bool Nodes::updateNodeInfo(std::string uid, NodeInfo &node) {
 	listener->publishMessage(topic, msg);
 	
 	// If newly assigned node, from from unassigned list, assign to assigned list.
-	
+	std::vector<NodeInfo>::iterator it;
+	for (it = newNodes.begin(); it != newNodes.end(); ++it) {
+		if ((*it).uid == uid) {
+			std::cout << "Moving newly assigned node from unassigned to assigned." << std::endl;
+			nodes.push_back(node);
+			newNodes.erase(it);
+			break;
+		}
+	}
 	
 	return true;
 }
