@@ -1,0 +1,46 @@
+BMaC Controller
+
+Basic commissioning test procedure
+---
+
+> Features tested:
+
+- Basic node management using the core service & browser-based UI.
+	1. Start-up of Controller process and its MQTT client & HTTP server.
+	2. Connecting with browser to HTTP server (http://localhost:8080/nodes.html).
+	3. Sending MQTT message with external client to MQTT broker:
+		Topic: cc/config - Payload: <MAC address string> of length 6 characters.
+		
+	4. Refreshing unassigned nodes in browser UI, expecting to see new node appear.
+	5. Assign the unassigned node, give it a location value & enable THP.
+	6. Subscribe with external MQTT client to cc/<MAC address>.
+	7. Save the newly assigned node configuration in the browser-based UI.
+	8. Confirm reception of two MQTT messages on the cc/<MAC address> topic:
+		- location ('loc;')
+		- configuration ('mod;')
+
+- Node data retention:
+	1. Start by restarting the Controller process.
+	2. Confirm that upon refreshing the assigned node list in the browser-based UI the node appears.
+	3. Confirm reception of module configuration by external MQTT client:
+		Topic: cc/config - Payload: <MAC address>
+		
+- Editing a node:
+	1. Start the Controller process.
+	2. Open the browser-based node-management UI (nodes.html).
+	3. Enable the CO2 module in addition to the THP one.
+	4. Save the updated configuration.
+	5. Confirm the changed configuration has taken effect in the database & for the node.
+	
+- Deleting a node:
+	1. Start the Controller process.
+	2. Open the browser-based node management UI (nodes.html).
+	3. Select 'delete node' option, confirm deletion in dialogue.
+	4. Confirm that the node is no longer shown & not present in database.
+		
+---
+> Notes:
+	- Updating saved/unsaved state should be added to the UI.
+	- JS: element.remove() is not supported in Pale Moon => add fallback.
+	- New assigned node is added to top of table => attach to end instead.
+	- Newly assigned node should be removed in the unassigned nodes list on the Controller.
