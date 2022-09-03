@@ -1,7 +1,7 @@
 /*
 	ota_core.h - Header for the OtaCore class.
 	
-	Revision 2
+	Revision 3
 	
 	Features:
 			- Defines the basic class needed for ESP8266 OTA functionality.
@@ -13,6 +13,7 @@
 	2017/03/13, Maya Posch
 	2017/11/15, Maya Posch
 	2018/08/28, Maya Posch
+	2022/08/25, Maya Posch - Added NyanSD service discovery.
 */
 
 
@@ -29,6 +30,8 @@
 #include <esp_spi_flash.h>
 #include <Network/Mqtt/MqttBuffer.h>
 
+#include "nyansd_client.h"
+
 
 // Static initialisations.
 Timer OtaCore::procTimer;
@@ -38,6 +41,8 @@ String OtaCore::MAC;
 HashMap<String, topicCallback>* OtaCore::topicCallbacks = new HashMap<String, topicCallback>();
 HardwareSerial OtaCore::Serial1(UART_ID_1); // UART 0 is 'Serial'.
 String OtaCore::location;
+String OtaCore::ota_url;
+String OtaCore::mqtt_url;
 String OtaCore::version = VERSION;
 int OtaCore::sclPin = SCL_PIN; // default.
 int OtaCore::sdaPin = SDA_PIN; // default.
@@ -45,7 +50,7 @@ bool OtaCore::i2c_active = false;
 bool OtaCore::spi_active = false;
 uint32 OtaCore::esp8266_pins = 0x0;
 
-const Url mqtt_url(MQTT_URL);
+//const Url mqtt_url(MQTT_URL);
 
 
 // Utility function to circumvent a bug in older versions of the 
@@ -133,11 +138,29 @@ bool OtaCore::init(onInitCallback cb) {
     Serial1.printf("System Chip ID: %x\r\n", system_get_chip_id());
     Serial1.printf("SPI Flash ID: %x\r\n", spi_flash_get_id());
 	
-	mqtt = new MqttClient(); //MQTT_HOST, MQTT_PORT, onMqttReceived);
+	mqtt = new MqttClient();
 	
 	Serial1.printf("\r\nCurrently running rom %d.\r\n", slot);
+	
+	// Try to read the WiFi credentials from 'wifi_creds.txt' on SPIFFS.
+	// TODO: If file doesn't exist, use stored values.
+	String ssid;
+	String pwd;
+	if (fileExist("location.txt")) {
+		String wifi = getFileContent("wifi_creds.txt");
+		
+		// WiFi SSID and password are separated by a question mark '?'.
+		// <SSID>?<password>
+		ssid = wifi.substring(0, wifi.indexOf('?'));
+		pwd = wifi.substring(wifi.indexOf('?') + 1);
+	}
+	else {
+		Serial1.printf("No wifi_creds.txt file found in SPIFFS.\r\n");
+		return false;
+	}
 
-	WifiStation.config(__WIFI_SSID, __WIFI_PWD);
+	//WifiStation.config(__WIFI_SSID, __WIFI_PWD);
+	WifiStation.config(ssid, pwd);
 	WifiStation.enable(true);
 	WifiStation.connect();
 	WifiAccessPoint.enable(false);
@@ -204,7 +227,7 @@ bool OtaCore::publish(String topic, String message, int qos /* = 1 */) {
 // --- OTA UPDATE ---
 void OtaCore::otaUpdate() {
 	//Serial1.printf("Updating firmware from URL: %s...", OTA_URL);
-	OtaCore::log(LOG_INFO, "Updating firmware from URL: " + String(OTA_URL));
+	OtaCore::log(LOG_INFO, "Updating firmware from URL: " + String(ota_url));
 	
 	// Needs a clean object, otherwise if run before & failed, 
 	// it'll not run again.
@@ -257,7 +280,7 @@ void OtaCore::startMqttClient() {
 		debugf("Unable to set mqtt will. Maybe not enough memory on the device.");
 	}
 	
-	Serial1.println("MQTT broker: " + mqtt_url.toString());
+	Serial1.println("MQTT broker: " + mqtt_url);
 	
 	mqtt->setMessageHandler(onMqttReceived);
 
@@ -322,7 +345,8 @@ void OtaCore::startMqttClient() {
 #endif
 
 	// Connect.
-	mqtt->connect(mqtt_url, MAC);
+	Url url(mqtt_url);
+	mqtt->connect(url, MAC);
 	
 	// Subscribe to relevant topics.
 	mqtt->subscribe(MQTT_PREFIX"upgrade");
@@ -331,10 +355,81 @@ void OtaCore::startMqttClient() {
 	mqtt->subscribe(MQTT_PREFIX"presence/restart/#");
 	mqtt->subscribe(MQTT_PREFIX"cc/" + MAC);
 	
+	// Subscribe to OTA URL topic to get the retained topic.
+	mqtt->subscribe(MQTT_PREFIX"cc/ota_url");
+	
 	delay(100); // Wait for 100 ms to let subscriptions to be processed.
 	
 	// Announce presence to C&C.
 	mqtt->publish(MQTT_PREFIX"cc/config", MAC);
+}
+
+
+void OtaCore::checkResponses() {
+	procTimer.stop();
+	
+	if (!NyanSD_client::hasResponse()) {
+		// Bail out.
+		Serial.println(_F("Got no NyanSD responses for MQTT broker query."));
+		return;
+	}
+	
+	Serial.println(_F("Reading NyanSD responses for MQTT broker query..."));
+	
+	ServiceNode* responses = 0;
+	uint32_t resnum = 0;
+	uint32_t res = NyanSD_client::getResponses(responses, resnum);
+	if (res != 0) {
+		// Handle error.
+		Serial.println(_F("Failed to get NyanSD responses: ") + String(res));
+		return;
+	}
+	
+	// Process received responses, we should have just a single MQTT server. Pick the first one
+	// regardless.
+	if (resnum == 0) {
+		// No MQTT server found. Abort connecting.
+		Serial.println(_F("Failed to find an MQTT server..."));
+		return;
+	}
+	
+	if (responses == 0) {
+		Serial.println(_F("Responses is a null pointer."));
+		return;
+	}
+	
+	Serial.println(_F("Converting MQTT broker IPv4 address."));
+	Serial.println(_F("IPv4 address: ") + String(responses->service->ipv4));
+	
+	String ipv4 = NyanSD_client::ipv4_uintToString(responses->service->ipv4);
+	
+	// Print IP.
+	Serial.println(_F("Found MQTT server at: ") + ipv4);
+	
+	// Build MQTT URL.
+	// Format: mqtt://<ipv4>:<port>
+	mqtt_url = "mqtt://";
+	mqtt_url += ipv4;
+	mqtt_url += ":";
+	mqtt_url.concat(responses->service->port);
+	
+	Serial.println(_F("MQTT URL: ") + mqtt_url);
+	
+	// Clean up NyanSD query resources.
+	while (responses->next != 0) {
+		ServiceNode* oldn = responses;
+		responses = responses->next;
+		delete[] oldn->service->ipv6;
+		delete[] oldn->service->hostname;
+		delete[] oldn->service->service;
+		delete oldn->service;
+		delete oldn;
+	}
+	
+	delete responses;
+
+	// Run MQTT client
+	startMqttClient();
 }
 
 
@@ -359,7 +454,24 @@ void OtaCore::connectOk(IpAddress ip, IpAddress mask, IpAddress gateway) {
 	// Run MQTT client.
 	// It's important that the MQTT client is started before any modules, so
 	// that any log output from those modules can be sent to the MQTT broker.
-	startMqttClient();
+	//startMqttClient();
+	
+	// Use NyanSD to fetch the MQTT broker IP & port.
+	uint16_t port = 11310; // TODO: use 1883 and 8883 instead?
+	NYSD_query query;
+	query.protocol = NYSD_PROTOCOL_ALL;
+	char filter[] = "mqtt";
+	query.filter = (char*) &filter;
+	query.length = 4;
+	uint8_t qnum = 1;
+	uint32_t res = NyanSD_client::sendQuery(port, &query, qnum);
+	if (res != 0) {
+		// Handle error.
+		Serial.println(_F("Failed to query for an MQTT server: ") + String(res));
+		return;
+	}
+	
+	procTimer.initializeMs(500, checkResponses).start();
 	
 	// Set configuration from storage, if present.
 	if (fileExist("config.txt")) {
@@ -415,6 +527,9 @@ int OtaCore::onMqttReceived(MqttClient& client, mqtt_message_t* payload) {
 	}
 	else if (topic == MQTT_PREFIX"presence/restart/all") {
 		System.restart();
+	}
+	else if (topic == MQTT_PREFIX"cc/ota_url") {
+		ota_url = message;
 	}
 	else if (topic == MQTT_PREFIX"cc/" + MAC) {
 		// We received a remote maintenance command. Execute it.

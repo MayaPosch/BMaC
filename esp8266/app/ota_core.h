@@ -71,6 +71,8 @@ class OtaCore {
 	static HardwareSerial Serial1;
 	static String location;
 	static String version;
+	static String ota_url;
+	static String mqtt_url;
 	static int sclPin;
 	static int sdaPin;
 	static bool i2c_active;
@@ -80,6 +82,7 @@ class OtaCore {
 	static void otaUpdate();
 	static void otaUpdate_CallBack(RbootHttpUpdater& update, bool result);
 	static void startMqttClient();
+	static void checkResponses();
 	static void checkMQTTDisconnect(TcpClient& client, bool flag);
 	static void connectOk(IpAddress ip, IpAddress mask, IpAddress gateway);
 	static void connectFail(const String& ssid, MacAddress bssid, WifiDisconnectReason reason);
