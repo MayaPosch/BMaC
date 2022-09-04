@@ -30,12 +30,16 @@
 ## Com port speed
 # COM_SPEED	= 115200
 
+COMPONENT_DEPENDS += Ota
+
 # Arduino-style libraries.
 ARDUINO_LIBRARIES := APA102 DHTesp BME280 MCP23008 HX711 SDCard
 
+HWCONFIG += ota
+
 
 ## Configure flash parameters (for ESP12-E and other new boards):
-SPI_MODE = dio
+#SPI_MODE = dio
 
 #### overridable rBoot options ####
 ## use rboot build mode
@@ -45,14 +49,14 @@ RBOOT_BIG_FLASH ?= 1
 ## two rom mode (where two roms sit in the same 1mb block of flash)
 RBOOT_TWO_ROMS  ?= 0
 ## size of the flash chip
-SPI_SIZE        ?= 4M
+#SPI_SIZE        ?= 4M
 
 ## SPIFFS options
 # DISABLE_SPIFFS = 1
 SPIFF_FILES = files
 
 ## size of the spiffs to create
-SPIFF_SIZE      ?= 65536
+#SPIFF_SIZE      ?= 65536
 
 ## flash offsets for spiffs, set if using two rom mode or not on a 4mb flash
 ## (spiffs location defaults to the mb after the rom slot on 4mb flash)
@@ -71,14 +75,17 @@ USER_CFLAGS = -DVERSION="\"$(VERSION)\""
 # Environment options:
 ## WiFi
 # WiFi SSID for the network to connect to and its password.
-WIFI_SSID = MyWiFiNetwork
-WIFI_PWD = MyWiFiPassword
+#WIFI_SSID = MyWiFiNetwork
+WIFI_SSID = CIA7430QX
+#WIFI_PWD = MyWiFiPassword
+WIFI_PWD = 84697060122592298009
 
 ## MQTT
 # MQTT host and port.
 #MQTT_HOST = mqtt.host.net
 #MQTT_HOST = orangepizero
-MQTT_HOST = servepi
+#MQTT_HOST = servepi
+MQTT_HOST = 192.168.31.105
 # For SSL support, uncomment the following line or compile with this parameter.
 #ENABLE_SSL=1
 # MQTT SSL port (for example):
@@ -117,7 +124,8 @@ MQTT_URL := $(MQTT_URL)$(MQTT_HOST):$(MQTT_PORT)
 # OTA (update) URL. Only change the host name (and port).
 #OTA_URL = http://ota.host.net/ota.php?uid=
 #OTA_URL = http://orangepizero/ota.php?uid=
-OTA_URL = http://servepi/ota.php?uid=
+#OTA_URL = http://servepi/ota.php?uid=
+OTA_URL = http://192.168.31.105/ota.php?uid=
 
 # Pass flags to compiler
 USER_CFLAGS := $(USER_CFLAGS) -D__WIFI_SSID="\"$(WIFI_SSID)"\"

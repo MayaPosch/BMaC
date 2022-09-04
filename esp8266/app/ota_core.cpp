@@ -29,6 +29,7 @@
 
 #include <esp_spi_flash.h>
 #include <Network/Mqtt/MqttBuffer.h>
+#include <Ota/Manager.h>
 
 #include "nyansd_client.h"
 
@@ -109,6 +110,21 @@ bool readIntoFileBuffer(const String filename, char* &buffer, unsigned int &size
 }
 
 
+Storage::Partition spiffsPartition;
+
+
+Storage::Partition findSpiffsPartition(Storage::Partition partition) {
+	String name = F("spiffs");
+	name += OtaManager.getSlot(partition);
+	Storage::Partition part = Storage::findPartition(name);
+	if (!part) {
+		debug_w("Partition '%s' not found", name.c_str());
+	}
+	
+	return part;
+}
+
+
 // --- INIT ---
 // Initialise the static class.
 bool OtaCore::init(onInitCallback cb) {
@@ -120,7 +136,7 @@ bool OtaCore::init(onInitCallback cb) {
 	// Initialise the sub module system.
 	BaseModule::init();
 	
-	spiffs_mount(); // Mount file system, in order to work with files.
+	//spiffs_mount(); // Mount file system, in order to work with files.
 	
 	// Mount the SpifFS manually. Automatic mounting is not
 	// compatible with RBoot (yet):
@@ -130,6 +146,29 @@ bool OtaCore::init(onInitCallback cb) {
 	if (slot == 0) { offset = 0x100000; }
 	else { offset = 0x300000; }
 	spiffs_mount_manual(offset, 65536);*/
+	// Find the n'th SPIFFS partition
+	//Storage::Partition part = Storage::PartitionTable().find(Storage::Partition::SubType::Data::spiffs, slot);
+	//Storage::Partition part = Storage::PartitionTable().find(Storage::Partition::SubType::Data::spiffs, slot);
+	//Storage::Partition part = Storage::findDefaultPartition(Storage::Partition::SubType::Data::spiffs);
+	/* Storage::Partition part = OtaManager.getRunningPartition();
+	if(part) {
+	   //debugf("trying to mount SPIFFS at %x, length %d", part.address(), part.size());
+	   spiffs_mount(part);
+	} else {
+	   debug_e("SPIFFS partition missing for slot #%u", slot);
+	} */
+	
+	// mount spiffs
+	Storage::Partition partition = OtaManager.getRunningPartition();
+	//spiffsPartition = findSpiffsPartition(partition);
+	String name = F("spiffs");
+	name += slot;
+	spiffsPartition = Storage::findPartition(name);
+	//if (spiffsPartition) {
+		debugf("trying to mount %s @ 0x%08x, length %d", name.c_str(), spiffsPartition.address(),
+			   spiffsPartition.size());
+		spiffs_mount(spiffsPartition);
+	//}
 	
 	// Print debug info.
 	Serial1.printf("\r\nSDK: v%s\r\n", system_get_sdk_version());
