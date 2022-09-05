@@ -160,16 +160,22 @@ bool OtaCore::init(onInitCallback cb) {
 	
 	// mount spiffs
 	auto partition = OtaManager.getRunningPartition();
+	//Storage::Partition partition = OtaManager.getRunningPartition();
 	auto slot = OtaManager.getSlotForPartition(partition);
+	//int slot = OtaManager.getSlotForPartition(partition);
 	//spiffsPartition = findSpiffsPartition(partition);
 	String name = F("spiffs");
 	name += slot;
 	spiffsPartition = Storage::findPartition(name);
-	//if (spiffsPartition) {
+	if (spiffsPartition) {
 		debugf("trying to mount %s @ 0x%08x, length %d", name.c_str(), spiffsPartition.address(),
 			   spiffsPartition.size());
 		spiffs_mount(spiffsPartition);
-	//}
+	}
+	else {
+		debugf("Failed to find partition %s.", name);
+		return false;
+	}
 	
 	// Print debug info.
 	Serial1.printf("\r\nSDK: v%s\r\n", system_get_sdk_version());
