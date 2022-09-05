@@ -159,10 +159,10 @@ bool OtaCore::init(onInitCallback cb) {
 	} */
 	
 	// mount spiffs
-	auto partition = OtaManager.getRunningPartition();
-	//Storage::Partition partition = OtaManager.getRunningPartition();
-	auto slot = OtaManager.getSlotForPartition(partition);
-	//int slot = OtaManager.getSlotForPartition(partition);
+	//auto partition = OtaManager.getRunningPartition();
+	Storage::Partition partition = OtaManager.getRunningPartition();
+	//auto slot = OtaManager.getSlotForPartition(partition);
+	int slot = OtaManager.getSlotForPartition(partition);
 	//spiffsPartition = findSpiffsPartition(partition);
 	String name = F("spiffs");
 	name += slot;
@@ -192,7 +192,7 @@ bool OtaCore::init(onInitCallback cb) {
 	// TODO: If file doesn't exist, use stored values.
 	String ssid;
 	String pwd;
-	if (fileExist("location.txt")) {
+	if (fileExist("wifi_creds.txt")) {
 		String wifi = getFileContent("wifi_creds.txt");
 		
 		// WiFi SSID and password are separated by a question mark '?'.
