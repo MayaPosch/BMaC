@@ -39,6 +39,8 @@ ARDUINO_LIBRARIES := APA102 DHTesp BME280 MCP23008 HX711 SDCard
 
 HWCONFIG := ota
 
+# In Host mode, use UART 1 for console output
+HOST_UART_OPTIONS := --uart=1 --device=console
 
 ## Configure flash parameters (for ESP12-E and other new boards):
 #SPI_MODE = dio
