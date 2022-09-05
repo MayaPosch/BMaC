@@ -141,7 +141,7 @@ bool OtaCore::init(onInitCallback cb) {
 	// Mount the SpifFS manually. Automatic mounting is not
 	// compatible with RBoot (yet):
 	// https://github.com/SmingHub/Sming/issues/1009
-	int slot = rboot_get_current_rom();
+	// int slot = rboot_get_current_rom();
 	/*u32_t offset;
 	if (slot == 0) { offset = 0x100000; }
 	else { offset = 0x300000; }
@@ -159,7 +159,8 @@ bool OtaCore::init(onInitCallback cb) {
 	} */
 	
 	// mount spiffs
-	Storage::Partition partition = OtaManager.getRunningPartition();
+	auto partition = OtaManager.getRunningPartition();
+	auto slot = OtaManager.getSlotForPartition(partition);
 	//spiffsPartition = findSpiffsPartition(partition);
 	String name = F("spiffs");
 	name += slot;

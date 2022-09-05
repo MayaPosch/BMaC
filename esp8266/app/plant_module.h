@@ -16,7 +16,7 @@
 #include "base_module.h"
 
 #include <Libraries/APA102/apa102.h>
-#include <Libraries/HX711/HX711.h>
+#include <HX711/HX711.h>
 #include <Network/HttpServer.h>
 
 
