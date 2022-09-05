@@ -32,10 +32,12 @@
 
 COMPONENT_DEPENDS += Ota
 
+COMPONENT_SEARCH_DIRS := libs
+
 # Arduino-style libraries.
 ARDUINO_LIBRARIES := APA102 DHTesp BME280 MCP23008 HX711 SDCard
 
-HWCONFIG += ota
+HWCONFIG := ota
 
 
 ## Configure flash parameters (for ESP12-E and other new boards):
