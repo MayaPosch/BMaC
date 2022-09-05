@@ -6,6 +6,13 @@
 		},
 		"rom1": {
 			"subtype": "ota_1"
+		},
+		"spiffs1": {
+			"device": "spiFlash",
+			"address": "0x00280000",
+			"size": "512K",
+			"type": "data",
+			"subtype": "spiffs"
 		}
 	}
 }
