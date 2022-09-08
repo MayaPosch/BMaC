@@ -17,9 +17,9 @@
 
 
 #include "mqtt_listener.h"
-
 #include "httprequestfactory.h"
 #include "nodes.h"
+#include "influx_client.h"
 
 #include <iostream>
 #include <string>
@@ -118,8 +118,11 @@ int main(int argc, char* argv[]) {
 	std::string influx_host = config.Get("", "Influx.host", "localhost");
 	int influx_port = config.GetInteger("", "Influx.port", 8086);
 	std::string influx_sec = config.Get("", "Influx.secure", "false");
-	std::string influx_db = config.Get("", "Influx.db", "test");
+	std::string influx_db = config.Get("", "Influx.db", "bmac");
 	Nodes::init(defaultFirmware, influx_host, influx_port, influx_db, influx_sec, &listener);
+	
+	// Initialise the Influx client.
+	InfluxClient::init(influx_host, influx_port, influx_db, influx_sec);
 	
 	// Connect to the MQTT broker.
 	if (!listener.connectBroker()) {

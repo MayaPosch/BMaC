@@ -9,6 +9,7 @@
 
 #include "mqtt_listener.h"
 #include "nodes.h"
+#include "influx_client.h"
 
 #include <iostream>
 #include <fstream>
@@ -1119,7 +1120,7 @@ void Listener::messageHandler(int handle, std::string topic, std::string payload
 		//influxMsg += " " + to_string(static_cast<long int>(time(0)));
 		
 		// Send message.
-		try {
+		/* try {
 			Net::HTTPRequest request(Net::HTTPRequest::HTTP_POST, "/write?db=" + influxDb, Net::HTTPMessage::HTTP_1_1);
 			request.setContentLength(influxMsg.length());
 			request.setContentType("application/x-www-form-urlencoded");
@@ -1130,13 +1131,15 @@ void Listener::messageHandler(int handle, std::string topic, std::string payload
 			/* Poco::Net::HTTPResponse::HTTPStatus status = response.getStatus();
 			if (status != Poco::Net::HTTPResponse::HTTP_OK && status != Poco::Net::HTTPResponse::HTTP_NO_CONTENT) {
 				cerr << "Received InfluxDB error: " << response.getReason() << "\n";
-			} */
+			} *//*
 		}
 		catch (Exception& exc) {
 			std::cout << "Exception caught while attempting to connect." << std::endl;
 			std::cerr << exc.displayText() << std::endl;
 			return;
-		}
+		} */
+		
+		InfluxClient::writeQuery(influxMsg);
 	}
 }
 
