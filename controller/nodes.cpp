@@ -305,6 +305,15 @@ bool Nodes::updateNodeInfo(std::string uid, NodeInfo &node) {
 			std::cout << "Moving newly assigned node from unassigned to assigned." << std::endl;
 			nodes.push_back(node);
 			newNodes.erase(it);
+			return true;
+		}
+	}
+	
+	// Should be an existing node. Update in the in-memory nodes list.
+	for (it = nodes.begin(); it != nodes.end(); ++it) {
+		if ((*it).uid == uid) {
+			std::cout << "Updating existing assigned node." << std::endl;
+			(*it) = node;
 			break;
 		}
 	}
