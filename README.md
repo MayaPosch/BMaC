@@ -1,11 +1,5 @@
 # Building Monitoring and Control 
 
-**Author:** Maya Posch
-
-**Last update:** 2017/12/19
-
-## Introduction
-
 The Building Monitoring and Control (**BMaC**) system consists out multiple components which all work together to allow one to monitor and control conditions within a building.
 
 Communication between these components is performed over MQTT, requiring the use of an (existing) MQTT broker. An Influx database instance is used to register sensor data, allowing this data to be used by other services. An existing InfluxDB instance can be used, or a new one created for the BMaC system.
@@ -24,6 +18,21 @@ A graphical overview:
 * AC control service
 * OTA update service
 * Influx-MQTT service
+
+
+## Refactoring Notice ##
+
+**Notice:** Be aware that the BMaC project is currently being refactored and will undergo a number of changes:
+
+* ESP8266-based node firmware:
+	- Auto-configuration using NyanSD service discovery.
+	- Update & potentially remove unused modules.
+* Merging of services:
+	- The Command & Control server, AC & Influx-MQTT services are being merged into the 'Controller' service.
+	- These old services will be retired after the merge completes.
+* Web-based administration panel:
+	- The new BMaC Controller server will provide a web-based interface for managing BMaC nodes and other parts of a BMaC installation.
+
 
 ### Command & Control server
 
