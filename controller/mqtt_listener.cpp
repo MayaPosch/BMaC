@@ -96,6 +96,8 @@ bool Listener::addSubscription(std::string topic) {
 		return false;
 	}
 	
+	series.insert(std::pair<std::string, std::string>(topic, topic));
+	
 	return true;
 }
 
@@ -140,52 +142,48 @@ void Listener::messageHandler(int handle, std::string topic, std::string payload
 	// * On Connect.
 	// * Subscriptions.
 	if (topic == "cc/config") {
+		// Payload should be the UID of the node. Retrieve the configuration for
+		// this UID and publish it on 'cc/<UID>' with the configuration as payload.
 		if (payload.length() < 1 || payload.length() != 12) {
 			// Invalid payload. Reject.
 			std::cerr << "Invalid payload: " << payload << ". Reject." << std::endl;
 			return;
 		}
 		
-		// TODO: Get the modules configuration for the specified node ID.
-		// TODO: Handle an unknown node.
+		// Get the modules configuration for the specified node ID.
 		NodeInfo node;
-		//node.uid = payload;
 		bool res = Nodes::getNodeInfo(payload, node);
-		//node.modules = Nodes::getNodeModules(payload);
-		//node.location = Nodes::getNodeLocation(payload);
-		
-		// Payload should be the UID of the node. Retrieve the configuration for
-		// this UID and publish it on 'cc/<UID>' with the configuration as payload.
-		/* Data::Statement select(*session);
-		Node node;
-		node.uid = payload;
-		select << "SELECT location, modules FROM nodes WHERE uid=?",
-				into (node.location),
-				into (node.modules),
-				use (payload);
-				
-		size_t rows = select.execute(); */
 		
 		// Send result.
-		//if (rows == 1) {
 		if (res) {
 			std::string topic = "cc/" + payload;
 			std::string response = "mod;" + std::string((const char*) &node.modules, 4);
-			//publish(0, topic.c_str(), response.length(), response.c_str());
 			publishMessage(topic, response);
 			response = "loc;" + node.location;
-			//publish(0, topic.c_str(), response.length(), response.c_str());
 			publishMessage(topic, response);
 		}
-		//else if (rows < 1) {
 		else {
 			// No node with this UID found.
 			std::cout << "No data found for uid " << payload << ". Added as new node." << std::endl;
-		}/* 
-		else {
-			// Multiple data sets were found, which shouldn't be possible...
-			std::cerr << "Error: Multiple data sets found for uid " << payload << std::endl;
-		} */
+		}
+	}
+	else if (topic == "cc/sos") {
+		// A node is reporting trouble. Use the UID (payload) to update its status.
+		if (payload.length() < 1 || payload.length() != 12) {
+			// Invalid payload. Reject.
+			std::cerr << "Invalid payload: " << payload << ". Reject." << std::endl;
+			return;
+		}
+		
+		// Get UID and the message.
+		size_t pos = payload.find(";");
+		if (pos == std::string::npos || pos == 0) {
+			// Invalid payload. Reject.
+			std::cerr << "Invalid payload: " << payload << ". Reject." << std::endl;
+			return;
+		}
+		
+		// 
 	}
 	else if (topic == "cc/ui/config") {
 		// Payload is the desired resource to return:
@@ -1104,6 +1102,9 @@ void Listener::messageHandler(int handle, std::string topic, std::string payload
 			std::cerr << "Invalid payload: " << payload << ". Reject.\n";
 			return;
 		}
+		
+		// Found valid topic.
+		//std::cout << "Writing to Influx for topic: " << topic << std::endl;
 		
 		// Assemble the message to send to the InfluxDB instance. 
 		// This message contains the uid and value from the MQTT payload, as well

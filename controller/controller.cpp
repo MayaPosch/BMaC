@@ -146,6 +146,7 @@ int main(int argc, char* argv[]) {
 	StringTokenizer st(configTopics, ",", StringTokenizer::TOK_TRIM | StringTokenizer::TOK_IGNORE_EMPTY);
 	for (StringTokenizer::Iterator it = st.begin(); it != st.end(); ++it) {
 		std::string topic = std::string(*it);
+		std::cout << "Registering topic: " << topic << std::endl;
 		topics.push_back(topic);
 		
 		// Add name of the series to the 'series' map.

@@ -59,11 +59,11 @@ bool InfluxClient::writeQuery(std::string query) {
 		request.setContentType("application/x-www-form-urlencoded");
 		influxClient->sendRequest(request) << query;
 		
-		Poco::Net::HTTPResponse response;
+		/*Poco::Net::HTTPResponse response;
 		influxClient->receiveResponse(response);
-		/* Poco::Net::HTTPResponse::HTTPStatus status = response.getStatus();
+		Poco::Net::HTTPResponse::HTTPStatus status = response.getStatus();
 		if (status != Poco::Net::HTTPResponse::HTTP_OK && status != Poco::Net::HTTPResponse::HTTP_NO_CONTENT) {
-			cerr << "Received InfluxDB error: " << response.getReason() << "\n";
+			std::cerr << "Received InfluxDB error: " << response.getReason() << "\n";
 		} */
 	}
 	catch (Poco::Exception& exc) {
