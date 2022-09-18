@@ -30,6 +30,7 @@
 #include <esp_spi_flash.h>
 #include <Network/Mqtt/MqttBuffer.h>
 #include <Ota/Manager.h>
+#include <Libraries/SDCard/SDCard.h>
 
 #include "nyansd_client.h"
 
@@ -146,17 +147,6 @@ bool OtaCore::init(onInitCallback cb) {
 	if (slot == 0) { offset = 0x100000; }
 	else { offset = 0x300000; }
 	spiffs_mount_manual(offset, 65536);*/
-	// Find the n'th SPIFFS partition
-	//Storage::Partition part = Storage::PartitionTable().find(Storage::Partition::SubType::Data::spiffs, slot);
-	//Storage::Partition part = Storage::PartitionTable().find(Storage::Partition::SubType::Data::spiffs, slot);
-	//Storage::Partition part = Storage::findDefaultPartition(Storage::Partition::SubType::Data::spiffs);
-	/* Storage::Partition part = OtaManager.getRunningPartition();
-	if(part) {
-	   //debugf("trying to mount SPIFFS at %x, length %d", part.address(), part.size());
-	   spiffs_mount(part);
-	} else {
-	   debug_e("SPIFFS partition missing for slot #%u", slot);
-	} */
 	
 	// mount spiffs
 	//auto partition = OtaManager.getRunningPartition();
@@ -168,8 +158,8 @@ bool OtaCore::init(onInitCallback cb) {
 	name += slot;
 	spiffsPartition = Storage::findPartition(name);
 	if (spiffsPartition) {
-		debugf("trying to mount %s @ 0x%08x, length %d", name.c_str(), spiffsPartition.address(),
-			   spiffsPartition.size());
+		//debugf("trying to mount %s @ 0x%08x, length %d", name.c_str(), spiffsPartition.address(),
+			//   spiffsPartition.size());
 		spiffs_mount(spiffsPartition);
 	}
 	else {
@@ -416,18 +406,18 @@ void OtaCore::checkResponses() {
 	
 	if (!NyanSD_client::hasResponse()) {
 		// Bail out.
-		Serial.println(_F("Got no NyanSD responses for MQTT broker query."));
+		Serial1.println(_F("Got no NyanSD responses for MQTT broker query."));
 		return;
 	}
 	
-	Serial.println(_F("Reading NyanSD responses for MQTT broker query..."));
+	Serial1.println(_F("Reading NyanSD responses for MQTT broker query..."));
 	
 	ServiceNode* responses = 0;
 	uint32_t resnum = 0;
 	uint32_t res = NyanSD_client::getResponses(responses, resnum);
 	if (res != 0) {
 		// Handle error.
-		Serial.println(_F("Failed to get NyanSD responses: ") + String(res));
+		Serial1.println(_F("Failed to get NyanSD responses: ") + String(res));
 		return;
 	}
 	
@@ -435,22 +425,22 @@ void OtaCore::checkResponses() {
 	// regardless.
 	if (resnum == 0) {
 		// No MQTT server found. Abort connecting.
-		Serial.println(_F("Failed to find an MQTT server..."));
+		Serial1.println(_F("Failed to find an MQTT server..."));
 		return;
 	}
 	
 	if (responses == 0) {
-		Serial.println(_F("Responses is a null pointer."));
+		Serial1.println(_F("Responses is a null pointer."));
 		return;
 	}
 	
-	Serial.println(_F("Converting MQTT broker IPv4 address."));
-	Serial.println(_F("IPv4 address: ") + String(responses->service->ipv4));
+	Serial1.println(_F("Converting MQTT broker IPv4 address."));
+	Serial1.println(_F("IPv4 address: ") + String(responses->service->ipv4));
 	
 	String ipv4 = NyanSD_client::ipv4_uintToString(responses->service->ipv4);
 	
 	// Print IP.
-	Serial.println(_F("Found MQTT server at: ") + ipv4);
+	Serial1.println(_F("Found MQTT server at: ") + ipv4);
 	
 	// Build MQTT URL.
 	// Format: mqtt://<ipv4>:<port>
@@ -459,7 +449,7 @@ void OtaCore::checkResponses() {
 	mqtt_url += ":";
 	mqtt_url.concat(responses->service->port);
 	
-	Serial.println(_F("MQTT URL: ") + mqtt_url);
+	Serial1.println(_F("MQTT URL: ") + mqtt_url);
 	
 	// Clean up NyanSD query resources.
 	while (responses->next != 0) {
@@ -513,7 +503,7 @@ void OtaCore::connectOk(IpAddress ip, IpAddress mask, IpAddress gateway) {
 	uint32_t res = NyanSD_client::sendQuery(port, &query, qnum);
 	if (res != 0) {
 		// Handle error.
-		Serial.println(_F("Failed to query for an MQTT server: ") + String(res));
+		Serial1.println(_F("Failed to query for an MQTT server: ") + String(res));
 		return;
 	}
 	
@@ -537,6 +527,9 @@ void OtaCore::connectFail(const String& ssid, MacAddress bssid, WifiDisconnectRe
 	
 	// Feed the watchdog timer to prevent a soft reset.
 	WDT.alive();
+	
+	// TODO: Check for an attached SD card that may contain a 'wifi_creds.txt' file with
+	// updated credentials.
 
 	// Handle error.
 	// Run success callback or failure callback depending on connection result.
@@ -669,7 +662,11 @@ void OtaCore::updateModules(uint32 input) {
 	Serial1.printf("Input: %x, Active: %x.\n", input, BaseModule::activeMods());
 	
 	// Set the new configuration.
-	BaseModule::newConfig(input);
+	if (!BaseModule::newConfig(input)) {
+		// Report module configuration error.
+		mqtt->publish(MQTT_PREFIX"cc/sos", OtaCore::MAC + ";module config fail.");
+		return;
+	}
 	
 	// Update the local copy of the configuration in storage if needed.
 	if (BaseModule::activeMods() != input) {

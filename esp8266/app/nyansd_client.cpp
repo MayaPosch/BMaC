@@ -101,11 +101,11 @@ void NyanSD_client::udp_receive_callback(UdpConnection& connection, char* data, 
 	
 	// Debug.
 	// Dump data to serial port.
-	Serial.println("=============================\r\n");
+	/* Serial.println("=============================\r\n");
 	Serial.println("Received message with length: " + String(size));
 	Serial.println("=============================\r\n");	
 	Serial.write(data, size);
-	Serial.println("\r\n=============================\r\n");
+	Serial.println("\r\n=============================\r\n"); */
 	
 	// Copy data to global buffer, set flag.
 	ListNode* node = new ListNode;
@@ -263,9 +263,9 @@ uint32_t NyanSD_client::getResponses(ServiceNode* &responses, uint32_t &resnum) 
 		
 		// Debug.
 		// Dump data to serial port.
-		Serial.println("=============================\r\n");
+		/* Serial.println("=============================\r\n");
 		Serial.write(response->data, response->length);
-		Serial.println("\r\n=============================\r\n");
+		Serial.println("\r\n=============================\r\n"); */
 		
 		// The received data can contain more than one response. Start parsing from the beginning until
 		// we are done.
@@ -298,7 +298,7 @@ uint32_t NyanSD_client::getResponses(ServiceNode* &responses, uint32_t &resnum) 
 			//std::cout << "Found message with length: " << len << std::endl;
 #endif
 
-			Serial.println(_F("Message of length: ") + String(len));
+			//Serial.println(_F("Message of length: ") + String(len));
 			
 			uint8_t type;
 			type = *((uint8_t*) (buffer + index++));
@@ -317,7 +317,7 @@ uint32_t NyanSD_client::getResponses(ServiceNode* &responses, uint32_t &resnum) 
 #ifdef DEBUG
 			//std::cout << "Response count: " << (uint16_t) rnum << std::endl;
 #endif
-			Serial.println(_F("Response count: ") + String(rnum));
+			//Serial.println(_F("Response count: ") + String(rnum));
 			
 			// Service sections.
 			for (int i = 0; i < rnum; ++i) {
@@ -331,7 +331,7 @@ uint32_t NyanSD_client::getResponses(ServiceNode* &responses, uint32_t &resnum) 
 				memcpy(&ipv4, (buffer + index), 4);
 				index += 4;
 				
-				Serial.println(_F("Service IPv4: ") + String(ipv4));
+				//Serial.println(_F("Service IPv4: ") + String(ipv4));
 				
 				uint8_t ipv6len = *((uint8_t*) (buffer + index));
 				index++;
@@ -340,15 +340,15 @@ uint32_t NyanSD_client::getResponses(ServiceNode* &responses, uint32_t &resnum) 
 				//std::cout << "IPv6 string with length: " << (uint16_t) ipv6len << std::endl;
 #endif
 
-				Serial.println(_F("IPv6 string of length: ") + String((uint16_t) ipv6len));
+				//Serial.println(_F("IPv6 string of length: ") + String((uint16_t) ipv6len));
 				
 				char* ipv6 = new char[ipv6len];
 				memcpy(ipv6, buffer + index, ipv6len);
 				index += ipv6len;
 				
-				Serial.println(_F("IPv6:\t"));
+				/* Serial.println(_F("IPv6:\t"));
 				Serial.write(ipv6, ipv6len);
-				Serial.println(".");
+				Serial.println("."); */
 				
 				uint16_t hostlen;
 				memcpy(&hostlen, (buffer + index), 2);
@@ -358,9 +358,9 @@ uint32_t NyanSD_client::getResponses(ServiceNode* &responses, uint32_t &resnum) 
 				memcpy(hostname, buffer + index, hostlen);
 				index += hostlen;
 				
-				Serial.println(_F("Host name:\t"));
+				/* Serial.println(_F("Host name:\t"));
 				Serial.write(hostname, hostlen);
-				Serial.println(".");
+				Serial.println("."); */
 				
 				uint16_t p;	// port
 				memcpy(&p, (buffer + index), 2);
@@ -380,9 +380,9 @@ uint32_t NyanSD_client::getResponses(ServiceNode* &responses, uint32_t &resnum) 
 #ifdef DEBUG
 				//std::cout << "Adding service with name: " << svname << std::endl;
 #endif
-				Serial.println(_F("Adding service:\t"));
+				/* Serial.println(_F("Adding service:\t"));
 				Serial.write(svname, snlen);
-				Serial.println(".");
+				Serial.println("."); */
 				
 				ServiceNode* sn = new ServiceNode;
 				sn->next = 0;
@@ -402,28 +402,28 @@ uint32_t NyanSD_client::getResponses(ServiceNode* &responses, uint32_t &resnum) 
 					sv->protocol = NYSD_PROTOCOL_UDP;
 				}
 				
-				Serial.println(_F("Adding service to response..."));
+				//Serial.println(_F("Adding service to response..."));
 				
 				sn->service = sv;
 				
-				Serial.println(_F("Service IPv4: ") + String(ipv4));
+				/* Serial.println(_F("Service IPv4: ") + String(ipv4));
 				Serial.println(_F("Service IPv4: ") + String(sv->ipv4));
 				Serial.println(_F("Service IPv4: ") + String(sn->service->ipv4));
 				
-				Serial.println(_F("Adding response to output list..."));
+				Serial.println(_F("Adding response to output list...")); */
 				
 				if (parsecount == 0) {
-					Serial.println(_F("First response."));
+					//Serial.println(_F("First response."));
 					responses = sn;
 					pres = responses;
 				}
 				else {
-					Serial.println(_F("Not first response."));
+					//Serial.println(_F("Not first response."));
 					pres->next = sn;
 					pres = sn;
 				}
 				
-				Serial.println(_F("Response count: ") + String(rnum));
+				//Serial.println(_F("Response count: ") + String(rnum));
 				
 				//resnum += 1;
 				++parsecount;
@@ -438,26 +438,26 @@ uint32_t NyanSD_client::getResponses(ServiceNode* &responses, uint32_t &resnum) 
 		//}
 		
 		// Delete previously allocated data.
-		Serial.println(_F("Delete old response data."));
+		//Serial.println(_F("Delete old response data."));
 		free(buffer);
 		
 		// Prepare for next loop: move to next list node, delete old node.
-		Serial.println(_F("Checking for next response..."));
+		//Serial.println(_F("Checking for next response..."));
 		ListNode* old = response;
 		if (response->next) { 
-			Serial.println(_F("Moving to next response..."));
+			//Serial.println(_F("Moving to next response..."));
 			response = response->next;
 		}
 		
-		Serial.println(_F("Deleting old response..."));
+		//Serial.println(_F("Deleting old response..."));
 		delete old;
 	}
 	
-	Serial.println("Found responses: " + String(parsecount));
+	//Serial.println("Found responses: " + String(parsecount));
 	
 	resnum = parsecount;
 	
-	Serial.println("Found responses: " + String(resnum));
+	//Serial.println("Found responses: " + String(resnum));
 	
 	return 0;
 }
