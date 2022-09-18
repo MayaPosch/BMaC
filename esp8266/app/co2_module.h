@@ -23,6 +23,7 @@ class CO2Module {
 	static uint8 eventLevel;
 	static uint8 eventCountDown;
 	static uint8 eventCountUp;
+	//static CO2Module* thisClass;
 	
 	static void onSerialReceived(Stream &stream, char arrivedChar, unsigned short availableCharsCount);
 	

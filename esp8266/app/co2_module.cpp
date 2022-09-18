@@ -20,6 +20,7 @@ uint8_t CO2Module::readCmd[9] = { 0xFF,0x01,0x86,0x00,0x00,0x00,0x00,0x00,0x79};
 uint8 CO2Module::eventLevel = 0; // 0: < 750, 1: > 900, > 1,000.
 uint8 CO2Module::eventCountDown = 10; // Counter until lower event level.
 uint8 CO2Module::eventCountUp = 0; // Counter until higher event level.
+//CO2Module* CO2Module::thisClass;
 
 
 // --- INITIALIZE ---
@@ -35,13 +36,19 @@ bool CO2Module::start() {
 	if (!OtaCore::claimPin(ESP8266_gpio03)) { return false; } // RX 0
 	if (!OtaCore::claimPin(ESP8266_gpio01)) { return false; } // TX 0
 	
+	//thisClass = new CO2Module();
+	
 	// We use UART0 for the MH-Z14 CO2 sensor.
 	// The sensor's UART uses 9600 baud, 8N1.
 	//Serial.resetCallback();
 	Serial.end();
 	delay(10);
 	Serial.begin(9600);
-	Serial.onDataReceived(&CO2Module::onSerialReceived);
+	if (!Serial.onDataReceived(StreamDataReceivedDelegate(&CO2Module::onSerialReceived))) {
+	//if (!Serial.onDataReceived(&CO2Module::onSerialReceived)) {
+		OtaCore::log(LOG_DEBUG, "Failed to set serial callback.");
+		return false;
+	}
 	
 	// Create timer.
 	// Read the current value every 30 seconds.
@@ -69,6 +76,8 @@ void CO2Module::readCO2() {
 	// Write the command to the sensor which will make it send back the current
 	// reading.
 	Serial.write(readCmd, 9);
+	
+	OtaCore::log(LOG_DEBUG, "Sent CO2 read.");
 }
 
 
@@ -101,7 +110,7 @@ void CO2Module::config(String cmd) {
 // Callback for serial RX data events on UART 0.
 void CO2Module::onSerialReceived(Stream &stream, char arrivedChar, unsigned short availableCharsCount) {
 	//Serial1.printf("Receiving UART 0.\n");
-	//OtaCore::log(LOG_DEBUG, "Receiving UART 0.");
+	OtaCore::log(LOG_DEBUG, "Receiving UART 0.");
 	
 	// Count until we have 9 characters available in the buffer.
 	// Read them out, calculate the current PPM response and publish.
