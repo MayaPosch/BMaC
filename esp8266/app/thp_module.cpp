@@ -31,7 +31,14 @@ bool THPModule::initialize() {
 bool THPModule::start() {
 	// Directly start the BME280 module here for now.
 	// TODO: make configurable.
-	BME280Module::init();
+	if (!BME280Module::init()) {
+		// Try to start the DHT module instead.
+		// FIXME: DHT module is configured to use an I2C pin. Change DHT pin?
+		if (!DHTModule::init()) {
+			// Report error.
+			return false;
+		}
+	}
 	
 	return true;
 }

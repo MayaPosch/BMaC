@@ -34,6 +34,7 @@ bool BME280Module::init() {
 	}
 	else {
 		OtaCore::log(LOG_ERROR, "Not connected to BME280 sensor.");
+		delete bme280;
 		return false;
 	}
 	

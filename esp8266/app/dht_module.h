@@ -20,7 +20,8 @@
 #include <Libraries/DHTesp/DHTesp.h>
 
 
-#define DHT_PIN 5 // DHT sensor: GPIO5 ('D1' on NodeMCU)
+//#define DHT_PIN 5 // DHT sensor: GPIO5 ('D1' on NodeMCU)
+#define DHT_PIN 0 // DHT sensor: GPIO0 ('D3' on NodeMCU)
 
 
 class DHTModule {
