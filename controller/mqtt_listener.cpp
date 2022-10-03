@@ -41,7 +41,8 @@ Listener::Listener() {
 	// Initialise the MQTT client.
 	//client.setClientId("BMaC_Controller");
 	using namespace std::placeholders;
-	client.init(std::bind(&Listener::logHandler, this, _1, _2), NYMPH_LOG_LEVEL_TRACE);
+	//client.init(std::bind(&Listener::logHandler, this, _1, _2), NYMPH_LOG_LEVEL_TRACE);
+	client.init(std::bind(&Listener::logHandler, this, _1, _2), NYMPH_LOG_LEVEL_WARNING);
 	client.setMessageHandler(std::bind(&Listener::messageHandler, this, _1, _2, _3));
 	
 	//int keepalive = 60;
@@ -96,6 +97,7 @@ bool Listener::addSubscription(std::string topic) {
 		return false;
 	}
 	
+	// TODO: strip the leading 'nsa/' from the topic and use it as the value of the pair.
 	series.insert(std::pair<std::string, std::string>(topic, topic));
 	
 	return true;
