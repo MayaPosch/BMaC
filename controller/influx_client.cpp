@@ -59,16 +59,20 @@ bool InfluxClient::writeQuery(std::string query) {
 		request.setContentType("application/x-www-form-urlencoded");
 		influxClient->sendRequest(request) << query;
 		
-		/*Poco::Net::HTTPResponse response;
+		Poco::Net::HTTPResponse response;
 		influxClient->receiveResponse(response);
 		Poco::Net::HTTPResponse::HTTPStatus status = response.getStatus();
 		if (status != Poco::Net::HTTPResponse::HTTP_OK && status != Poco::Net::HTTPResponse::HTTP_NO_CONTENT) {
 			std::cerr << "Received InfluxDB error: " << response.getReason() << "\n";
-		} */
+		}
 	}
 	catch (Poco::Exception& exc) {
 		std::cout << "Exception caught while attempting to connect." << std::endl;
 		std::cerr << exc.displayText() << std::endl;
+		return false;
+	}
+	catch (...) {
+		std::cerr << "Caught unknown exception in InfluxClient::writeQuery." << std::endl;
 		return false;
 	}
 	
