@@ -1191,7 +1191,7 @@ bool Listener::checkNodes() {
 		// Request current valve status from the node.
 		topic = "io/" + uids[i];
 		//unsigned char pl[] = { 0x80 };
-		std::string pl({ (int8_t) 0x80 });
+		std::string pl({ (uint8_t) 0x80 });
 		//publish(0, topic.c_str(), 1, pl, 1);
 		publishMessage(topic, pl);
 	}
