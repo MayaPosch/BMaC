@@ -1,0 +1,10 @@
+[Unit]
+Description=NyanSD service discovery server
+
+[Service]
+ExecStart=/usr/local/bin/bmaccontrol -c /etc/bmac/config.ini
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

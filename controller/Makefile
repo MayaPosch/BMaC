@@ -63,3 +63,32 @@ clean :
 	$(RM) $(OBJECTS)
 
 .PHONY: all clean
+
+# --- INSTALLATION ---
+
+PREFIX ?= /usr/local
+	
+# ifeq ($(PREFIX),/usr/local)
+	# CONFDIR := $(PREFIX)/etc
+# else
+	# CONFDIR := /etc
+# endif
+
+CONFDIR := /etc
+	
+.PHONY: install
+install:
+	install -d $(DESTDIR)$(PREFIX)/bin/ \
+		-d $(DESTDIR)$(CONFDIR)/bmac/
+	install -m 755 bin/$(OUTPUT) $(DESTDIR)$(PREFIX)/bin/
+	install -m 644 config.ini $(DESTDIR)$(CONFDIR)/bmac/
+
+.PHONY: install-systemd
+install-systemd:
+	install -d $(DESTDIR)$(CONFDIR)/systemd/system/ 
+	cp systemd/bmaccontroller.service $(DESTDIR)$(CONFDIR)/systemd/system/bmaccontroller.service
+
+.PHONY: install-openrc
+install-openrc:
+	install -d $(DESTDIR)$(CONFDIR)/init.d/	
+	cp openrc/bmaccontroller $(DESTDIR)$(CONFDIR)/init.d/bmaccontroller

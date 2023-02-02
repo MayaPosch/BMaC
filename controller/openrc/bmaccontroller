@@ -1,0 +1,5 @@
+#!/sbin/openrc-run
+
+supervisor=supervise-daemon
+command="/usr/local/bin/bmaccontrol"
+command_args="-c /etc/bmac/config.ini"
