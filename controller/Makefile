@@ -80,7 +80,7 @@ CONFDIR := /etc
 install:
 	install -d $(DESTDIR)$(PREFIX)/bin/ \
 		-d $(DESTDIR)$(CONFDIR)/bmac/
-	install -m 755 bin/$(TARGET) $(DESTDIR)$(PREFIX)/bin/
+	install -m 755 bin/$(ARCH)/$(TARGET) $(DESTDIR)$(PREFIX)/bin/
 	install -m 644 config.ini $(DESTDIR)$(CONFDIR)/bmac/
 
 .PHONY: install-systemd
