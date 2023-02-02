@@ -2,7 +2,7 @@
 Description=NyanSD service discovery server
 
 [Service]
-ExecStart=/usr/local/bin/bmaccontrol -c /etc/bmac/config.ini
+ExecStart=/usr/local/bin/bmaccontrol -c /etc/bmac/config.ini  -d /etc/bmac/htdocs
 Restart=always
 RestartSec=5
 

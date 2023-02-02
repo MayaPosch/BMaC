@@ -45,6 +45,7 @@ using namespace Poco::Net;
 
 // Globals.
 std::condition_variable sigcv;
+std::string htdocs_path;
 
 
 // --- LOG HANDLER ---
@@ -74,6 +75,7 @@ int main(int argc, char* argv[]) {
 	Sarge sarge;
 	sarge.setArgument("h", "help", "Get this help message.", false);
 	sarge.setArgument("c", "configuration", "Path to configuration file.", true);
+	sarge.setArgument("d", "htdocs", "Path to htdocs.", true);
 	sarge.setArgument("v", "version", "Output the software version and exit.", false);
 	sarge.setDescription("Building Management and Control server. Details: https://github.com/MayaPosch/BMaC/.");
 	sarge.setUsage("nymphcast_server <options>");
@@ -94,6 +96,10 @@ int main(int argc, char* argv[]) {
 	if (!sarge.getFlag("configuration", config_file)) {
 		std::cerr << "No configuration file provided in command line arguments." << std::endl;
 		return 1;
+	}
+	
+	if (!sarge.getFlag("htdocs", htdocs_path)) {
+		htdocs_path = "htdocs";
 	}
 	
 	std::cout << "Starting MQTT BMaC Control server...\n";

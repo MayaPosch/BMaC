@@ -28,6 +28,8 @@ using namespace Poco;
 
 //#include "coffeenet.h"
 
+extern std::string htdocs_path;
+
 
 class DataHandler: public HTTPRequestHandler { 
 public: 
@@ -230,7 +232,8 @@ public:
 		} */
 		
 		// No endpoint found, continue serving the requested file.
-		std::string fileroot = "htdocs";
+		//std::string fileroot = "htdocs";
+		std::string fileroot = htdocs_path;
 		if (path.empty() || path == "/") { path = "/index.html"; }
 		
 		File file(fileroot + path);

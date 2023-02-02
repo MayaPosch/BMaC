@@ -2,4 +2,4 @@
 
 supervisor=supervise-daemon
 command="/usr/local/bin/bmaccontrol"
-command_args="-c /etc/bmac/config.ini"
+command_args="-c /etc/bmac/config.ini -d /etc/bmac/htdocs"

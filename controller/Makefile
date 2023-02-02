@@ -79,9 +79,11 @@ CONFDIR := /etc
 .PHONY: install
 install:
 	install -d $(DESTDIR)$(PREFIX)/bin/ \
-		-d $(DESTDIR)$(CONFDIR)/bmac/
+		-d $(DESTDIR)$(CONFDIR)/bmac/ \
+		-d $(DESTDIR)$(CONFDIR)/bmac/htdocs/
 	install -m 755 bin/$(ARCH)/$(TARGET) $(DESTDIR)$(PREFIX)/bin/
 	install -m 644 config.ini $(DESTDIR)$(CONFDIR)/bmac/
+	install -m 644 htdocs/* $(DESTDIR)$(CONFDIR)/bmac/htdocs/
 
 .PHONY: install-systemd
 install-systemd:
